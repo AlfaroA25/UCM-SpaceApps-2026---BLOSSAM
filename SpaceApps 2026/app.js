@@ -14,10 +14,29 @@
     sleep: { src: './icons/rufus-sleep.png', name: 'Sleep cycle', description: 'Rufus drifts off for a well-earned rest.' },
     study: { src: './icons/rufus-study.png', name: 'Curious mind', description: 'Rufus explores a mission display.' }
   };
+  const suitPalettes = {
+    classic: { name: 'Classic white & gold', suit: '#ece8dc', trim: '#eab84d' },
+    midnight: { name: 'Midnight navy & gold', suit: '#34466d', trim: '#efbd58' },
+    arctic: { name: 'Arctic blue & silver', suit: '#92b8d0', trim: '#c9dce6' },
+    purple: { name: 'Space explorer purple', suit: '#8066a9', trim: '#f0cb78' },
+    emerald: { name: 'Emerald & gold', suit: '#3e8069', trim: '#e9bd57' },
+    crimson: { name: 'Crimson & black', suit: '#a44a53', trim: '#34343d' }
+  };
+  const rufusAccessories = {
+    'mission-patch': { name: 'Crew mission patch', description: 'A stitched mission insignia for the flight suit.', src: './icons/rufus-layer-patch.svg', cost: 0 },
+    'orbit-satellite': { name: 'Pocket satellite', description: 'A tiny satellite companion circling Rufus.', src: './icons/rufus-layer-satellite.svg', cost: 0 },
+    'wrist-computer': { name: 'Wrist computer', description: 'A compact mission communicator on Rufus’s cuff.', src: './icons/rufus-layer-wrist.svg', cost: 35 },
+    'holo-slate': { name: 'Holographic slate', description: 'A luminous field slate for curious explorers.', src: './icons/rufus-layer-slate.svg', cost: 50 },
+    'comms-pack': { name: 'Comms pack', description: 'A flight-ready communications pack.', src: './icons/rufus-layer-pack.svg', cost: 60 }
+  };
   const seed = {
     version: 1,
     profile: { name: 'Maya Chen', role: 'Flight Specialist', heartMin: 58, heartMax: 72, sleepMin: 7.5, sleepMax: 9, radiationReviewAt: 50 },
-    rufus: { pose: 'wave' },
+    rufus: {
+      pose: 'wave', palette: 'classic', customSuit: '#ece8dc', customTrim: '#eab84d',
+      inventory: ['mission-patch', 'orbit-satellite'], accessories: ['mission-patch', 'orbit-satellite'],
+      stardust: 0, bondXp: 0, petDate: today, petCount: 0, petStreak: 0, lastPetDate: ''
+    },
     metrics: { heart: 64, sleep: 7.4, exercise: 42, fatigue: 3, mood: 'Good', cognition: 92, radiation: 38 },
     xp: 2480,
     streak: 6,
@@ -44,6 +63,10 @@
   let memorySequence = [];
   let memoryInput = [];
   let gameLocked = false;
+  let rufusDialogue = '';
+  let rufusReactionPose = '';
+  let rufusReactionTimer;
+  const artworkImageCache = new Map();
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -56,12 +79,35 @@
       if (!parsed || parsed.version !== 1 || typeof parsed.metrics !== 'object' || typeof parsed.profile !== 'object') {
         throw new Error('Saved AstroVital data has an unsupported format.');
       }
-      const savedPose = parsed.rufus && typeof parsed.rufus.pose === 'string' ? parsed.rufus.pose : 'wave';
+      const savedRufus = parsed.rufus && typeof parsed.rufus === 'object' ? parsed.rufus : {};
+      const savedPose = typeof savedRufus.pose === 'string' ? savedRufus.pose : 'wave';
+      const inventory = Array.isArray(savedRufus.inventory)
+        ? [...new Set(savedRufus.inventory.filter((item) => Object.hasOwn(rufusAccessories, item)))]
+        : clone(seed.rufus.inventory);
+      const accessories = Array.isArray(savedRufus.accessories)
+        ? [...new Set(savedRufus.accessories.filter((item) => inventory.includes(item)))]
+        : clone(seed.rufus.accessories);
+      const isColor = (value) => typeof value === 'string' && /^#[\da-f]{6}$/i.test(value);
       return {
         ...clone(seed),
         ...parsed,
         profile: { ...seed.profile, ...parsed.profile },
-        rufus: { pose: Object.hasOwn(rufusArtwork, savedPose) ? savedPose : seed.rufus.pose },
+        rufus: {
+          ...seed.rufus,
+          ...savedRufus,
+          pose: Object.hasOwn(rufusArtwork, savedPose) ? savedPose : seed.rufus.pose,
+          palette: savedRufus.palette === 'custom' || Object.hasOwn(suitPalettes, savedRufus.palette) ? savedRufus.palette : 'classic',
+          customSuit: isColor(savedRufus.customSuit) ? savedRufus.customSuit : seed.rufus.customSuit,
+          customTrim: isColor(savedRufus.customTrim) ? savedRufus.customTrim : seed.rufus.customTrim,
+          inventory,
+          accessories,
+          stardust: Number.isFinite(savedRufus.stardust) ? Math.max(0, savedRufus.stardust) : seed.rufus.stardust,
+          bondXp: Number.isFinite(savedRufus.bondXp) ? Math.max(0, savedRufus.bondXp) : seed.rufus.bondXp,
+          petDate: typeof savedRufus.petDate === 'string' ? savedRufus.petDate : today,
+          petCount: Number.isFinite(savedRufus.petCount) ? Math.max(0, savedRufus.petCount) : 0,
+          petStreak: Number.isFinite(savedRufus.petStreak) ? Math.max(0, savedRufus.petStreak) : 0,
+          lastPetDate: typeof savedRufus.lastPetDate === 'string' ? savedRufus.lastPetDate : ''
+        },
         metrics: { ...seed.metrics, ...parsed.metrics },
         completed: Array.isArray(parsed.completed) ? parsed.completed : [],
         achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
@@ -91,6 +137,10 @@
       state.completedDate = today;
     }
     if (state.checkinDate !== today) state.checkinDate = '';
+    if (state.rufus.petDate !== today) {
+      state.rufus.petDate = today;
+      state.rufus.petCount = 0;
+    }
   }
 
   function showToast(message) {
@@ -140,12 +190,14 @@
   function setNav(view) {
     $$('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${view}`));
     $$('.nav-link[data-nav]').forEach((button) => button.classList.toggle('active', button.dataset.nav === view));
-    const labels = { overview: 'OVERVIEW', health: 'HEALTH MONITOR', missions: 'DAILY MISSIONS', cognitive: 'MIND LAB', journal: 'WELLBEING LOG' };
+    const labels = { overview: 'OVERVIEW', companion: 'RUFUS COMPANION', health: 'HEALTH MONITOR', missions: 'DAILY MISSIONS', cognitive: 'MIND LAB', journal: 'WELLBEING LOG' };
     $('#page-crumb').textContent = labels[view] || 'OVERVIEW';
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (view === 'health') renderHealth();
     if (view === 'missions') renderMissions();
     if (view === 'journal') renderJournalHistory();
+    if (view === 'companion') renderCompanion();
+    if (view === 'cognitive') speakRufus('A curious mind is ready for its next little puzzle.', 'Curious', 'study');
   }
 
   function updateClock() {
@@ -200,7 +252,7 @@
     const list = compact ? missions.slice(0, 3) : missions;
     container.innerHTML = list.map((mission) => {
       const done = state.completed.includes(mission.id);
-      return `<div class="mission-row"><button class="mission-check ${done ? 'done' : ''}" data-complete="${mission.id}" aria-label="${done ? 'Completed' : 'Complete'} ${escapeHtml(mission.title)}">${done ? '✓' : ''}</button><div class="mission-copy"><strong>${escapeHtml(mission.title)}</strong><small>${escapeHtml(mission.description)}</small></div><span class="mission-reward">${done ? 'DONE' : `+${mission.reward} XP`}</span></div>`;
+      return `<div class="mission-row"><button class="mission-check ${done ? 'done' : ''}" data-mission-action="${mission.id}" aria-label="${done ? 'Completed' : 'Open'} ${escapeHtml(mission.title)}" ${done ? 'disabled' : ''}>${done ? '✓' : '→'}</button><div class="mission-copy"><strong>${escapeHtml(mission.title)}</strong><small>${escapeHtml(mission.description)}</small></div><span class="mission-reward">${done ? 'DONE' : `+${mission.reward} XP`}</span></div>`;
     }).join('');
   }
 
@@ -321,11 +373,16 @@
     const mission = missions.find((item) => item.id === id);
     state.completed.push(id);
     state.xp += mission.reward;
+    awardCompanionMission(id);
     const newBadges = unlockEligibleAchievements();
+    if (newBadges.length) {
+      speakRufus(`${$('#rufus-message').textContent} Milestone unlocked: ${newBadges.join(', ')}!`, 'NEW MISSION INSIGNIA', 'wave');
+    }
     persist();
     renderOverview();
     renderMissions();
-    showToast(`Objective complete · +${mission.reward} mission XP${newBadges.length ? ` · ${newBadges.join(', ')} insignia earned` : ''}`);
+    if ($('#view-companion').classList.contains('active')) renderCompanion();
+    showToast(`Objective complete · +${mission.reward} mission XP · +10 stardust${newBadges.length ? ` · ${newBadges.join(', ')} insignia earned` : ''}`);
   }
 
   function unlockEligibleAchievements() {
@@ -374,9 +431,15 @@
 
   function renderRufus() {
     $$('[data-rufus-art]').forEach((image) => {
-      const pose = image.id === 'rufus-avatar' ? state.rufus.pose : image.dataset.rufusArt;
+      const pose = image.matches('[data-rufus-live]')
+        ? rufusReactionPose || state.rufus.pose
+        : image.dataset.rufusArt;
       const art = rufusArtwork[pose] || rufusArtwork.wave;
       image.dataset.rufusArt = pose in rufusArtwork ? pose : 'wave';
+      if (image.matches('[data-avatar-canvas]')) {
+        paintRufusCanvas(image, pose);
+        return;
+      }
       image.src = art.src;
       if (image.dataset.rufusAlt) image.alt = image.dataset.rufusAlt;
       else image.alt = `Rufus: ${art.description}`;
@@ -388,7 +451,93 @@
         : state.checkinDate === today
           ? 'Thanks for checking in. Looking after yourself is a mission win.'
           : 'No pressure, crew member. Every small check-in is a win, and rest counts too.';
-    $('#rufus-message').textContent = message;
+    if (!rufusDialogue) speakRufus(message);
+    if ($('#rufus-mission-count')) $('#rufus-mission-count').textContent = `${state.completed.length} / ${missions.length}`;
+  }
+
+  function getArtworkImage(src) {
+    if (!artworkImageCache.has(src)) {
+      artworkImageCache.set(src, new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error(`Unable to load Rufus artwork layer: ${src}`));
+        image.src = src;
+      }));
+    }
+    return artworkImageCache.get(src);
+  }
+
+  function hexToRgb(hex) {
+    return { r: parseInt(hex.slice(1, 3), 16), g: parseInt(hex.slice(3, 5), 16), b: parseInt(hex.slice(5, 7), 16) };
+  }
+
+  function recolorSuitPixels(imageData, width, height, suitColor, trimColor, pose) {
+    const suit = hexToRgb(suitColor);
+    const trim = hexToRgb(trimColor);
+    const { data } = imageData;
+    const suitStart = { wave: .47, confident: .45, rest: .56, sleep: .7, study: .59 }[pose] || .5;
+    for (let y = Math.floor(height * suitStart); y < height * .97; y++) {
+      for (let x = Math.floor(width * .18); x < width * .88; x++) {
+        const index = (y * width + x) * 4;
+        const red = data[index], green = data[index + 1], blue = data[index + 2];
+        const maximum = Math.max(red, green, blue), minimum = Math.min(red, green, blue);
+        const lightness = (maximum + minimum) / 510;
+        const saturation = maximum === 0 ? 0 : (maximum - minimum) / maximum;
+        const inSuit = lightness > .33 && saturation < .34;
+        const inTrim = x > width * .34 && x < width * .79 && lightness > .2 && saturation > .32 && red >= green * .91 && green >= blue * 1.12;
+        const target = inSuit ? suit : inTrim ? trim : null;
+        if (!target) continue;
+        const shade = .38 + lightness * .72;
+        const highlight = Math.max(0, lightness - .72) * .55;
+        data[index] = Math.min(255, target.r * shade + 255 * highlight);
+        data[index + 1] = Math.min(255, target.g * shade + 255 * highlight);
+        data[index + 2] = Math.min(255, target.b * shade + 255 * highlight);
+      }
+    }
+  }
+
+  function currentSuitColors() {
+    const preset = suitPalettes[state.rufus.palette];
+    return state.rufus.palette === 'custom'
+      ? { suit: state.rufus.customSuit, trim: state.rufus.customTrim }
+      : preset || suitPalettes.classic;
+  }
+
+  async function paintRufusCanvas(canvas, pose = canvas.dataset.rufusArt) {
+    pose = Object.hasOwn(rufusArtwork, pose) ? pose : 'wave';
+    const art = rufusArtwork[pose] || rufusArtwork.wave;
+    const renderId = Number(canvas.dataset.renderId || 0) + 1;
+    canvas.dataset.renderId = String(renderId);
+    try {
+      const image = await getArtworkImage(art.src);
+      if (!canvas.isConnected || canvas.dataset.rufusArt !== pose || canvas.dataset.renderId !== String(renderId)) return;
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0);
+      const colors = currentSuitColors();
+      const frame = context.getImageData(0, 0, canvas.width, canvas.height);
+      recolorSuitPixels(frame, canvas.width, canvas.height, colors.suit, colors.trim, pose);
+      context.putImageData(frame, 0, 0);
+      const layers = state.rufus.accessories.filter((item) => {
+        if (!state.rufus.inventory.includes(item)) return false;
+        if (pose === 'sleep') return item === 'orbit-satellite';
+        return pose !== 'study' || item !== 'holo-slate';
+      });
+      for (const item of layers) {
+        if (canvas.dataset.renderId !== String(renderId)) return;
+        const accessory = rufusAccessories[item];
+        if (accessory) {
+          const layer = await getArtworkImage(accessory.src);
+          if (canvas.dataset.renderId !== String(renderId)) return;
+          context.drawImage(layer, 0, 0, canvas.width, canvas.height);
+        }
+      }
+    } catch (error) {
+      console.error('Unable to render the customized Rufus avatar:', error);
+      showToast('Rufus’s custom artwork could not be loaded. Check that the app assets are available.');
+    }
   }
 
   function rufusImage(pose, className = '', alt) {
@@ -397,15 +546,137 @@
     return `<img class="${className}" data-rufus-art="${safePose}" src="${art.src}" alt="${escapeHtml(alt || art.description)}" loading="lazy" decoding="async">`;
   }
 
+  function rufusCanvas(pose, className, alt) {
+    const art = rufusArtwork[pose] || rufusArtwork.wave;
+    const safePose = Object.hasOwn(rufusArtwork, pose) ? pose : 'wave';
+    const label = alt || `Rufus: ${art.description}`;
+    return `<canvas class="${className}" width="245" height="360" data-rufus-art="${safePose}" data-avatar-canvas role="img" aria-label="${escapeHtml(label)}"></canvas>`;
+  }
+
   function openRufusCustomizer() {
     const poses = Object.entries(rufusArtwork).map(([pose, art]) => `
       <button class="rufus-pose-choice ${state.rufus.pose === pose ? 'selected' : ''}" type="button" data-rufus-choice="${pose}" aria-pressed="${state.rufus.pose === pose}">
-        ${rufusImage(pose, 'rufus-pose-thumb', `${art.name}: ${art.description}`)}
+        ${rufusCanvas(pose, 'rufus-pose-thumb', `Rufus, ${art.name.toLowerCase()}: ${art.description}`)}
         <span><strong>${art.name}</strong><small>${art.description}</small></span>
       </button>`).join('');
 
-    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> RUFUS AVATAR BAY</div><h2 id="modal-title">Choose Rufus’s mission moment</h2><p>Pick one of Rufus’s illustrated poses from the character sheet. Your choice is saved only in this browser on this device.</p><div class="rufus-preview" id="rufus-preview">${rufusImage(state.rufus.pose, 'rufus-preview-art')}<div><strong>Rufus</strong><span id="rufus-preview-caption">${rufusArtwork[state.rufus.pose].description}</span></div></div><form id="rufus-form"><input type="hidden" name="pose" value="${state.rufus.pose}"><div class="rufus-pose-grid">${poses}</div><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE AVATAR</button></div></form>`);
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> RUFUS AVATAR BAY</div><h2 id="modal-title">Choose Rufus’s mission moment</h2><p>Choose an expression from the supplied character art. Suit colors and gear can be changed in the companion bay.</p><div class="rufus-preview" id="rufus-preview">${rufusCanvas(state.rufus.pose, 'rufus-preview-art')}<div><strong>Rufus</strong><span id="rufus-preview-caption">${rufusArtwork[state.rufus.pose].description}</span></div></div><form id="rufus-form"><input type="hidden" name="pose" value="${state.rufus.pose}"><div class="rufus-pose-grid">${poses}</div><div class="modal-actions"><button type="button" class="secondary-button" data-nav="companion">OPEN COMPANION BAY</button><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE POSE</button></div></form>`);
     renderRufus();
+  }
+
+  function speakRufus(message, reaction = 'READY FOR A LITTLE COMPANY', reactionPose = '') {
+    rufusDialogue = message;
+    $('#rufus-message').textContent = message;
+    if ($('#rufus-home-dialogue')) $('#rufus-home-dialogue').textContent = message;
+    if ($('#rufus-stage-caption')) $('#rufus-stage-caption').textContent = reaction.toUpperCase();
+    clearTimeout(rufusReactionTimer);
+    if (Object.hasOwn(rufusArtwork, reactionPose)) {
+      rufusReactionPose = reactionPose;
+      renderRufus();
+      rufusReactionTimer = setTimeout(() => {
+        rufusReactionPose = '';
+        renderRufus();
+      }, 4200);
+    } else {
+      rufusReactionPose = '';
+      renderRufus();
+    }
+  }
+
+  function renderCompanion() {
+    resetDailyProgressIfNeeded();
+    const level = Math.floor(state.rufus.bondXp / 100) + 1;
+    const levelXp = state.rufus.bondXp % 100;
+    const titles = ['New crewmates', 'Trusted orbiters', 'Mission partners', 'Cosmic companions'];
+    $('#rufus-bond-level').textContent = `LEVEL ${level}`;
+    $('#rufus-bond-title').textContent = titles[Math.min(titles.length - 1, level - 1)];
+    $('#rufus-bond-xp').textContent = String(levelXp);
+    $('#rufus-bond-progress').style.width = `${levelXp}%`;
+    $('#rufus-stardust').textContent = state.rufus.stardust.toLocaleString();
+    $('#rufus-pet-streak').textContent = String(state.rufus.petStreak);
+    $('#rufus-mission-count').textContent = `${state.completed.length} / ${missions.length}`;
+    $('#suit-palette-name').textContent = state.rufus.palette === 'custom'
+      ? 'CUSTOM COLORS'
+      : (suitPalettes[state.rufus.palette] || suitPalettes.classic).name.toUpperCase();
+    $('#custom-suit-color').value = state.rufus.customSuit;
+    $('#custom-trim-color').value = state.rufus.customTrim;
+    $$('[data-suit-palette]').forEach((button) => {
+      const selected = state.rufus.palette === button.dataset.suitPalette;
+      button.classList.toggle('selected', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
+    $('#rufus-inventory').innerHTML = state.rufus.inventory.map((id) => {
+      const item = rufusAccessories[id];
+      if (!item) return '';
+      const equipped = state.rufus.accessories.includes(id);
+      return `<article class="gear-item ${equipped ? 'equipped' : ''}"><span class="gear-art" data-gear-preview="${id}" style="--gear-image:url('${item.src}')" aria-hidden="true"></span><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description)}</small></div><button class="gear-toggle" data-toggle-accessory="${id}" aria-pressed="${equipped}">${equipped ? 'EQUIPPED' : 'EQUIP'}</button></article>`;
+    }).join('') || '<p class="companion-help">Your locker is ready for its first mission reward.</p>';
+    $('#rufus-shop').innerHTML = Object.entries(rufusAccessories).filter(([, item]) => item.cost > 0).map(([id, item]) => {
+      const owned = state.rufus.inventory.includes(id);
+      return `<article class="shop-item"><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description)}</small></div><button class="gear-buy" data-buy-accessory="${id}" ${owned || state.rufus.stardust < item.cost ? 'disabled' : ''}>${owned ? 'OWNED' : `${item.cost} ✦`}</button></article>`;
+    }).join('');
+    renderMissionList($('#companion-goals-list'));
+    renderRufus();
+  }
+
+  function petRufus() {
+    resetDailyProgressIfNeeded();
+    if (state.rufus.lastPetDate !== today) {
+      const yesterday = new Date();
+      yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+      const previousDate = yesterday.toISOString().slice(0, 10);
+      state.rufus.petStreak = state.rufus.lastPetDate === previousDate ? state.rufus.petStreak + 1 : 1;
+      state.rufus.lastPetDate = today;
+    }
+    state.rufus.petCount += 1;
+    if (state.rufus.petCount <= 5) state.rufus.bondXp += 2;
+    const greetings = [
+      'Oh! A friendly space-pat. My whiskers are receiving excellent signals.',
+      'You came back! I saved you the comfiest spot in the observation deck.',
+      'Crew check: you are doing better than you think. No rush, okay?',
+      'Boop received. Mission morale is now orbiting at a very respectable altitude.',
+      'I would high-five you, but these astronaut gloves are delightfully enormous.'
+    ];
+    const avatar = $('#rufus-avatar');
+    const homeAvatar = $('#rufus-home-avatar');
+    [avatar, homeAvatar].filter(Boolean).forEach((node) => {
+      node.classList.remove('rufus-bounce');
+      void node.offsetWidth;
+      node.classList.add('rufus-bounce');
+    });
+    speakRufus(greetings[(state.rufus.petCount - 1) % greetings.length], 'RUFUS IS HAPPY YOU DROPPED BY', 'wave');
+    persist();
+    renderCompanion();
+    renderRufus();
+  }
+
+  function awardCompanionMission(id) {
+    const mission = missions.find((item) => item.id === id);
+    if (!mission) return;
+    state.rufus.stardust += 10;
+    state.rufus.bondXp += 8;
+    const allDone = missions.every((item) => state.completed.includes(item.id));
+    const message = allDone
+      ? 'LOOK AT YOU! Your whole flight plan is complete. Rufus is doing a tiny victory dance!'
+      : id === 'checkin' && Number(state.metrics.sleep) >= Number(state.profile.sleepMin)
+        ? 'Mission accomplished, crew member! You checked in and made room for rest. Rufus is proud of you.'
+        : id === 'checkin'
+          ? 'Mission accomplished, crew member! Thanks for checking in with yourself. That counts.'
+          : id === 'move'
+            ? 'Nice work getting your movement mission logged. One small win, right on course.'
+            : id === 'mind'
+              ? 'Curiosity beacon: activated! Rufus loved exploring that Mind Lab puzzle with you.'
+              : 'A mindful pause logged. Rufus says a little reset can be a lovely mission moment.';
+    const reactionPose = allDone ? 'wave' : id === 'mind' ? 'study' : id === 'breathe' || (id === 'checkin' && Number(state.metrics.sleep) >= Number(state.profile.sleepMin)) ? 'rest' : 'confident';
+    speakRufus(message, allDone ? 'FLIGHT PLAN COMPLETE · CELEBRATION TIME' : 'MISSION MILESTONE · +10 STARDUST', reactionPose);
+    if (allDone) {
+      const avatar = $('#rufus-avatar');
+      avatar?.classList.remove('rufus-bounce');
+      if (avatar) {
+        void avatar.offsetWidth;
+        avatar.classList.add('rufus-bounce');
+      }
+    }
   }
 
   function cheerRufus() {
@@ -413,9 +684,11 @@
       'You do not have to do it all at once. One small step is plenty.',
       'Checking in with yourself is brave work. I am cheering you on!',
       'Your pace is the right pace. Rest is part of the mission, too.',
-      'A little progress still counts as progress. You have got this, crew member!'
+      'A little progress still counts as progress. You have got this, crew member!',
+      'Fun fact: the stars are very far away, but your next small win is right here.'
     ];
-    $('#rufus-message').textContent = cheers[rufusCheerIndex % cheers.length];
+    const cheerPose = ['confident', 'wave', 'rest', 'study'][rufusCheerIndex % 4];
+    speakRufus(cheers[rufusCheerIndex % cheers.length], 'RUFUS HAS A MESSAGE FOR YOU', cheerPose);
     rufusCheerIndex += 1;
     const avatar = $('#rufus-avatar');
     avatar.classList.remove('rufus-bounce');
@@ -581,14 +854,19 @@
       const mission = missions.find((item) => item.id === 'mind');
       state.completed.push('mind');
       state.xp += mission.reward;
+      awardCompanionMission('mind');
       message += ` · Daily objective +${mission.reward} XP`;
     }
     const newBadges = unlockEligibleAchievements();
-    if (newBadges.length) message += ` · ${newBadges.join(', ')} insignia earned`;
+    if (newBadges.length) {
+      message += ` · ${newBadges.join(', ')} insignia earned`;
+      speakRufus(`${$('#rufus-message').textContent} Milestone unlocked: ${newBadges.join(', ')}!`, 'NEW MISSION INSIGNIA', 'wave');
+    }
     persist();
     renderXp();
     renderMissions();
     renderOverview();
+    if ($('#view-companion').classList.contains('active')) renderCompanion();
     $('#cog-sessions').innerHTML = `${state.cognitiveSessions} <small>sessions</small>`;
     $('#game-start').disabled = false;
     showToast(message);
@@ -632,9 +910,71 @@
     if (action === 'checkin') openCheckin();
     if (action === 'alerts') openAlerts();
     if (action === 'rufus-cheer') cheerRufus();
+    if (action === 'pet-rufus') petRufus();
     if (action === 'customize-rufus') openRufusCustomizer();
     if (action === 'close-modal') closeModal();
     if (action === 'dismiss-notice') event.target.closest('.notice-strip').remove();
+
+    const paletteChoice = event.target.closest('[data-suit-palette]');
+    if (paletteChoice && Object.hasOwn(suitPalettes, paletteChoice.dataset.suitPalette)) {
+      state.rufus.palette = paletteChoice.dataset.suitPalette;
+      state.rufus.customSuit = suitPalettes[state.rufus.palette].suit;
+      state.rufus.customTrim = suitPalettes[state.rufus.palette].trim;
+      persist();
+      renderCompanion();
+      speakRufus(`New flight suit, same Rufus! The ${suitPalettes[state.rufus.palette].name} palette is ready for our next adventure.`, 'SUIT PALETTE UPDATED');
+      return;
+    }
+
+    if (action === 'save-custom-colors') {
+      const suitColor = $('#custom-suit-color').value;
+      const trimColor = $('#custom-trim-color').value;
+      if (!/^#[\da-f]{6}$/i.test(suitColor) || !/^#[\da-f]{6}$/i.test(trimColor)) {
+        showToast('Choose valid suit and trim colors before applying them.');
+        return;
+      }
+      state.rufus.palette = 'custom';
+      state.rufus.customSuit = suitColor;
+      state.rufus.customTrim = trimColor;
+      persist();
+      renderCompanion();
+      speakRufus('Custom colors applied! Rufus is ready to make this suit his own.', 'CUSTOM COLORS APPLIED');
+      return;
+    }
+
+    const accessoryToggle = event.target.closest('[data-toggle-accessory]');
+    if (accessoryToggle) {
+      const item = accessoryToggle.dataset.toggleAccessory;
+      if (!state.rufus.inventory.includes(item) || !Object.hasOwn(rufusAccessories, item)) {
+        showToast('That gear is not in Rufus’s locker yet.');
+        return;
+      }
+      state.rufus.accessories = state.rufus.accessories.includes(item)
+        ? state.rufus.accessories.filter((equipped) => equipped !== item)
+        : [...state.rufus.accessories, item];
+      persist();
+      renderCompanion();
+      speakRufus(`${rufusAccessories[item].name} ${state.rufus.accessories.includes(item) ? 'equipped' : 'put away'}. Mix and match any gear you own.`, 'LOCKER UPDATED');
+      return;
+    }
+
+    const accessoryPurchase = event.target.closest('[data-buy-accessory]');
+    if (accessoryPurchase) {
+      const item = accessoryPurchase.dataset.buyAccessory;
+      const accessory = rufusAccessories[item];
+      if (!accessory || state.rufus.inventory.includes(item) || state.rufus.stardust < accessory.cost) {
+        showToast('That gear is unavailable or you need more mission stardust.');
+        return;
+      }
+      state.rufus.stardust -= accessory.cost;
+      state.rufus.inventory.push(item);
+      state.rufus.accessories.push(item);
+      persist();
+      renderCompanion();
+      speakRufus(`${accessory.name} unlocked and equipped! That is some excellent mission gear.`, 'NEW GEAR UNLOCKED');
+      showToast(`${accessory.name} added to Rufus’s locker.`);
+      return;
+    }
 
     const rufusChoice = event.target.closest('[data-rufus-choice]');
     if (rufusChoice) {
@@ -647,8 +987,8 @@
       $('#rufus-form [name="pose"]').value = pose;
       const preview = $('.rufus-preview-art', $('#modal-content'));
       preview.dataset.rufusArt = pose;
-      preview.src = art.src;
-      preview.alt = art.description;
+      preview.setAttribute('aria-label', `Rufus: ${art.description}`);
+      paintRufusCanvas(preview, pose);
       $('#rufus-preview-caption').textContent = art.description;
       $$('[data-rufus-choice]').forEach((choice) => {
         const selected = choice === rufusChoice;
@@ -664,7 +1004,7 @@
     if (missionAction === 'breathe') {
       openModal('<div class="eyebrow"><span class="eyebrow-line"></span> RECOVERY · MINDFUL PAUSE</div><h2 id="modal-title">A moment to reset</h2><p>Follow your own comfort and mission guidance. Try a slow, comfortable breath in and out for one minute. Stop if you feel unwell.</p><div class="health-note"><span>◌</span><div><strong>Optional, self-paced pause</strong><p>This is a general relaxation prompt, not a medical breathing protocol.</p></div></div><div class="modal-actions"><button class="secondary-button" data-action="close-modal">NOT NOW</button><button class="primary-button" data-action="complete-breath">I TOOK A PAUSE · +30 XP</button></div>');
     }
-    if (missionAction === 'game') {
+    if (missionAction === 'mind' || missionAction === 'game') {
       closeModal();
       setNav('cognitive');
       return;
@@ -673,8 +1013,6 @@
       closeModal();
       completeMission('breathe');
     }
-    const completeId = event.target.closest('[data-complete]')?.dataset.complete;
-    if (completeId) completeMission(completeId);
     const gameTab = event.target.closest('[data-game]')?.dataset.game;
     if (gameTab) setGame(gameTab);
     const rangeButton = event.target.closest('[data-range]');
@@ -772,6 +1110,8 @@
         return;
       }
       state.rufus.pose = pose;
+      rufusReactionPose = '';
+      clearTimeout(rufusReactionTimer);
       persist();
       closeModal();
       renderRufus();

@@ -21,6 +21,7 @@
         <div class="sidebar-label">MISSION CONTROL</div>
         <nav class="main-nav" aria-label="Main navigation">
           <button class="nav-link active" data-nav="overview"><span class="nav-icon">◈</span> Overview <span class="nav-count">01</span></button>
+          <button class="nav-link" data-nav="companion"><span class="nav-icon">✦</span> Rufus companion</button>
           <button class="nav-link" data-nav="health"><span class="nav-icon">⌁</span> Health monitor</button>
           <button class="nav-link" data-nav="missions"><span class="nav-icon">◎</span> Daily missions <span class="nav-dot"></span></button>
           <button class="nav-link" data-nav="cognitive"><span class="nav-icon">⌘</span> Mind lab</button>
@@ -68,7 +69,7 @@
 
             <article class="rufus-card" aria-labelledby="rufus-title">
               <div class="rufus-art">
-                <img id="rufus-avatar" class="rufus-avatar" data-rufus-art="wave" src="./icons/rufus-wave.png" alt="Rufus waves from space in his white and gold astronaut suit" decoding="async">
+                <button class="rufus-avatar-tap" data-action="pet-rufus" aria-label="Pet Rufus"><canvas id="rufus-avatar" class="rufus-avatar" width="245" height="360" data-rufus-art="wave" data-rufus-live data-avatar-canvas role="img" aria-label="Rufus in his astronaut suit"></canvas></button>
               </div>
               <div class="rufus-copy">
                 <div class="rufus-kicker"><span class="eyebrow-line"></span> YOUR HEALTH BUDDY <span class="rufus-online"><i></i> ON YOUR TEAM</span></div>
@@ -79,7 +80,6 @@
                   <button class="rufus-customize-button" type="button" data-action="customize-rufus">CUSTOMIZE RUFUS <span>↗</span></button>
                 </div>
               </div>
-              <span class="rufus-card-star" aria-hidden="true">✦</span>
             </article>
 
             <div class="hero-grid">
@@ -124,6 +124,42 @@
               </article>
             </div>
             <footer class="disclaimer"><span>✳</span> AstroVital is a wellness companion, not a medical diagnostic system. Always consult your flight surgeon regarding health concerns.</footer>
+          </section>
+
+          <section class="view" id="view-companion">
+            <div class="page-intro companion-heading"><div class="eyebrow"><span class="eyebrow-line"></span> RUFUS · YOUR COMPANION BAY</div><h1>Your crewmate, <span>your mission.</span></h1><p>Drop in, say hello, and shape Rufus’s flight look. Your companion progress stays on this device.</p></div>
+            <div class="companion-hero">
+              <div class="companion-stage">
+                <div class="companion-orbit orbit-a"></div><div class="companion-orbit orbit-b"></div>
+                <button class="companion-avatar-tap" data-action="pet-rufus" aria-label="Pet Rufus. Each visit can build your friendship.">
+                  <canvas id="rufus-home-avatar" class="companion-avatar" width="245" height="360" data-rufus-art="wave" data-rufus-live data-avatar-canvas role="img" aria-label="Rufus in his customized astronaut suit"></canvas>
+                  <span class="companion-pet-hint">TAP RUFUS TO SAY HI</span>
+                </button>
+                <div class="companion-stage-caption"><span class="live-dot"></span><span id="rufus-stage-caption">READY FOR A LITTLE COMPANY</span></div>
+              </div>
+              <div class="companion-dashboard">
+                <div class="companion-bond-card"><div class="bond-heading"><span>CREW BOND</span><strong id="rufus-bond-level">LEVEL 1</strong></div><div class="bond-name" id="rufus-bond-title">New crewmates</div><div class="xp-track"><span id="rufus-bond-progress"></span></div><small><span id="rufus-bond-xp">0</span> / 100 BOND XP · EARNED BY SHOWING UP</small></div>
+                <div class="companion-stats"><div><span>MISSION STARDUST</span><strong><span id="rufus-stardust">0</span> ✦</strong></div><div><span>HELLO STREAK</span><strong><span id="rufus-pet-streak">0</span> days</strong></div><div><span>MISSIONS TODAY</span><strong id="rufus-mission-count">0 / 4</strong></div></div>
+                <div class="companion-dialogue" aria-live="polite"><span class="dialogue-label">RUFUS SAYS</span><p id="rufus-home-dialogue">Every mission starts with a little hello. Want to see the flight plan?</p><button class="text-button" data-action="rufus-cheer">CHAT WITH RUFUS <span>✦</span></button></div>
+                <div class="companion-shortcuts"><button class="primary-button" data-action="customize-rufus">CUSTOMIZE RUFUS <span>↗</span></button><button class="secondary-button" data-nav="missions">VIEW TODAY’S MISSIONS</button></div>
+              </div>
+            </div>
+            <div class="companion-sections">
+              <section class="companion-panel"><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> CREW WARDROBE</div><h2>Choose Rufus’s suit colors</h2></div></div><p class="companion-help">Color changes are applied to Rufus’s suit while keeping its original shading and fur. The pose previews keep your selected colors and equipped gear. Your choice is saved locally. The source sheet is flattened, so expressions use its five original illustrated poses rather than separate eye or face sliders.</p>
+                <div class="palette-group"><div class="palette-title">SUIT PALETTE <span id="suit-palette-name">CLASSIC WHITE & GOLD</span></div><div class="palette-options" role="group" aria-label="Suit palette">
+                  <button class="palette-choice selected" data-suit-palette="classic" aria-pressed="true" aria-label="Classic white and gold"><i style="--swatch:#ece8dc"></i><span>Classic</span></button>
+                  <button class="palette-choice" data-suit-palette="midnight" aria-pressed="false" aria-label="Midnight navy and gold"><i style="--swatch:#273d65"></i><span>Midnight</span></button>
+                  <button class="palette-choice" data-suit-palette="arctic" aria-pressed="false" aria-label="Arctic blue and silver"><i style="--swatch:#8bb8d1"></i><span>Arctic</span></button>
+                  <button class="palette-choice" data-suit-palette="purple" aria-pressed="false" aria-label="Space explorer purple"><i style="--swatch:#8563b2"></i><span>Purple</span></button>
+                  <button class="palette-choice" data-suit-palette="emerald" aria-pressed="false" aria-label="Emerald and gold"><i style="--swatch:#347d68"></i><span>Emerald</span></button>
+                  <button class="palette-choice" data-suit-palette="crimson" aria-pressed="false" aria-label="Crimson and black"><i style="--swatch:#9d3e48"></i><span>Crimson</span></button>
+                </div></div>
+                <div class="custom-colors"><label>SUIT COLOR<input type="color" id="custom-suit-color" value="#ece8dc"></label><label>TRIM COLOR<input type="color" id="custom-trim-color" value="#eab84d"></label><button class="secondary-button" data-action="save-custom-colors">APPLY CUSTOM COLORS</button></div>
+              </section>
+              <section class="companion-panel"><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> GEAR LOCKER</div><h2>Accessories & inventory</h2></div><span class="sim-tag">EARNED WITH MISSIONS</span></div><p class="companion-help">Equip any gear you own. Complete a daily mission to earn stardust toward new items.</p><div class="inventory-grid" id="rufus-inventory"></div><div class="locker-divider"></div><div class="section-heading shop-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> MISSION SUPPLY</div><h2>Unlock new gear</h2></div></div><div class="shop-grid" id="rufus-shop"></div></section>
+            </div>
+            <section class="companion-panel companion-goals"><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> GROW TOGETHER</div><h2>Today’s crew missions</h2></div><button class="subtle-button" data-nav="missions">ALL WELLNESS GOALS ↗</button></div><div class="mission-list" id="companion-goals-list"></div><p class="companion-help">Rufus celebrates actions already supported by AstroVital. Mission data is illustrative and isn’t medical advice.</p></section>
+            <footer class="disclaimer"><span>✳</span> Rufus is a friendly wellness companion, not a medical diagnostic system. Progress and rewards are motivational only.</footer>
           </section>
 
           <section class="view" id="view-health">
