@@ -1,4 +1,4 @@
-const CACHE_NAME = 'astrovital-shell-v12';
+const CACHE_NAME = 'astrovital-shell-v13';
 const APP_SHELL = [
   './',
   './index.html',
@@ -12,7 +12,6 @@ const APP_SHELL = [
   './icons/rufus-confident.png',
   './icons/rufus-rest.png',
   './icons/rufus-sleep.png',
-  './icons/rufus-study.png',
   './icons/rufus-layer-patch.svg',
   './icons/rufus-layer-satellite.svg',
   './icons/rufus-layer-wrist.svg',
