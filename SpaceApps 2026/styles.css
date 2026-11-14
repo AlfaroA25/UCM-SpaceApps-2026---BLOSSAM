@@ -417,7 +417,6 @@ textarea::placeholder{color:#617483}
 @media (max-width:430px){.content-wrap{padding:18px 11px}.topbar{padding:0 11px}.breadcrumb{letter-spacing:.5px}.topbar-right{gap:8px}.mission-clock{gap:4px}.top-avatar{height:27px;width:27px}.hero-grid{gap:10px}.readiness-card,.xp-card{padding:15px}.readiness-body{gap:12px}.readiness-copy h2{font-size:16px}.readiness-copy p{font-size:9px}.readiness-foot{font-size:6px}.metric-card{padding:11px 10px}.metric-name{font-size:6px}.metric-reading strong{font-size:22px}.metric-baseline{font-size:6px}.section-heading{gap:8px}.section-heading>.subtle-button{font-size:7px}.mission-summary{gap:8px;padding:12px}.summary-icon{width:30px;height:30px}.mission-summary>div:nth-child(2)>strong{font-size:11px}.summary-progress{min-width:75px}.summary-streak{padding-left:8px}.summary-streak small{font-size:6px}.sim-tag{font-size:6px;padding:5px}.objective-copy h3{font-size:11px}.objective-copy p{font-size:9px}.objective-button{padding:7px;font-size:7px}.chart-footer{font-size:6px;gap:10px}.panel{padding:13px}.modal{padding:20px 16px}.modal-form{grid-template-columns:1fr 1fr}.mood-options{gap:5px}.mood-options label span{height:42px}.game-tabs{gap:12px}.game-tab{font-size:7px}.cognitive-stats>div{padding:0 7px}.cognitive-stats>div>strong{font-size:13px}.cognitive-stats>div>strong small{font-size:7px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
-<<<<<<< HEAD
 .sidebar{overflow-y:auto}
 .main-nav{flex:none}
 .nav-link{min-height:38px;height:auto;padding-top:7px;padding-bottom:7px;font-size:10px}
@@ -604,7 +603,6 @@ html[dir=rtl] #login-personnel-id{direction:ltr;text-align:left}
 .power-roadmap-panel{margin-bottom:12px}
 @media(max-width:1050px){.power-query-form{grid-template-columns:repeat(2,minmax(120px,1fr))}.power-results-meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.power-query-form{grid-template-columns:1fr}.power-query-form .primary-button{width:100%}.power-results-meta{grid-template-columns:1fr 1fr}.power-summary-grid{grid-template-columns:1fr 1fr}.power-summary-card{padding:10px}.power-summary-card>strong{font-size:14px}.power-chart-panel .panel-heading{align-items:flex-start;flex-direction:column}.power-chart-select{width:100%;grid-template-columns:42px minmax(0,1fr)}.power-chart{min-height:170px}.power-table{font-size:8px}.power-table th,.power-table td{padding:7px}.power-results-meta>div{padding:9px}.power-results-meta strong{font-size:9px}}
-=======
 .rufus-avatar-tap,.companion-avatar-tap{display:grid;place-items:center;position:relative;padding:0;border:0;background:transparent;cursor:pointer}
 .rufus-avatar-tap{width:100%;height:100%}
 .rufus-avatar-tap:focus-visible,.companion-avatar-tap:focus-visible{outline:2px solid var(--cyan);outline-offset:4px;border-radius:8px}
@@ -674,4 +672,3 @@ html[dir=rtl] #login-personnel-id{direction:ltr;text-align:left}
 .gear-art[data-gear-preview="comms-pack"]{background-position:-20px -180px}
 @media(max-width:430px){.gear-art{width:40px;height:40px;flex-basis:40px}}
 @media(max-width:430px){.breadcrumb{display:none}.topbar-right{gap:7px}.sync-status,.topbar-divider{display:none}}
->>>>>>> e98bc241ac99d9dc6c13ba0153732b578f25abfd
