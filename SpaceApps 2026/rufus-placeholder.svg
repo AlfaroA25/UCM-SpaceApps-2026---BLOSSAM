@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title description">
+  <title id="title">Temporary original bobcat companion placeholder</title>
+  <desc id="description">A friendly, geometric bobcat face in a space helmet. This is not official UC Merced mascot artwork.</desc>
+  <defs>
+    <linearGradient id="helmet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4dd8e8"/>
+      <stop offset="1" stop-color="#5275df"/>
+    </linearGradient>
+    <linearGradient id="fur" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#f2bc78"/>
+      <stop offset="1" stop-color="#d47f58"/>
+    </linearGradient>
+  </defs>
+  <circle cx="120" cy="120" r="112" fill="#10243c" stroke="#315675" stroke-width="2"/>
+  <circle cx="120" cy="120" r="98" fill="none" stroke="#4dd8e8" stroke-opacity=".22"/>
+  <path d="M56 91 48 36l53 28m83 27 8-55-53 28" fill="url(#fur)" stroke="#ffdaa3" stroke-width="5" stroke-linejoin="round"/>
+  <path d="m60 72 30 9-24 20m114-29-30 9 24 20" fill="#8b4e45" opacity=".8"/>
+  <path d="M48 124a72 72 0 0 1 144 0v16a72 72 0 0 1-144 0z" fill="#182c43" stroke="url(#helmet)" stroke-width="7"/>
+  <path d="M66 126a54 54 0 0 1 108 0v14a54 54 0 0 1-108 0z" fill="url(#fur)"/>
+  <path d="m83 126 12-6 12 6-12 6zm50 0 12-6 12 6-12 6z" fill="#142339"/>
+  <circle cx="95" cy="126" r="2.5" fill="#e7f8ff"/>
+  <circle cx="145" cy="126" r="2.5" fill="#e7f8ff"/>
+  <path d="M112 143q8-8 16 0l-8 8z" fill="#6b3f42"/>
+  <path d="M120 151q-8 12-18 2m18-2q8 12 18 2" fill="none" stroke="#713f3e" stroke-width="3" stroke-linecap="round"/>
+  <path d="M78 144 53 139m27 14-27 4m109-13 25-5m-27 19 27 4" fill="none" stroke="#fff0d9" stroke-opacity=".8" stroke-width="2" stroke-linecap="round"/>
+  <path d="M101 90 91 78m48 12 10-12" fill="none" stroke="#f6d69d" stroke-width="6" stroke-linecap="round"/>
+  <path d="M81 187q39 20 78 0" fill="none" stroke="#4dd8e8" stroke-opacity=".8" stroke-width="3"/>
+  <circle cx="190" cy="55" r="4" fill="#f3c271"/>
+  <path d="m42 171 5 5-5 5-5-5z" fill="#58d9e7"/>
+</svg>
