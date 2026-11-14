@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "SpaceApps 2026/**"
+      - "index.html"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
