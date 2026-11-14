@@ -1847,7 +1847,6 @@
     }
   });
 
-  const installButton = $('#install-button');
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
     installPrompt = event;
@@ -1856,7 +1855,7 @@
     installPrompt = null;
     showToast('AstroVital is installed on this device.');
   });
-  installButton.addEventListener('click', async () => {
+  const installApp = async () => {
     if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true) {
       showToast('AstroVital is already installed on this device.');
       return;
@@ -1888,6 +1887,9 @@
       console.error('Unable to install AstroVital:', error);
       showToast('Unable to start installation. Use your browser menu to install the app.');
     }
+  };
+  [$('#entry-install-button'), $('#install-button')].forEach((button) => {
+    button.addEventListener('click', installApp);
   });
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {

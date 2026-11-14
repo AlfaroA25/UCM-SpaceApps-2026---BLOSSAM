@@ -16,7 +16,7 @@ Open <http://localhost:8000>. Serving over localhost enables the service worker;
 
 ## Share and install
 
-After deployment, share the [RUFUS GitHub Pages app](https://alfaroa25.github.io/UCM-SpaceApps-2026---BLOSSAM/) with its link. On desktop Chrome or Edge, use **Install** and accept the browser prompt (or choose **Install RUFUS** from the browser menu). On Android, open the link in Chrome and choose **Install app** or **Add to Home screen**. On iPhone or iPad, open the link in Safari, tap **Share**, then choose **Add to Home Screen**.
+After deployment, share the [RUFUS GitHub Pages app](https://alfaroa25.github.io/UCM-SpaceApps-2026---BLOSSAM/) with its link. Choose **Install app** on the welcome screen or **Install** in the app header. On desktop Chrome or Edge, accept the browser prompt (or choose **Install RUFUS** from the browser menu). On Android, open the link in Chrome and choose **Install app** or **Add to Home screen**. On iPhone or iPad, open the link in Safari, tap **Share**, then choose **Add to Home Screen**.
 
 Installation and offline use require HTTPS or localhost. The GitHub Pages deployment workflow publishes the contents of this directory at the repository’s Pages URL.
 

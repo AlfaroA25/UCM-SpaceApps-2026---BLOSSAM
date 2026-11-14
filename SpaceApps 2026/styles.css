@@ -445,6 +445,7 @@ body.show-entry .app-shell{display:none}
 .entry-note,.entry-content .entry-note{font-size:9px;color:#849caf;margin:7px 0 16px}
 .entry-note strong{color:#bfeaf1;font-family:var(--mono);font-weight:600}
 .entry-start{width:100%;height:43px}
+.entry-install{width:100%;margin-top:5px}
 .entry-language-label{margin-top:22px}
 #login-feedback{color:#ffb5a7;font-size:10px;line-height:1.5;margin:6px 0}
 .entry-privacy{margin:18px 0 0!important;font-size:9px!important;color:#8296a8!important}
