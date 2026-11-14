@@ -7,9 +7,17 @@
     { id: 'breathe', title: 'Take a mindful pause', description: 'Try a short breathing or relaxation break.', icon: '◌', reward: 30, action: 'breathe' },
     { id: 'mind', title: 'Exercise your attention', description: 'Complete an optional Mind Lab activity.', icon: '⌘', reward: 50, action: 'game' }
   ];
+  const rufusArtwork = {
+    wave: { src: './icons/rufus-wave.png', name: 'Mission wave', description: 'Rufus waves hello in his flight suit.' },
+    confident: { src: './icons/rufus-confident.png', name: 'Steady orbit', description: 'Rufus stands ready with a confident smile.' },
+    rest: { src: './icons/rufus-rest.png', name: 'Recharge', description: 'Rufus takes a comfortable moment to rest.' },
+    sleep: { src: './icons/rufus-sleep.png', name: 'Sleep cycle', description: 'Rufus drifts off for a well-earned rest.' },
+    study: { src: './icons/rufus-study.png', name: 'Curious mind', description: 'Rufus explores a mission display.' }
+  };
   const seed = {
     version: 1,
     profile: { name: 'Maya Chen', role: 'Flight Specialist', heartMin: 58, heartMax: 72, sleepMin: 7.5, sleepMax: 9, radiationReviewAt: 50 },
+    rufus: { pose: 'wave' },
     metrics: { heart: 64, sleep: 7.4, exercise: 42, fatigue: 3, mood: 'Good', cognition: 92, radiation: 38 },
     xp: 2480,
     streak: 6,
@@ -29,6 +37,7 @@
   let state = loadState();
   let activeGame = 'memory';
   let activeRange = 7;
+  let rufusCheerIndex = 0;
   let toastTimer;
   let gameTimer;
   let reactionStart = 0;
@@ -47,10 +56,12 @@
       if (!parsed || parsed.version !== 1 || typeof parsed.metrics !== 'object' || typeof parsed.profile !== 'object') {
         throw new Error('Saved AstroVital data has an unsupported format.');
       }
+      const savedPose = parsed.rufus && typeof parsed.rufus.pose === 'string' ? parsed.rufus.pose : 'wave';
       return {
         ...clone(seed),
         ...parsed,
         profile: { ...seed.profile, ...parsed.profile },
+        rufus: { pose: Object.hasOwn(rufusArtwork, savedPose) ? savedPose : seed.rufus.pose },
         metrics: { ...seed.metrics, ...parsed.metrics },
         completed: Array.isArray(parsed.completed) ? parsed.completed : [],
         achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
@@ -84,8 +95,9 @@
 
   function showToast(message) {
     const node = $('#toast');
-    if (!node) return;
-    node.textContent = message;
+    const messageNode = $('#toast-message');
+    if (!node || !messageNode) return;
+    messageNode.textContent = message;
     node.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => node.classList.remove('show'), 2700);
@@ -178,6 +190,7 @@
       : 'Your overall indicators are tracking close to your personal baseline. Keep your recovery routine on course.';
     $('#last-checkin').textContent = state.checkinDate === today ? state.lastCheckin : 'NOT LOGGED TODAY';
     $('#alert-count').textContent = String(currentAlerts().length);
+    renderRufus();
     renderMissionList($('#overview-mission-list'), true);
     $$('.range-select').forEach((button) => { button.textContent = `${activeRange} DAYS⌄`; });
     renderHeartChart($('#heart-chart'), activeRange, false);
@@ -343,11 +356,87 @@
   }
 
   function openProfile() {
-    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> CREW HEALTH PROFILE</div><h2 id="modal-title">Personal reference profile</h2><p>Adjust this simulated crew profile. Personal ranges are for context; radiation review markers must follow mission medical guidance.</p><form id="profile-form"><div class="modal-form"><label>CREW NAME<input name="name" maxlength="50" value="${escapeHtml(state.profile.name)}" required></label><label>CREW ROLE<input name="role" maxlength="50" value="${escapeHtml(state.profile.role)}"></label><label>RESTING HR MIN · BPM<input name="heartMin" type="number" min="35" max="110" value="${state.profile.heartMin}" required></label><label>RESTING HR MAX · BPM<input name="heartMax" type="number" min="40" max="160" value="${state.profile.heartMax}" required></label><label>SLEEP TARGET MIN · HOURS<input name="sleepMin" type="number" min="3" max="12" step=".1" value="${state.profile.sleepMin}" required></label><label>SLEEP TARGET MAX · HOURS<input name="sleepMax" type="number" min="4" max="14" step=".1" value="${state.profile.sleepMax}" required></label><label>SIMULATED RADIATION REVIEW · mSv<input name="radiationReviewAt" type="number" min="1" max="1000" step=".1" value="${state.profile.radiationReviewAt}" required></label></div><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE PROFILE</button></div></form>`);
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> CREW HEALTH PROFILE</div>
+      <h2 id="modal-title">Personal reference profile</h2>
+      <p>Adjust this simulated crew profile. Personal ranges are for context; radiation review markers must follow mission medical guidance.</p>
+      <aside class="rufus-profile-buddy">${rufusImage('confident', 'rufus-profile-art')}<div><strong>Rufus is on your crew.</strong><span>Make his mission pose yours.</span></div><button class="secondary-button" type="button" data-action="customize-rufus">CUSTOMIZE</button></aside>
+      <form id="profile-form"><div class="modal-form">
+        <label>CREW NAME<input name="name" maxlength="50" value="${escapeHtml(state.profile.name)}" required></label>
+        <label>CREW ROLE<input name="role" maxlength="50" value="${escapeHtml(state.profile.role)}"></label>
+        <label>RESTING HR MIN · BPM<input name="heartMin" type="number" min="35" max="110" value="${state.profile.heartMin}" required></label>
+        <label>RESTING HR MAX · BPM<input name="heartMax" type="number" min="40" max="160" value="${state.profile.heartMax}" required></label>
+        <label>SLEEP TARGET MIN · HOURS<input name="sleepMin" type="number" min="3" max="12" step=".1" value="${state.profile.sleepMin}" required></label>
+        <label>SLEEP TARGET MAX · HOURS<input name="sleepMax" type="number" min="4" max="14" step=".1" value="${state.profile.sleepMax}" required></label>
+        <label>SIMULATED RADIATION REVIEW · mSv<input name="radiationReviewAt" type="number" min="1" max="1000" step=".1" value="${state.profile.radiationReviewAt}" required></label>
+      </div><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE PROFILE</button></div></form>`);
+    renderRufus();
+  }
+
+  function renderRufus() {
+    $$('[data-rufus-art]').forEach((image) => {
+      const pose = image.id === 'rufus-avatar' ? state.rufus.pose : image.dataset.rufusArt;
+      const art = rufusArtwork[pose] || rufusArtwork.wave;
+      image.dataset.rufusArt = pose in rufusArtwork ? pose : 'wave';
+      image.src = art.src;
+      if (image.dataset.rufusAlt) image.alt = image.dataset.rufusAlt;
+      else image.alt = `Rufus: ${art.description}`;
+    });
+    const message = state.completed.length >= missions.length
+      ? 'Flight plan complete! Take a moment to celebrate your effort.'
+      : state.completed.length
+        ? `Nice work, crew member. You have ${state.completed.length} small win${state.completed.length === 1 ? '' : 's'} logged today. Keep your own pace.`
+        : state.checkinDate === today
+          ? 'Thanks for checking in. Looking after yourself is a mission win.'
+          : 'No pressure, crew member. Every small check-in is a win, and rest counts too.';
+    $('#rufus-message').textContent = message;
+  }
+
+  function rufusImage(pose, className = '', alt) {
+    const art = rufusArtwork[pose] || rufusArtwork.wave;
+    const safePose = Object.hasOwn(rufusArtwork, pose) ? pose : 'wave';
+    return `<img class="${className}" data-rufus-art="${safePose}" src="${art.src}" alt="${escapeHtml(alt || art.description)}" loading="lazy" decoding="async">`;
+  }
+
+  function openRufusCustomizer() {
+    const poses = Object.entries(rufusArtwork).map(([pose, art]) => `
+      <button class="rufus-pose-choice ${state.rufus.pose === pose ? 'selected' : ''}" type="button" data-rufus-choice="${pose}" aria-pressed="${state.rufus.pose === pose}">
+        ${rufusImage(pose, 'rufus-pose-thumb', `${art.name}: ${art.description}`)}
+        <span><strong>${art.name}</strong><small>${art.description}</small></span>
+      </button>`).join('');
+
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> RUFUS AVATAR BAY</div><h2 id="modal-title">Choose Rufus’s mission moment</h2><p>Pick one of Rufus’s illustrated poses from the character sheet. Your choice is saved only in this browser on this device.</p><div class="rufus-preview" id="rufus-preview">${rufusImage(state.rufus.pose, 'rufus-preview-art')}<div><strong>Rufus</strong><span id="rufus-preview-caption">${rufusArtwork[state.rufus.pose].description}</span></div></div><form id="rufus-form"><input type="hidden" name="pose" value="${state.rufus.pose}"><div class="rufus-pose-grid">${poses}</div><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE AVATAR</button></div></form>`);
+    renderRufus();
+  }
+
+  function cheerRufus() {
+    const cheers = [
+      'You do not have to do it all at once. One small step is plenty.',
+      'Checking in with yourself is brave work. I am cheering you on!',
+      'Your pace is the right pace. Rest is part of the mission, too.',
+      'A little progress still counts as progress. You have got this, crew member!'
+    ];
+    $('#rufus-message').textContent = cheers[rufusCheerIndex % cheers.length];
+    rufusCheerIndex += 1;
+    const avatar = $('#rufus-avatar');
+    avatar.classList.remove('rufus-bounce');
+    void avatar.getBoundingClientRect();
+    avatar.classList.add('rufus-bounce');
   }
 
   function openCheckin() {
-    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> DAILY WELLNESS · SIMULATED DATA</div><h2 id="modal-title">Health check-in</h2><p>Enter illustrative self-reported values. This prototype does not connect to sensors or provide medical advice.</p><form id="checkin-form"><div class="modal-form"><label>RESTING HEART RATE · BPM<input name="heart" type="number" min="30" max="220" value="${state.metrics.heart}" required></label><label>SLEEP DURATION · HOURS<input name="sleep" type="number" min="0" max="24" step=".1" value="${state.metrics.sleep}" required></label><label>EXERCISE · MINUTES TODAY<input name="exercise" type="number" min="0" max="600" value="${state.metrics.exercise}" required></label><label>FATIGUE · 1–10<input name="fatigue" type="number" min="1" max="10" value="${state.metrics.fatigue}" required></label><label>MOOD<select name="mood"><option ${state.metrics.mood === 'Low' ? 'selected' : ''}>Low</option><option ${state.metrics.mood === 'Okay' ? 'selected' : ''}>Okay</option><option ${state.metrics.mood === 'Good' ? 'selected' : ''}>Good</option><option ${state.metrics.mood === 'Great' ? 'selected' : ''}>Great</option></select></label><label>RADIATION · SIMULATED mSv<input name="radiation" type="number" min="0" max="1000" step=".1" value="${state.metrics.radiation}" required></label></div><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE CHECK-IN</button></div></form>`);
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> DAILY WELLNESS · SIMULATED DATA</div>
+      <h2 id="modal-title">Health check-in</h2>
+      <p>Enter illustrative self-reported values. This prototype does not connect to sensors or provide medical advice.</p>
+      <aside class="rufus-modal-note">${rufusImage('confident', 'rufus-modal-art')}<span><strong>There’s no perfect score.</strong> Just share what feels comfortable today.</span></aside>
+      <form id="checkin-form"><div class="modal-form">
+        <label>RESTING HEART RATE · BPM<input name="heart" type="number" min="30" max="220" value="${state.metrics.heart}" required></label>
+        <label>SLEEP DURATION · HOURS<input name="sleep" type="number" min="0" max="24" step=".1" value="${state.metrics.sleep}" required></label>
+        <label>EXERCISE · MINUTES TODAY<input name="exercise" type="number" min="0" max="600" value="${state.metrics.exercise}" required></label>
+        <label>FATIGUE · 1–10<input name="fatigue" type="number" min="1" max="10" value="${state.metrics.fatigue}" required></label>
+        <label>MOOD<select name="mood"><option ${state.metrics.mood === 'Low' ? 'selected' : ''}>Low</option><option ${state.metrics.mood === 'Okay' ? 'selected' : ''}>Okay</option><option ${state.metrics.mood === 'Good' ? 'selected' : ''}>Good</option><option ${state.metrics.mood === 'Great' ? 'selected' : ''}>Great</option></select></label>
+        <label>RADIATION · SIMULATED mSv<input name="radiation" type="number" min="0" max="1000" step=".1" value="${state.metrics.radiation}" required></label>
+      </div><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE CHECK-IN</button></div></form>`);
+    renderRufus();
   }
 
   function openActivity() {
@@ -523,7 +612,7 @@
     const target = $('#journal-history');
     if (!target) return;
     if (!state.checkinHistory.length) {
-      target.innerHTML = '<div class="journal-entry"><span>☀</span><div><strong>No saved reflections yet</strong><small>YOUR DEVICE</small><p>Save a wellbeing check-in to begin your personal log.</p></div></div>';
+      target.innerHTML = `<div class="journal-entry journal-empty">${rufusImage('study', 'journal-empty-art')}<div><strong>No saved reflections yet</strong><small>YOUR DEVICE</small><p>Rufus is ready when you are. Save a wellbeing check-in to begin your personal log.</p></div></div>`;
       return;
     }
     target.innerHTML = state.checkinHistory.slice(0, 5).map((entry) => `<article class="journal-entry"><span>${entry.mood === 'Great' ? '✦' : entry.mood === 'Good' ? '☀' : entry.mood === 'Okay' ? '◒' : '☁'}</span><div><strong>${escapeHtml(entry.mood)} · Fatigue ${escapeHtml(entry.fatigue)}/10</strong><small>${escapeHtml(entry.date)} · ${escapeHtml(entry.time)}</small>${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : ''}</div></article>`).join('');
@@ -542,8 +631,32 @@
     if (action === 'profile') openProfile();
     if (action === 'checkin') openCheckin();
     if (action === 'alerts') openAlerts();
+    if (action === 'rufus-cheer') cheerRufus();
+    if (action === 'customize-rufus') openRufusCustomizer();
     if (action === 'close-modal') closeModal();
     if (action === 'dismiss-notice') event.target.closest('.notice-strip').remove();
+
+    const rufusChoice = event.target.closest('[data-rufus-choice]');
+    if (rufusChoice) {
+      const pose = rufusChoice.dataset.rufusChoice;
+      if (!Object.hasOwn(rufusArtwork, pose)) {
+        showToast('Choose one of Rufus’s available mission poses.');
+        return;
+      }
+      const art = rufusArtwork[pose];
+      $('#rufus-form [name="pose"]').value = pose;
+      const preview = $('.rufus-preview-art', $('#modal-content'));
+      preview.dataset.rufusArt = pose;
+      preview.src = art.src;
+      preview.alt = art.description;
+      $('#rufus-preview-caption').textContent = art.description;
+      $$('[data-rufus-choice]').forEach((choice) => {
+        const selected = choice === rufusChoice;
+        choice.classList.toggle('selected', selected);
+        choice.setAttribute('aria-pressed', String(selected));
+      });
+      return;
+    }
 
     const missionAction = event.target.closest('[data-mission-action]')?.dataset.missionAction;
     if (missionAction === 'checkin') openCheckin();
@@ -651,12 +764,24 @@
       $('#energy-slider').value = state.metrics.fatigue;
       $('#fatigue-value').textContent = $('#energy-slider').value;
     }
+    if (event.target.id === 'rufus-form') {
+      event.preventDefault();
+      const pose = String(new FormData(event.target).get('pose'));
+      if (!Object.hasOwn(rufusArtwork, pose)) {
+        showToast('Choose a valid look for Rufus.');
+        return;
+      }
+      state.rufus.pose = pose;
+      persist();
+      closeModal();
+      renderRufus();
+      showToast('Rufus’s new look is saved on this device.');
+    }
   });
 
   document.addEventListener('input', (event) => {
     if (event.target.id === 'energy-slider') $('#fatigue-value').textContent = event.target.value;
   });
-
   $('#modal-backdrop').addEventListener('click', (event) => {
     if (event.target.id === 'modal-backdrop') closeModal();
   });
@@ -675,6 +800,45 @@
   $('#cog-best').innerHTML = `${state.bestReaction} <small>ms</small>`;
   $('#energy-slider').value = state.metrics.fatigue;
   $('#fatigue-value').textContent = state.metrics.fatigue;
+
+  let installPrompt = null;
+  const installButton = $('#install-button');
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    installPrompt = event;
+  });
+  window.addEventListener('appinstalled', () => {
+    installPrompt = null;
+    showToast('AstroVital is installed on this device.');
+  });
+  installButton.addEventListener('click', async () => {
+    if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true) {
+      showToast('AstroVital is already installed on this device.');
+      return;
+    }
+
+    if (!installPrompt) {
+      const isAppleMobile = /iPad|iPhone|iPod/.test(navigator.userAgent)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isAppleMobile) {
+        openModal('<div class="eyebrow"><span class="eyebrow-line"></span> INSTALL ASTROVITAL</div><h2 id="modal-title">Add to your Home Screen</h2><p>In Safari, tap the Share button, then choose <strong>Add to Home Screen</strong>. AstroVital runs as a standalone app and keeps your entries on this device.</p><div class="modal-actions"><button class="primary-button" data-action="close-modal">GOT IT</button></div>');
+      } else {
+        showToast('Open your browser menu and choose Install AstroVital or Add to Home Screen.');
+      }
+      return;
+    }
+
+    const prompt = installPrompt;
+    installPrompt = null;
+    try {
+      await prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      showToast(outcome === 'accepted' ? 'AstroVital is installed on this device.' : 'Installation canceled.');
+    } catch (error) {
+      console.error('Unable to install AstroVital:', error);
+      showToast('Unable to start installation. Use your browser menu to install the app.');
+    }
+  });
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', () => {
