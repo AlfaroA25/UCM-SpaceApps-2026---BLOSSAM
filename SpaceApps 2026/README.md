@@ -14,6 +14,12 @@ python3 -m http.server 8000
 
 Open <http://localhost:8000>. Serving over localhost enables the service worker; opening `index.html` directly does not.
 
+## Share and install
+
+After deployment, share the [RUFUS GitHub Pages app](https://alfaroa25.github.io/UCM-SpaceApps-2026---BLOSSAM/) with its link. On desktop Chrome or Edge, use **Install** and accept the browser prompt (or choose **Install RUFUS** from the browser menu). On Android, open the link in Chrome and choose **Install app** or **Add to Home screen**. On iPhone or iPad, open the link in Safari, tap **Share**, then choose **Add to Home Screen**.
+
+Installation and offline use require HTTPS or localhost. The GitHub Pages deployment workflow publishes the contents of this directory at the repository’s Pages URL.
+
 ## Implemented
 
 - Crew members enter only a Personnel ID. Demo ID `1234` opens the local profile named Rufus; other IDs open or create separate local profiles named Crew Member by default.

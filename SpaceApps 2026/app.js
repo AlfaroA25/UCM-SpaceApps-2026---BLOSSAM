@@ -1819,11 +1819,11 @@
   let installPrompt = null;
   const shareButton = $('#share-button');
   shareButton.addEventListener('click', async () => {
-    const shareUrl = new URL(location.href);
+    const shareUrl = new URL($('link[rel="canonical"]')?.href || location.href);
     shareUrl.hash = '';
     const shareData = {
       title: document.title,
-      text: 'Explore AstroVital: Mission Health.',
+      text: 'Try RUFUS, a personal astronaut health and wellbeing companion.',
       url: shareUrl.href
     };
 
@@ -1865,11 +1865,16 @@
     if (!installPrompt) {
       const isAppleMobile = /iPad|iPhone|iPod/.test(navigator.userAgent)
         || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      if (isAppleMobile) {
-        openModal('<div class="eyebrow"><span class="eyebrow-line"></span> INSTALL ASTROVITAL</div><h2 id="modal-title">Add to your Home Screen</h2><p>In Safari, tap the Share button, then choose <strong>Add to Home Screen</strong>. AstroVital runs as a standalone app and keeps your entries on this device.</p><div class="modal-actions"><button class="primary-button" data-action="close-modal">GOT IT</button></div>');
-      } else {
-        showToast('Open your browser menu and choose Install AstroVital or Add to Home Screen.');
-      }
+      const instructions = isAppleMobile
+        ? 'Open this link in Safari, tap the Share button, then choose <strong>Add to Home Screen</strong>.'
+        : /Android/i.test(navigator.userAgent)
+          ? 'In Chrome, open the menu <strong>⋮</strong> and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.'
+          : 'In Chrome or Edge, use the install icon in the address bar or choose <strong>Install RUFUS</strong> from the browser menu.';
+      const secureOrigin = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      const availability = secureOrigin
+        ? ''
+        : '<p>Home-screen installation requires the published HTTPS link or a local development server; opening this file directly is not installable.</p>';
+      openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> INSTALL RUFUS</div><h2 id="modal-title">Add to your Home Screen</h2><p>${instructions}</p><p>RUFUS opens like an app and keeps your profile on this device.</p>${availability}<div class="modal-actions"><button class="primary-button" data-action="close-modal">GOT IT</button></div>`);
       return;
     }
 

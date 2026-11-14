@@ -36,3 +36,22 @@ jobs:
       - name: Deploy site
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify public app and install assets
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -eu
+          page_url="${PAGE_URL%/}"
+          index_file="$(mktemp)"
+          manifest_file="$(mktemp)"
+          worker_file="$(mktemp)"
+          trap 'rm -f "$index_file" "$manifest_file" "$worker_file"' EXIT
+
+          curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors "$page_url/" -o "$index_file"
+          grep -q 'rel="manifest"' "$index_file"
+          curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors "$page_url/manifest.webmanifest" -o "$manifest_file"
+          jq -e '.display == "standalone" and .start_url == "./index.html" and (.icons | any(.purpose == "maskable"))' "$manifest_file" >/dev/null
+          curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors "$page_url/sw.js" -o "$worker_file"
+          grep -q 'astrovital-shell-' "$worker_file"
+          curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors "$page_url/icons/astrovital-192.png" -o /dev/null
+          curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors "$page_url/icons/astrovital-512.png" -o /dev/null

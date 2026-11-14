@@ -2,7 +2,8 @@
   "name": "RUFUS — Your Health. Your Mission. Your Companion.",
   "short_name": "RUFUS",
   "description": "A local-first astronaut health and wellbeing companion prototype.",
-  "start_url": "./",
+  "id": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#080d16",
@@ -18,7 +19,13 @@
       "src": "./icons/astrovital-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/astrovital-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
