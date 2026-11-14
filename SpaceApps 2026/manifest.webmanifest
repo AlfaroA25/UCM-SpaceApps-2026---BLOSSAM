@@ -1,7 +1,7 @@
 {
-  "name": "AstroVital: Mission Health",
-  "short_name": "AstroVital",
-  "description": "An offline-ready, simulated astronaut wellness dashboard.",
+  "name": "RUFUS — Your Health. Your Mission. Your Companion.",
+  "short_name": "RUFUS",
+  "description": "A local-first astronaut health and wellbeing companion prototype.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
