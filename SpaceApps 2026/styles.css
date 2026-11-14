@@ -420,7 +420,7 @@ textarea::placeholder{color:#617483}
 .sidebar{overflow-y:auto}
 .main-nav{flex:none}
 .nav-link{min-height:38px;height:auto;padding-top:7px;padding-bottom:7px;font-size:10px}
-.brand-mark img{width:42px;height:42px;object-fit:contain}
+.brand-mark img{width:37px;height:37px;object-fit:contain}
 .mission-day.mission-identifier{font:500 12px var(--mono);letter-spacing:.3px;overflow-wrap:anywhere;margin:11px 0}
 .entry-screen{display:none;min-height:100vh;padding:28px;place-items:center;background:radial-gradient(ellipse at 18% 20%,#123654 0,transparent 38%),radial-gradient(ellipse at 86% 76%,#182c55 0,transparent 35%),#071426}
 body.show-entry .entry-screen{display:grid}
@@ -428,7 +428,7 @@ body.show-entry .app-shell{display:none}
 .entry-card{width:min(1040px,100%);min-height:610px;display:grid;grid-template-columns:.9fr 1.1fr;border:1px solid #26415b;border-radius:16px;overflow:hidden;background:#0d1b2c;box-shadow:0 28px 90px #0007}
 .entry-intro{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:40px;background:linear-gradient(145deg,#102c48,#0a192b)}
 .entry-brand{position:absolute;top:32px;left:36px;display:flex;align-items:center;gap:12px}
-.entry-brand-mark{width:38px;height:38px;display:grid;place-items:center;border:1px solid #56d4e4;border-radius:11px;color:#8eeaf1;font:700 20px var(--display);box-shadow:0 0 24px #38bdf833}
+.entry-brand-mark{width:38px;height:38px;display:block;border-radius:10px;box-shadow:0 0 24px #38bdf833}
 .entry-brand strong{display:block;font:700 16px var(--display);letter-spacing:2px}
 .entry-brand small{display:block;margin-top:3px;color:#8da6bc;font:7px var(--mono);letter-spacing:.8px}
 .entry-orbit{position:absolute;width:370px;height:370px;top:110px;left:50%;border:1px solid #5ccddd22;border-radius:50%;transform:translateX(-50%);box-shadow:0 0 0 34px #5ccddd08,0 0 0 75px #5ccddd05}
