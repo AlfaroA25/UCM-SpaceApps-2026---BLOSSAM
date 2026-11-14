@@ -4,57 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#080d16">
-    <meta name="description" content="AstroVital: Mission Health — a simulated, offline-ready astronaut wellness dashboard.">
+    <meta name="description" content="ASTROVITAL — a personal astronaut health companion for long-duration missions.">
+    <link rel="canonical" href="https://alfaroa25.github.io/UCM-SpaceApps-2026---BLOSSAM/">
+    <title>ASTROVITAL — Your Health. Your Mission. Your Companion.</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="AstroVital">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="AstroVital: Mission Health">
-    <meta property="og:description" content="An offline-ready astronaut wellness dashboard with Rufus, daily missions, and personal wellbeing tracking.">
+    <meta property="og:title" content="ASTROVITAL — Your Health. Your Mission. Your Companion.">
+    <meta property="og:description" content="A local-first astronaut health and wellbeing companion. Share check-ins and mission routines, and add the app to your home screen.">
     <meta property="og:url" content="https://alfaroa25.github.io/UCM-SpaceApps-2026---BLOSSAM/">
     <meta property="og:image" content="https://alfaroa25.github.io/UCM-SpaceApps-2026---BLOSSAM/icons/astrovital-512.png">
-    <meta name="twitter:card" content="summary">
-    <title>AstroVital: Mission Health</title>
+    <meta property="og:image:alt" content="ASTROVITAL astronaut companion app icon">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ASTROVITAL — Your Health. Your Mission. Your Companion.">
+    <meta name="twitter:description" content="A local-first astronaut health and wellbeing companion.">
+    <meta name="twitter:image" content="https://alfaroa25.github.io/UCM-SpaceApps-2026---BLOSSAM/icons/astrovital-512.png">
     <link rel="icon" type="image/svg+xml" href="./icons/astrovital.svg">
     <link rel="apple-touch-icon" href="./icons/astrovital-192.png">
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
+    <main class="entry-screen" id="entry-screen">
+      <section class="entry-card">
+        <div class="entry-intro">
+          <div class="entry-brand"><span class="entry-brand-mark">A</span><span><strong>ASTROVITAL</strong><small>MISSION HEALTH MONITOR</small></span></div>
+          <div class="entry-orbit" aria-hidden="true"></div>
+          <img class="entry-mascot" src="./icons/rufus-wave.png" alt="Rufus waving in his supplied astronaut suit artwork">
+          <span class="mascot-caption">CREW COMPANION · MISSION SIMULATION</span>
+          <p class="entry-promise">Health check-ins and wellbeing support for long-duration missions.</p>
+        </div>
+        <div class="entry-content">
+          <div id="welcome-panel">
+            <div class="eyebrow"><span class="eyebrow-line"></span> CREW MEMBER ACCESS · LOCAL PROFILE</div>
+            <h1>Crew profile <span>sign-in.</span></h1>
+            <p>Enter your Personnel ID to access your local crew health profile.</p>
+            <form id="login-form">
+              <label class="entry-label" for="login-personnel-id">PERSONNEL ID<input id="login-personnel-id" class="entry-control" name="personnelId" type="text" inputmode="text" maxlength="20" pattern="[A-Za-z0-9][A-Za-z0-9\-]*" autocomplete="off" autofocus required></label>
+              <p class="entry-note"><strong>Demo profile: Rufus · ID 1234.</strong> Other IDs open or create local crew profiles. IDs are not verified; this prototype has no secure authentication or cross-device sync, and anyone using this browser can access local profiles.</p>
+              <div class="form-feedback" id="login-feedback" aria-live="polite"></div>
+              <button class="primary-button entry-start" type="submit">ACCESS CREW PROFILE <span>→</span></button>
+            </form>
+            <label class="entry-label entry-language-label" for="welcome-language">PREFERRED LANGUAGE</label>
+            <select id="welcome-language" class="entry-control">
+              <option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="zh">简体中文</option><option value="ja">日本語</option><option value="ar">العربية</option>
+            </select>
+            <p class="entry-note">Choose your preferred language. The interface and app-generated messages are translated locally; personal notes remain unchanged.</p>
+            <p class="entry-privacy">This prototype uses illustrative readings and does not connect to sensors or medical systems.</p>
+          </div>
+        </div>
+      </section>
+    </main>
     <div class="app-shell">
       <aside class="sidebar">
-        <a class="brand" href="#overview" aria-label="AstroVital home" data-nav="overview">
-          <span class="brand-mark"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="13"/><ellipse cx="20" cy="20" rx="18" ry="7" transform="rotate(-35 20 20)"/><circle class="brand-star" cx="30" cy="10" r="2"/></svg></span>
-          <span><strong>ASTRO<span>VITAL</span></strong><small>MISSION HEALTH</small></span>
+        <a class="brand" href="#overview" aria-label="ASTROVITAL home" data-nav="overview">
+          <span class="brand-mark"><img src="./icons/rufus-wave.png" alt="" aria-hidden="true"></span>
+          <span><strong>ASTRO<span>VITAL</span></strong><small>CREW COMPANION</small></span>
         </a>
-        <div class="sidebar-label">MISSION CONTROL</div>
+        <div class="sidebar-label">YOUR MISSION</div>
         <nav class="main-nav" aria-label="Main navigation">
-          <button class="nav-link active" data-nav="overview"><span class="nav-icon">◈</span> Overview <span class="nav-count">01</span></button>
-          <button class="nav-link" data-nav="health"><span class="nav-icon">⌁</span> Health monitor</button>
-          <button class="nav-link" data-nav="missions"><span class="nav-icon">◎</span> Daily missions <span class="nav-dot"></span></button>
-          <button class="nav-link" data-nav="cognitive"><span class="nav-icon">⌘</span> Mind lab</button>
-          <button class="nav-link" data-nav="journal"><span class="nav-icon">▤</span> Wellbeing log</button>
+          <button class="nav-link active" data-nav="overview" title="Home dashboard"><span class="nav-icon">◈</span> Home dashboard</button>
+          <button class="nav-link" data-nav="companion" title="Rufus companion"><span class="nav-icon">✦</span> Rufus companion</button>
+          <button class="nav-link" data-nav="health" title="Health monitoring"><span class="nav-icon">⌁</span> Health monitoring</button>
+          <button class="nav-link" data-nav="environment" title="NASA Environmental Data"><span class="nav-icon">◌</span> NASA Environmental Data</button>
+          <button class="nav-link" data-nav="hydration" title="Hydration tracker"><span class="nav-icon">◉</span> Hydration tracker</button>
+          <button class="nav-link" data-nav="meals" title="Meals and nutrition"><span class="nav-icon">◒</span> Meals and nutrition</button>
+          <button class="nav-link" data-nav="medications" title="Medication manager"><span class="nav-icon">＋</span> Medication manager</button>
+          <button class="nav-link" data-nav="activity" title="Physical activity"><span class="nav-icon">↗</span> Physical activity</button>
+          <button class="nav-link" data-nav="mental" title="Mental wellness"><span class="nav-icon">☼</span> Mental wellness</button>
+          <button class="nav-link" data-nav="sleep" title="Sleep tracking"><span class="nav-icon">☾</span> Sleep tracking</button>
+          <button class="nav-link" data-nav="reports" title="Health reports"><span class="nav-icon">▤</span> Health reports</button>
+          <button class="nav-link" data-nav="alerts" title="Alerts and notifications"><span class="nav-icon">♧</span> Alerts</button>
+          <button class="nav-link" data-nav="missions" title="Daily missions"><span class="nav-icon">◎</span> Daily missions</button>
+          <button class="nav-link" data-nav="cognitive" title="Mind lab"><span class="nav-icon">⌘</span> Mind lab</button>
+          <button class="nav-link" data-nav="journal" title="Wellbeing log"><span class="nav-icon">▧</span> Wellbeing log</button>
+          <button class="nav-link" data-nav="settings" title="Settings"><span class="nav-icon">⚙</span> Settings</button>
         </nav>
         <div class="sidebar-bottom">
           <div class="mission-card">
-            <div class="mission-card-head"><span class="live-dot"></span> MISSION DAY</div>
-            <div class="mission-day">142 <span>/ 365</span></div>
-            <div class="progress-track"><span style="width:39%"></span></div>
-            <div class="mission-card-foot"><span>ORBITAL YEAR</span><span>39%</span></div>
+            <div class="mission-card-head"><span class="live-dot"></span> MISSION PROFILE</div>
+            <div class="mission-day mission-identifier" id="mission-identifier">NOT SET</div>
+            <div class="mission-card-foot"><span>LOCAL PROFILE</span><span>READY</span></div>
           </div>
-          <button class="nav-link settings-link" data-action="profile"><span class="nav-icon">⚙</span> Crew profile</button>
+          <button class="nav-link settings-link" data-nav="settings"><span class="nav-icon">⚙</span> Profile & settings</button>
           <div class="sidebar-user">
-            <div class="avatar">MC</div><div class="user-lines"><strong>Maya Chen</strong><small>FLIGHT SPECIALIST</small></div><span class="user-menu">···</span>
+            <div class="avatar" data-user-content>A</div><div class="user-lines"><strong data-user-content>Astronaut</strong><small>CREW MEMBER</small></div><span class="user-menu">···</span>
           </div>
         </div>
       </aside>
 
       <main class="main-content">
         <header class="topbar">
-          <div class="breadcrumb"><span>CREW HEALTH</span><span class="crumb-slash">/</span><strong id="page-crumb">OVERVIEW</strong></div>
+          <div class="breadcrumb"><span>ASTROVITAL COMPANION</span><span class="crumb-slash">/</span><strong id="page-crumb">HOME DASHBOARD</strong></div>
           <div class="topbar-right">
             <div class="sync-status"><span class="live-dot"></span><span id="sync-label">OFFLINE READY</span></div>
             <span class="topbar-divider"></span>
-            <div class="mission-clock"><span class="clock-icon">◷</span><span id="clock">--:--:--</span><small>UTC</small></div>
+            <div class="mission-clock"><span class="clock-icon">◷</span><span id="clock">--:--:--</span><small>LOCAL</small></div>
             <button class="install-button" id="share-button" type="button" aria-label="Share AstroVital">SHARE</button>
             <button class="install-button" id="install-button" type="button" aria-label="Install AstroVital as an app">INSTALL</button>
             <button class="icon-button alert-button" data-action="alerts" aria-label="View health alerts">♧<span class="alert-badge" id="alert-count">0</span></button>
@@ -66,14 +111,20 @@
           <section class="view active" id="view-overview">
             <div class="welcome-row">
               <div>
-                <div class="eyebrow"><span class="eyebrow-line"></span> WEDNESDAY, MISSION DAY 142</div>
-                <h1>Good morning, <span id="welcome-name">Maya.</span></h1>
-                <p class="welcome-copy">Your body is your most important instrument. Here's your status report.</p>
+                <div class="eyebrow"><span class="eyebrow-line"></span><span id="local-date">YOUR HEALTH · YOUR MISSION</span></div>
+                <h1>Welcome back, <span id="welcome-name" data-user-content>astronaut.</span></h1>
+                <p class="welcome-copy">A personal space for health check-ins, mission routines, and a little encouragement.</p>
               </div>
               <button class="primary-button" data-action="checkin"><span>＋</span> Log health check-in</button>
             </div>
 
             <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>SIMULATION MODE</strong> &nbsp;All readings are illustrative sample data, not real medical measurements.</span><button aria-label="Dismiss simulation notice" data-action="dismiss-notice">×</button></div>
+
+            <article class="rufus-companion" aria-live="polite">
+              <div class="rufus-portrait-wrap"><img class="rufus-portrait" id="rufus-portrait" data-rufus-art="wave" data-rufus-live src="./icons/rufus-wave.png" alt="Rufus in his astronaut suit"></div>
+              <div class="rufus-message"><div class="eyebrow"><span class="eyebrow-line"></span> RUFUS · YOUR COMPANION</div><span class="rufus-state" id="rufus-state">READY TO EXPLORE</span><h2 id="rufus-title">Hi, astronaut!</h2><p id="rufus-message">I’m here to help you keep track of your wellbeing. Want to start with a quick check-in?</p><div class="rufus-actions"><button class="primary-button" id="rufus-action" data-action="checkin">LOG A CHECK-IN <span>→</span></button><button class="text-button" data-nav="journal">OPEN WELLBEING LOG <span>↗</span></button></div></div>
+              <div class="rufus-orbit" aria-hidden="true"></div>
+            </article>
 
             <div class="hero-grid">
               <article class="readiness-card">
@@ -95,12 +146,18 @@
               </article>
             </div>
 
-            <div class="section-heading metric-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> LIVE VITALS</div><h2>Your health at a glance</h2></div><button class="subtle-button" data-nav="health">FULL HEALTH REPORT <span>↗</span></button></div>
+            <div class="section-heading metric-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> HEALTH INDICATORS</div><h2>Your health at a glance</h2></div><button class="subtle-button" data-nav="health">FULL HEALTH REPORT <span>↗</span></button></div>
             <div class="metric-grid" id="overview-metrics">
               <article class="metric-card"><div class="metric-top"><span class="metric-icon heart-icon">♡</span><span class="metric-trend good">↘ &nbsp;2 bpm</span></div><div class="metric-name">RESTING HEART RATE</div><div class="metric-reading"><strong id="metric-heart">64</strong><span>bpm</span></div><div class="metric-baseline">BASELINE <strong>58–72 bpm</strong></div><div class="sparkline heart-spark"><svg viewBox="0 0 120 32" preserveAspectRatio="none"><path d="M0 22 C9 21 9 10 18 15 S29 24 38 16 48 18 55 12 64 18 74 9 86 13 92 14 106 4 120 8"/></svg></div></article>
               <article class="metric-card"><div class="metric-top"><span class="metric-icon sleep-icon">☾</span><span class="metric-trend good">↗ &nbsp;0.8h</span></div><div class="metric-name">SLEEP DURATION</div><div class="metric-reading"><strong id="metric-sleep">7.4</strong><span>hrs</span></div><div class="metric-baseline">TARGET <strong>7.5–9 hrs</strong></div><div class="sparkline sleep-spark"><svg viewBox="0 0 120 32" preserveAspectRatio="none"><path d="M0 25 C10 19 14 22 22 14 S33 20 42 13 51 9 60 14 69 9 78 12 91 5 98 9 110 6 120 4"/></svg></div></article>
               <article class="metric-card"><div class="metric-top"><span class="metric-icon move-icon">↗</span><span class="metric-trend muted">DAILY GOAL</span></div><div class="metric-name">EXERCISE</div><div class="metric-reading"><strong id="metric-exercise">42</strong><span>min</span></div><div class="metric-baseline">TARGET <strong>60 min</strong></div><div class="mini-progress"><span id="exercise-progress" style="width:70%"></span></div></article>
               <article class="metric-card"><div class="metric-top"><span class="metric-icon fatigue-icon">◌</span><span class="metric-trend good">↓ &nbsp;1 level</span></div><div class="metric-name">FATIGUE</div><div class="metric-reading"><strong id="metric-fatigue">3</strong><span>/ 10</span></div><div class="metric-baseline">PERSONAL BASELINE <strong>2–4 / 10</strong></div><div class="fatigue-bars"><i></i><i></i><i class="filled"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
+              <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon oxygen-icon">◉</span><span class="metric-trend muted">NOT CONNECTED</span></div><div class="metric-name">BLOOD OXYGEN · SpO₂</div><div class="metric-reading"><strong>—</strong><span>no sensor</span></div><div class="metric-baseline">SOURCE <strong>NOT AVAILABLE</strong></div></article>
+              <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon pressure-icon">↕</span><span class="metric-trend muted">NOT CONNECTED</span></div><div class="metric-name">BLOOD PRESSURE</div><div class="metric-reading"><strong>—</strong><span>no sensor</span></div><div class="metric-baseline">SOURCE <strong>NOT AVAILABLE</strong></div></article>
+              <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon temperature-icon">⌁</span><span class="metric-trend muted">NOT CONNECTED</span></div><div class="metric-name">BODY TEMPERATURE</div><div class="metric-reading"><strong>—</strong><span>no sensor</span></div><div class="metric-baseline">SOURCE <strong>NOT AVAILABLE</strong></div></article>
+              <article class="metric-card"><div class="metric-top"><span class="metric-icon hydration-icon">◍</span><span class="metric-trend muted" id="hydration-status">NO TARGET</span></div><div class="metric-name">HYDRATION GOAL</div><div class="metric-reading"><strong id="metric-hydration">0 mL</strong><span id="hydration-unit">logged today</span></div><div class="metric-baseline">INTAKE TRACKING <strong>AVAILABLE · LOCAL</strong></div></article>
+              <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon meal-icon">◒</span><span class="metric-trend muted">NOT SET</span></div><div class="metric-name">NEXT MEAL</div><div class="metric-reading"><strong>—</strong><span>no schedule</span></div><div class="metric-baseline">MEAL REMINDERS <strong>PLANNED · PHASE 3</strong></div></article>
+              <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon medication-icon">＋</span><span class="metric-trend muted">NOT SET</span></div><div class="metric-name">MEDICATION SCHEDULE</div><div class="metric-reading"><strong>—</strong><span>no schedule</span></div><div class="metric-baseline">TRACKING <strong>PLANNED · PHASE 3</strong></div></article>
             </div>
 
             <div class="lower-grid">
@@ -116,22 +173,164 @@
                 <button class="all-missions" data-nav="missions">VIEW ALL OBJECTIVES <span>→</span></button>
               </article>
             </div>
-            <footer class="disclaimer"><span>✳</span> AstroVital is a wellness companion, not a medical diagnostic system. Always consult your flight surgeon regarding health concerns.</footer>
+            <footer class="disclaimer"><span>✳</span> RUFUS is a wellness companion, not a medical diagnostic system. Follow your mission medical team's guidance.</footer>
+          </section>
+
+          <section class="view" id="view-alerts">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH MONITOR</div><h1>Review your <span>alerts.</span></h1><p>These are prompts to review self-reported or illustrative readings, not diagnoses or emergency monitoring.</p></div>
+            <div id="alerts-page-content"></div>
+            <div class="health-note"><span>ⓘ</span><div><strong>Need medical guidance?</strong><p>Follow your mission medical protocols and contact your crew medical officer. RUFUS does not replace medical care.</p></div></div>
+          </section>
+
+          <section class="view" id="view-hydration">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HYDRATION TRACKER</div><h1>Your plan, <span>your pace.</span></h1><p>Set a target from your approved mission plan, preview a schedule, and log what you actually drink. Nothing is auto-recorded.</p></div>
+            <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>YOUR PLAN</strong> &nbsp;RUFUS does not prescribe a water goal. Use the goal and timing approved for you; never drink extra to catch up.</span></div>
+            <div class="hydration-summary-grid">
+              <article class="hydration-summary-card"><span>DAILY TARGET</span><strong id="hydration-goal-summary">Not set</strong><small>From your saved plan</small></article>
+              <article class="hydration-summary-card"><span>LOGGED TODAY</span><strong id="hydration-consumed-summary">0 mL</strong><small>Manual entries only</small></article>
+              <article class="hydration-summary-card"><span>REMAINING TO TARGET</span><strong id="hydration-remaining-summary">Not set</strong><small id="hydration-percent-summary">Set your own target</small></article>
+              <article class="hydration-summary-card"><span>NEXT PLANNED TIME</span><strong id="hydration-next-summary">No schedule</strong><small id="hydration-next-detail">Notifications are not enabled</small></article>
+            </div>
+            <div class="hydration-progress"><div class="hydration-progress-label"><span>TODAY'S LOGGED INTAKE</span><strong id="hydration-progress-label">Set a personal target to track progress</strong></div><div class="progress-track"><span id="hydration-progress-bar"></span></div></div>
+            <div class="hydration-layout">
+              <article class="panel hydration-log-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> MANUAL INTAKE LOG</div><h2>Record water</h2></div></div>
+                <p class="hydration-helper">Quick-add amounts are convenience examples in mL, not recommendations.</p>
+                <div class="hydration-quick-adds"><button type="button" class="secondary-button" data-hydration-quick="100">+100 mL</button><button type="button" class="secondary-button" data-hydration-quick="150">+150 mL</button><button type="button" class="secondary-button" data-hydration-quick="250">+250 mL</button></div>
+                <form id="hydration-log-form" class="hydration-log-form">
+                  <label for="hydration-amount">CUSTOM AMOUNT</label>
+                  <div class="entry-inline"><input id="hydration-amount" name="amount" class="entry-control" type="number" min="0.1" max="20000" step="any" placeholder="Amount" required><select id="hydration-log-unit" class="entry-control" name="unit" aria-label="Intake unit"><option>mL</option><option>L</option><option>fl oz</option></select><button class="primary-button" type="submit">LOG WATER</button></div>
+                </form>
+                <div class="hydration-feedback" id="hydration-feedback" aria-live="polite"></div>
+                <div class="hydration-section-heading"><h3>Recent entries</h3><span id="hydration-entry-count">0 today</span></div>
+                <div id="hydration-today-history" class="hydration-log-list"></div>
+              </article>
+              <aside class="panel hydration-plan-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> OPTIONAL SCHEDULE</div><h2>Plan your reminders</h2></div></div>
+                <p class="hydration-helper">Choose your own goal, unit, available window, and reminder count. A preview appears before anything is saved.</p>
+                <form id="hydration-plan-form">
+                  <label class="field-label" for="plan-goal">DAILY GOAL · YOUR APPROVED PLAN</label>
+                  <div class="entry-inline"><input id="plan-goal" name="goal" class="entry-control" type="number" min="1" max="20000" step="any" placeholder="Enter your goal" required><select id="plan-unit" name="unit" class="entry-control" aria-label="Goal unit"><option>mL</option><option>L</option><option>fl oz</option></select></div>
+                  <label class="field-label" for="plan-start">REMINDER WINDOW</label>
+                  <div class="entry-inline"><input id="plan-start" name="start" class="entry-control" type="time" aria-label="Reminder start time" required><input id="plan-end" name="end" class="entry-control" type="time" aria-label="Reminder end time" required></div>
+                  <label class="field-label" for="plan-count">REMINDERS PER DAY</label>
+                  <input id="plan-count" name="count" class="entry-control" type="number" min="1" max="24" step="1" placeholder="Choose 1–24" required>
+                  <div class="hydration-plan-actions"><button class="secondary-button" type="submit">PREVIEW SCHEDULE</button><button class="primary-button" type="button" id="confirm-hydration-plan" data-action="confirm-hydration-plan" hidden>CONFIRM & SAVE</button></div>
+                </form>
+                <div id="hydration-plan-preview" class="hydration-plan-preview" aria-live="polite"></div>
+                <div class="hydration-schedule-heading"><h3>Remaining planned times</h3><span>IN-APP ONLY</span></div>
+                <div id="hydration-schedule-list" class="hydration-schedule-list"></div>
+                <p class="hydration-limitation">This schedule is a guide while the app is open. No background or operating-system notifications are implemented. Past times are not treated as missed intake.</p>
+              </aside>
+            </div>
+            <article class="panel hydration-week-panel">
+              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> LOCAL HISTORY</div><h2>Last seven days</h2></div><span class="sim-tag">USER-RECORDED INTAKE</span></div>
+              <div id="hydration-week-history" class="hydration-week-history"></div>
+            </article>
+            <footer class="disclaimer"><span>✳</span> RUFUS records what you enter. It does not set medical hydration targets or recommend drinking beyond your configured goal.</footer>
+          </section>
+
+          <section class="view" id="view-environment">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> NASA ENVIRONMENTAL DATA · PHASE 1</div><h1>Earth conditions, <span>in context.</span></h1><p>Explore daily surface meteorology and solar measurements from NASA POWER for a selected coordinate and date range.</p></div>
+            <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>ENVIRONMENTAL DATA ONLY</strong> &nbsp;These are gridded Earth-surface observations/estimates, not astronaut biometrics, spacecraft conditions, or personal space-radiation exposure. Data are daily aggregates and may be delayed.</span></div>
+            <article class="panel power-query-panel">
+              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> NASA POWER · DAILY POINT API</div><h2>Select a location and date range</h2></div></div>
+              <form id="nasa-power-form" class="power-query-form">
+                <label>LATITUDE · DEGREES<input id="power-latitude" name="latitude" class="entry-control" type="number" min="-90" max="90" step="any" value="37.365" required></label>
+                <label>LONGITUDE · DEGREES<input id="power-longitude" name="longitude" class="entry-control" type="number" min="-180" max="180" step="any" value="-120.425" required></label>
+                <label>START DATE<input id="power-start" name="start" class="entry-control" type="date" min="1981-01-01" required></label>
+                <label>END DATE<input id="power-end" name="end" class="entry-control" type="date" required></label>
+                <button id="power-load-button" class="primary-button" type="submit">LOAD NASA POWER DATA</button>
+              </form>
+              <p class="power-query-privacy">The selected coordinates and dates are sent directly from this browser to the public NASA POWER API. No RUFUS account or API key is used.</p>
+              <div id="power-request-status" class="power-request-status" role="status" aria-live="polite">Choose a location and dates, then load the NASA POWER daily data.</div>
+              <div id="power-request-error" class="power-request-error" role="alert" hidden></div>
+            </article>
+            <section id="power-results" hidden>
+              <div class="power-results-meta">
+                <div><small>SELECTED COORDINATES</small><strong id="power-location">—</strong></div>
+                <div><small>REQUESTED DATE RANGE</small><strong id="power-range">—</strong></div>
+                <div><small>LATEST AVAILABLE DAY</small><strong id="power-latest-date">—</strong></div>
+                <div><small>TIME STANDARD</small><strong id="power-time-standard">—</strong></div>
+              </div>
+              <div class="power-summary-grid" id="power-summary-grid"></div>
+              <article class="panel power-chart-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> DAILY ENVIRONMENTAL TREND</div><h2>Temperature and weather trends</h2></div><label class="power-chart-select">PLOT<select id="power-chart-parameter" class="entry-control" aria-label="Select a measurement to plot"></select></label></div>
+                <div id="power-chart" class="power-chart" role="img"></div>
+              </article>
+              <article class="panel power-table-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> DAILY MEASUREMENTS</div><h2>Solar and atmospheric measurements</h2></div><span class="sim-tag">NASA POWER · DAILY</span></div>
+                <div class="power-table-wrap"><table class="power-table"><thead id="power-table-head"></thead><tbody id="power-table-body"></tbody></table></div>
+              </article>
+              <article class="panel power-source-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> DATA SOURCES AND INFORMATION</div><h2>About these measurements</h2></div></div>
+                <p id="power-source-description"></p>
+                <p id="power-source-systems"></p>
+                <p id="power-latest-time-note"></p>
+                <p><a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA Prediction Of Worldwide Energy Resources (POWER) ↗</a> · <a href="https://power.larc.nasa.gov/docs/services/api/temporal/daily/" target="_blank" rel="noopener noreferrer">Daily API documentation ↗</a></p>
+              </article>
+            </section>
+            <article class="panel power-roadmap-panel">
+              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> FOLLOWING DATA INTEGRATION PHASES</div><h2>More NASA and USGS sources</h2></div><span class="sim-tag">NOT YET CONNECTED</span></div>
+              <p>Satellite imagery (Worldview/GIBS), FIRMS fire detections, Earthdata and NASA dataset catalogs, Giovanni, AppEEARS, and USGS discovery are not part of this NASA POWER phase.</p>
+            </article>
+            <footer class="disclaimer"><span>✳</span> NASA POWER surface solar radiation is not personal space-radiation exposure. Environmental conditions do not measure astronaut health and must not be used to diagnose or infer a medical state.</footer>
+          </section>
+
+          <section class="view" id="view-settings">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> YOUR PROFILE · STORED ON THIS DEVICE</div><h1>Companion <span>settings.</span></h1><p>Review the preferences you saved during setup. These settings are local to this browser.</p></div>
+            <article class="panel settings-panel">
+              <div id="settings-summary" class="settings-summary"></div>
+              <button class="primary-button" data-action="profile">EDIT PROFILE & PREFERENCES <span>→</span></button>
+            </article>
+            <div class="health-note"><span>ⓘ</span><div><strong>Local-only prototype</strong><p>Hydration tracking and an in-app schedule are available on the Hydration Tracker. Meal and medication tracking, background notifications, full translations, and cloud sync are not implemented.</p></div></div>
+          </section>
+
+          <section class="view" id="view-roadmap">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> RUFUS DEVELOPMENT ROADMAP</div><h1 id="roadmap-title">Coming in a later phase.</h1><p id="roadmap-description">This area is clearly marked as planned and is not yet a working health feature.</p></div>
+            <article class="panel roadmap-panel"><span class="sim-tag" id="roadmap-phase">PLANNED</span><p id="roadmap-detail"></p><p class="roadmap-status">This Phase 1 build does not collect or simulate data for this feature.</p></article>
+          </section>
+
+          <section class="view" id="view-companion">
+            <div class="page-intro companion-heading"><div class="eyebrow"><span class="eyebrow-line"></span> RUFUS · YOUR COMPANION BAY</div><h1>Your crewmate, <span>your mission.</span></h1><p>Drop in, say hello, and choose Rufus’s pose and mission gear. Your companion progress stays on this device.</p></div>
+            <div class="companion-hero">
+              <div class="companion-stage">
+                <div class="companion-orbit orbit-a"></div><div class="companion-orbit orbit-b"></div>
+                <button class="companion-avatar-tap" data-action="pet-rufus" aria-label="Pet Rufus. Each visit can build your friendship.">
+                  <canvas id="rufus-home-avatar" class="companion-avatar" width="245" height="360" data-rufus-art="wave" data-rufus-live data-avatar-canvas role="img" aria-label="Rufus in his customized astronaut suit"></canvas>
+                  <span class="companion-pet-hint">TAP RUFUS TO SAY HI</span>
+                </button>
+                <div class="companion-stage-caption"><span class="live-dot"></span><span id="rufus-stage-caption">READY FOR A LITTLE COMPANY</span></div>
+              </div>
+              <div class="companion-dashboard">
+                <div class="companion-bond-card"><div class="bond-heading"><span>CREW BOND</span><strong id="rufus-bond-level">LEVEL 1</strong></div><div class="bond-name" id="rufus-bond-title">New crewmates</div><div class="xp-track"><span id="rufus-bond-progress"></span></div><small><span id="rufus-bond-xp">0</span> / 100 BOND XP · EARNED BY SHOWING UP</small></div>
+                <div class="companion-stats"><div><span>MISSION STARDUST</span><strong><span id="rufus-stardust">0</span> ✦</strong></div><div><span>HELLO STREAK</span><strong><span id="rufus-pet-streak">0</span> days</strong></div><div><span>MISSIONS TODAY</span><strong id="rufus-mission-count">0 / 4</strong></div></div>
+                <div class="companion-dialogue" aria-live="polite"><span class="dialogue-label">RUFUS SAYS</span><p id="rufus-home-dialogue">Every mission starts with a little hello. Want to see the flight plan?</p><button class="text-button" data-action="rufus-cheer">CHAT WITH RUFUS <span>✦</span></button></div>
+                <div class="companion-shortcuts"><button class="primary-button" data-action="customize-rufus">CUSTOMIZE RUFUS <span>↗</span></button><button class="secondary-button" data-nav="missions">VIEW TODAY’S MISSIONS</button></div>
+              </div>
+            </div>
+            <div class="companion-sections">
+              <section class="companion-panel"><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> GEAR LOCKER</div><h2>Accessories & inventory</h2></div><span class="sim-tag">EARNED WITH MISSIONS</span></div><p class="companion-help">Equip any gear you own. Complete a daily mission to earn stardust toward new items.</p><div class="inventory-grid" id="rufus-inventory"></div><div class="locker-divider"></div><div class="section-heading shop-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> MISSION SUPPLY</div><h2>Unlock new gear</h2></div></div><div class="shop-grid" id="rufus-shop"></div></section>
+            </div>
+            <section class="companion-panel companion-goals"><div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> GROW TOGETHER</div><h2>Today’s crew missions</h2></div><button class="subtle-button" data-nav="missions">ALL WELLNESS GOALS ↗</button></div><div class="mission-list" id="companion-goals-list"></div><p class="companion-help">Rufus celebrates actions already supported by AstroVital. Mission data is illustrative and isn’t medical advice.</p></section>
+            <footer class="disclaimer"><span>✳</span> Rufus is a friendly wellness companion, not a medical diagnostic system. Progress and rewards are motivational only.</footer>
           </section>
 
           <section class="view" id="view-health">
-            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH MONITOR</div><h1>Your health, <span>in context.</span></h1><p>Trends are compared against your own pre-flight baselines, not a generic average.</p></div>
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH MONITOR</div><h1>Your health, <span>in context.</span></h1><p>Track cardiovascular and recovery signals, resistance exercise, symptoms, crew connection, and simulated radiation exposure. Compare patterns with your personal references, then follow mission medical guidance when something concerns you.</p></div>
             <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>SIMULATION MODE</strong> &nbsp;All readings are illustrative sample data, not real medical measurements.</span></div>
+            <aside class="rufus-brief health-rufus"><img data-rufus-art="confident" src="./icons/rufus-confident.png" alt="Rufus standing confidently in his astronaut suit" loading="lazy" decoding="async"><div><span class="rufus-brief-label">RUFUS · BASELINE CHECK</span><strong>Your numbers are information, not a score.</strong><p>Notice patterns at your own pace. If a reading concerns you, talk with your flight surgeon.</p></div></aside>
             <div id="health-alerts"></div>
             <div class="health-detail-grid" id="health-metrics"></div>
             <article class="panel full-chart-panel"><div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> HEALTH TIMELINE</div><h2>Personal trends over time</h2></div><div class="range-tabs"><button class="range-tab active" data-range="7">7D</button><button class="range-tab" data-range="30">30D</button></div></div><div class="timeline-legend"><span><i class="legend-dot cyan"></i>HEART RATE</span><span><i class="legend-dot blue"></i>SLEEP (HRS)</span><span><i class="legend-line"></i>BASELINE</span></div><div class="chart-wrap large-chart" id="health-chart"></div></article>
-            <div class="health-note"><span>ⓘ</span><div><strong>About your personal baseline</strong><p>Baselines are personalized reference ranges shown for this simulated crew profile. A reading outside your usual range is a prompt to review and, if needed, contact your flight surgeon — it is not a diagnosis.</p></div></div>
-            <footer class="disclaimer"><span>✳</span> AstroVital is a wellness companion, not a medical diagnostic system. Always consult your flight surgeon regarding health concerns.</footer>
+            <div class="health-note"><span>ⓘ</span><div><strong>About these indicators</strong><p>Resistance exercise is tracked as a bone-health countermeasure activity, not a measurement of bone density. Symptom and crew-connection entries are self-reports, not immune or behavioral health assessments. All references are illustrative; review concerns with your flight surgeon or crew medical officer.</p></div></div>
+            <footer class="disclaimer"><span>✳</span> RUFUS is a wellness companion, not a medical diagnostic system. Follow your mission medical team's guidance.</footer>
           </section>
 
           <section class="view" id="view-missions">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> MISSION DAY 142 · FLIGHT PLAN</div><h1>Small actions. <span>Stronger missions.</span></h1><p>Choose approved wellness activities that fit your day. Every check-in is progress.</p></div>
             <div class="mission-summary"><div class="summary-icon">◎</div><div><span>DAILY OBJECTIVES</span><strong id="mission-summary-text">0 of 4 complete</strong></div><div class="summary-progress"><div class="progress-track"><span id="mission-summary-progress"></span></div><small>MISSION XP EARNED <strong id="mission-xp-today">0 / 160 XP</strong></small></div><div class="summary-streak"><span>✦</span><strong id="mission-streak">6</strong><small>DAY STREAK</small></div></div>
+            <aside class="rufus-brief mission-rufus"><img data-rufus-art="wave" src="./icons/rufus-wave.png" alt="Rufus waves to the crew before their mission" loading="lazy" decoding="async"><div><span class="rufus-brief-label">RUFUS’S FLIGHT PLAN</span><strong>One small win at a time.</strong><p>Pick what feels manageable today. Rest and recovery are part of looking after your crew.</p></div><span class="rufus-mission-star" aria-hidden="true">✦</span></aside>
             <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> WELLNESS FLIGHT PLAN</div><h2>Today's objectives</h2></div><span class="sim-tag">SIMULATED MISSION DATA</span></div>
             <div class="objective-list" id="mission-objectives"></div>
             <div class="achievement-panel"><div class="achievement-mark">✳</div><div><strong>Consistency unlocks new insignia.</strong><p>Complete daily health check-ins and approved wellness activities to earn mission XP. XP and achievements are for motivation only.</p></div><div class="achievement-badge"><span>◈</span><small>NEXT BADGE</small><strong>STEADY ORBIT</strong></div></div>
@@ -141,6 +340,7 @@
           <section class="view" id="view-cognitive">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> COGNITIVE FITNESS · MIND LAB</div><h1>Keep your mind <span>mission sharp.</span></h1><p>Short, optional brain games offer a fun way to practice focus. They are not clinical cognitive assessments.</p></div>
             <div class="cognitive-stats"><div><span>THIS WEEK</span><strong id="cog-sessions">3 <small>sessions</small></strong></div><div><span>BEST REACTION</span><strong id="cog-best">284 <small>ms</small></strong></div><div><span>FOCUS STREAK</span><strong>✦ 4 <small>days</small></strong></div><span class="sim-tag">SIMULATED SCORES</span></div>
+            <aside class="rufus-brief mind-rufus"><img data-rufus-art="confident" src="./icons/rufus-confident.png" alt="Rufus encourages the crew in the Mind Lab" loading="lazy" decoding="async"><div><span class="rufus-brief-label">RUFUS · MIND LAB</span><strong>Curiosity is a great place to start.</strong><p>These are just-for-fun focus games. Take a break whenever you need one.</p></div></aside>
             <div class="game-tabs" role="tablist"><button class="game-tab active" data-game="memory">01 &nbsp; MEMORY</button><button class="game-tab" data-game="reaction">02 &nbsp; REACTION</button><button class="game-tab" data-game="attention">03 &nbsp; ATTENTION</button></div>
             <article class="panel game-panel">
               <div class="game-copy"><div class="eyebrow"><span class="eyebrow-line"></span><span id="game-kicker">MEMORY SEQUENCE</span></div><h2 id="game-title">Sequence protocol</h2><p id="game-description">Watch the sequence, then repeat it in the same order. Each round adds one new step.</p><div class="game-meta"><span>◷ &nbsp;<strong id="game-duration">~1 MIN</strong></span><span>✦ &nbsp;+25 XP COMPLETE</span></div><button class="primary-button" id="game-start">START EXERCISE <span>→</span></button></div>
@@ -151,19 +351,23 @@
 
           <section class="view" id="view-journal">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> DAILY WELLBEING · PRIVATE BY DEFAULT</div><h1>Check in with <span>yourself.</span></h1><p>A quick reflection helps you notice patterns. Your journal stays on this device.</p></div>
+            <aside class="rufus-brief recovery-rufus"><img data-rufus-art="sleep" src="./icons/rufus-sleep.png" alt="Rufus snoozes on a cloud in his spacesuit" loading="lazy" decoding="async"><div><span class="rufus-brief-label">RUFUS · RECOVERY REMINDER</span><strong>Rest is part of the mission.</strong><p>A quiet moment, a good sleep opportunity, and an honest check-in all count.</p></div></aside>
             <div class="journal-grid">
               <article class="panel checkin-panel"><div class="eyebrow"><span class="eyebrow-line"></span> TODAY'S WELLNESS CHECK-IN</div><h2>How are you feeling, Maya?</h2><p class="form-intro">This is a non-clinical wellbeing check-in. Share only what feels comfortable.</p><form id="wellness-form"><label class="field-label">MOOD RIGHT NOW</label><div class="mood-options"><label><input type="radio" name="mood" value="Low"><span>☁</span><small>LOW</small></label><label><input type="radio" name="mood" value="Okay"><span>◒</span><small>OKAY</small></label><label><input type="radio" name="mood" value="Good" checked><span>☀</span><small>GOOD</small></label><label><input type="radio" name="mood" value="Great"><span>✦</span><small>GREAT</small></label></div><label class="field-label" for="energy-slider">FATIGUE LEVEL <strong><span id="fatigue-value">3</span> / 10</strong></label><input id="energy-slider" class="range-input" type="range" min="1" max="10" value="3"><div class="range-labels"><span>FEELING RESTED</span><span>VERY FATIGUED</span></div><label class="field-label" for="journal-note">PRIVATE JOURNAL <span class="optional-label">OPTIONAL · STORED ON THIS DEVICE</span></label><textarea id="journal-note" rows="4" maxlength="500" placeholder="Anything you'd like to reflect on? Only you can see this note on this device."></textarea><div class="form-footer"><span>UP TO 500 CHARACTERS</span><button class="primary-button" type="submit">SAVE CHECK-IN <span>→</span></button></div><div class="form-feedback" id="journal-feedback" aria-live="polite"></div></form></article>
               <aside class="wellness-aside"><article class="panel mood-summary"><div class="eyebrow"><span class="eyebrow-line"></span> YOUR WELLNESS TREND</div><h2>A little reflection goes a long way.</h2><div class="mood-trend"><div class="mood-dots"><span>☀</span><span>◒</span><span>☀</span><span>✦</span><span>☀</span><span>◒</span><span class="today-dot">☀</span></div><div class="mood-days"><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span><span>MON</span><span>TUE</span><span>TODAY</span></div></div><p>Patterns are personal. Use your check-ins to reflect on what helps you feel your best.</p></article><article class="privacy-card"><span>◉</span><div><strong>Your privacy matters</strong><p>Check-ins and journal entries are stored locally in this browser. They are not sent to a server. Avoid recording sensitive information on a shared device.</p></div></article><button class="subtle-button log-mission" data-nav="missions">EXPLORE WELLNESS ACTIVITIES <span>↗</span></button></aside>
             </div>
             <div class="section-heading journal-history-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> YOUR PERSONAL LOG</div><h2>Recent check-ins</h2></div></div><div class="journal-history" id="journal-history"></div>
-            <footer class="disclaimer"><span>✳</span> AstroVital is a wellness companion, not a medical diagnostic system. Consult your flight surgeon about health concerns.</footer>
+            <footer class="disclaimer"><span>✳</span> RUFUS is a wellness companion, not a medical diagnostic system. Follow your mission medical team's guidance.</footer>
           </section>
         </div>
       </main>
     </div>
 
     <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"><section class="modal" id="app-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button class="modal-close" data-action="close-modal" aria-label="Close dialog">×</button><div id="modal-content"></div></section></div>
-    <div class="toast" id="toast" aria-live="polite"></div>
+    <div class="toast" id="toast" aria-live="polite"><img data-rufus-art="wave" src="./icons/rufus-wave.png" alt="" aria-hidden="true" loading="eager" decoding="async"><span id="toast-message"></span></div>
+    <script src="./i18n-catalog.js"></script>
+    <script src="./i18n.js"></script>
+    <script src="./nasa-power.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>
