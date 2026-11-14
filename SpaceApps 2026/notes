@@ -1,0 +1,40 @@
+Hello!
+
+karina
+
+2. Features I'd recommend brainstorming
+Here are the features I'd put on your team's whiteboard.
+
+1. Rufus customization
+- Choose from Rufus's supplied poses.
+- Choose accessories.
+- Give Rufus a name.
+- Choose a background or spacecraft environment.
+
+2. Daily health logging
+- Log meals.
+- Log water consumption.
+- Record sleep duration.
+- Log physical activity.
+- Record symptoms or how they're feeling.
+
+3. Health monitoring dashboard
+- Heart rate.
+- Oxygen saturation.
+- Blood pressure.
+- Sleep patterns.
+- Activity levels.
+- Health trends over time.
+These could use simulated sensor readings for your prototype.
+
+4. Health alerts
+- Notify users of unusual readings.
+- Identify changes from personal baselines.
+- Encourage check-ins.
+- Flag symptoms that need medical attention.
+
+5. Rufus's visual reactions
+
+Rufus can visually respond to the astronaut's logged activities and health status.
+
+For example, he could appear sleepy after insufficient rest or look comfortable after completing a check-in.
