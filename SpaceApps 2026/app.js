@@ -8,6 +8,7 @@
     { id: 'mind', title: 'Exercise your attention', description: 'Complete an optional Mind Lab activity.', icon: '⌘', reward: 50, action: 'game' }
   ];
   const rufusArtwork = {
+<<<<<<< Updated upstream
     wave: { src: './icons/rufus-wave.png', name: 'Mission wave', description: 'Rufus waves hello in his flight suit.' },
     confident: { src: './icons/rufus-confident.png', name: 'Steady orbit', description: 'Rufus stands ready with a confident smile.' },
     rest: { src: './icons/rufus-rest.png', name: 'Recharge', description: 'Rufus takes a comfortable moment to rest.' },
@@ -20,9 +21,15 @@
     purple: { name: 'Space explorer purple', suit: '#8066a9', trim: '#f0cb78' },
     emerald: { name: 'Emerald & gold', suit: '#3e8069', trim: '#e9bd57' },
     crimson: { name: 'Crimson & black', suit: '#a44a53', trim: '#34343d' }
+=======
+    wave: { src: './icons/rufus-wave-cutout.png', name: 'Mission wave', description: 'Rufus waves hello in his flight suit.' },
+    confident: { src: './icons/rufus-confident-cutout.png', name: 'Steady orbit', description: 'Rufus stands ready with a confident smile.' },
+    rest: { src: './icons/rufus-rest-cutout.png', name: 'Recharge', description: 'Rufus takes a comfortable moment to rest.' },
+    sleep: { src: './icons/rufus-sleep-cutout.png', name: 'Sleep cycle', description: 'Rufus drifts off for a well-earned rest.' },
+    study: { src: './icons/rufus-study-cutout.png', name: 'Curious mind', description: 'Rufus explores a mission display.' }
+>>>>>>> Stashed changes
   };
   const rufusAccessories = {
-    'mission-patch': { name: 'Crew mission patch', description: 'A stitched mission insignia for the flight suit.', src: './icons/rufus-layer-patch.svg', cost: 0 },
     'orbit-satellite': { name: 'Pocket satellite', description: 'A tiny satellite companion circling Rufus.', src: './icons/rufus-layer-satellite.svg', cost: 0 },
     'wrist-computer': { name: 'Wrist computer', description: 'A compact mission communicator on Rufus’s cuff.', src: './icons/rufus-layer-wrist.svg', cost: 35 },
     'holo-slate': { name: 'Holographic slate', description: 'A luminous field slate for curious explorers.', src: './icons/rufus-layer-slate.svg', cost: 50 },
@@ -32,8 +39,13 @@
     version: 1,
     profile: { name: 'Maya Chen', role: 'Flight Specialist', heartMin: 58, heartMax: 72, sleepMin: 7.5, sleepMax: 9, radiationReviewAt: 50 },
     rufus: {
+<<<<<<< Updated upstream
       pose: 'wave', palette: 'classic', customSuit: '#ece8dc', customTrim: '#eab84d',
       inventory: ['mission-patch', 'orbit-satellite'], accessories: ['mission-patch'], gearVersion: 2,
+=======
+      pose: 'wave',
+      inventory: ['orbit-satellite'], accessories: ['orbit-satellite'],
+>>>>>>> Stashed changes
       stardust: 0, bondXp: 0, petDate: today, petCount: 0, petStreak: 0, lastPetDate: ''
     },
     metrics: { heart: 64, sleep: 7.4, exercise: 42, fatigue: 3, mood: 'Good', cognition: 92, radiation: 38 },
@@ -79,7 +91,10 @@
       if (!parsed || parsed.version !== 1 || typeof parsed.metrics !== 'object' || typeof parsed.profile !== 'object') {
         throw new Error('Saved AstroVital data has an unsupported format.');
       }
-      const savedRufus = parsed.rufus && typeof parsed.rufus === 'object' ? parsed.rufus : {};
+      const savedRufus = parsed.rufus && typeof parsed.rufus === 'object' ? { ...parsed.rufus } : {};
+      delete savedRufus.palette;
+      delete savedRufus.customSuit;
+      delete savedRufus.customTrim;
       const savedPose = typeof savedRufus.pose === 'string' ? savedRufus.pose : 'wave';
       const inventory = Array.isArray(savedRufus.inventory)
         ? [...new Set(savedRufus.inventory.filter((item) => Object.hasOwn(rufusAccessories, item)))]
@@ -87,9 +102,12 @@
       const accessories = Array.isArray(savedRufus.accessories)
         ? [...new Set(savedRufus.accessories.filter((item) => inventory.includes(item)))]
         : clone(seed.rufus.accessories);
+<<<<<<< Updated upstream
       needsCompanionGearMigration = savedRufus.gearVersion !== 2;
       if (needsCompanionGearMigration) accessories.splice(0, accessories.length, ...accessories.filter((item) => item !== 'orbit-satellite'));
       const isColor = (value) => typeof value === 'string' && /^#[\da-f]{6}$/i.test(value);
+=======
+>>>>>>> Stashed changes
       return {
         ...clone(seed),
         ...parsed,
@@ -98,10 +116,13 @@
           ...seed.rufus,
           ...savedRufus,
           pose: Object.hasOwn(rufusArtwork, savedPose) ? savedPose : seed.rufus.pose,
+<<<<<<< Updated upstream
           gearVersion: 2,
           palette: savedRufus.palette === 'custom' || Object.hasOwn(suitPalettes, savedRufus.palette) ? savedRufus.palette : 'classic',
           customSuit: isColor(savedRufus.customSuit) ? savedRufus.customSuit : seed.rufus.customSuit,
           customTrim: isColor(savedRufus.customTrim) ? savedRufus.customTrim : seed.rufus.customTrim,
+=======
+>>>>>>> Stashed changes
           inventory,
           accessories,
           stardust: Number.isFinite(savedRufus.stardust) ? Math.max(0, savedRufus.stardust) : seed.rufus.stardust,
@@ -472,6 +493,7 @@
     return artworkImageCache.get(src);
   }
 
+<<<<<<< Updated upstream
   function hexToRgb(hex) {
     return { r: parseInt(hex.slice(1, 3), 16), g: parseInt(hex.slice(3, 5), 16), b: parseInt(hex.slice(5, 7), 16) };
   }
@@ -510,6 +532,10 @@
 
   async function paintRufusCanvas(canvas, pose = canvas.dataset.rufusArt) {
     pose = Object.hasOwn(rufusArtwork, pose) ? pose : 'wave';
+=======
+  async function paintRufusCanvas(canvas) {
+    const pose = state.rufus.pose;
+>>>>>>> Stashed changes
     const art = rufusArtwork[pose] || rufusArtwork.wave;
     const renderId = Number(canvas.dataset.renderId || 0) + 1;
     canvas.dataset.renderId = String(renderId);
@@ -518,13 +544,9 @@
       if (!canvas.isConnected || canvas.dataset.rufusArt !== pose || canvas.dataset.renderId !== String(renderId)) return;
       canvas.width = image.naturalWidth;
       canvas.height = image.naturalHeight;
-      const context = canvas.getContext('2d', { willReadFrequently: true });
+      const context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
       context.drawImage(image, 0, 0);
-      const colors = currentSuitColors();
-      const frame = context.getImageData(0, 0, canvas.width, canvas.height);
-      recolorSuitPixels(frame, canvas.width, canvas.height, colors.suit, colors.trim, pose);
-      context.putImageData(frame, 0, 0);
       const layers = state.rufus.accessories.filter((item) => {
         if (!state.rufus.inventory.includes(item)) return false;
         return pose !== 'sleep' || item === 'orbit-satellite';
@@ -564,7 +586,11 @@
         <span><strong>${art.name}</strong><small>${art.description}</small></span>
       </button>`).join('');
 
+<<<<<<< Updated upstream
     openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> RUFUS AVATAR BAY</div><h2 id="modal-title">Choose Rufus’s mission moment</h2><p>Choose an expression from the supplied character art. Suit colors and gear can be changed in the companion bay.</p><div class="rufus-preview" id="rufus-preview">${rufusCanvas(state.rufus.pose, 'rufus-preview-art')}<div><strong>Rufus</strong><span id="rufus-preview-caption">${rufusArtwork[state.rufus.pose].description}</span></div></div><form id="rufus-form"><input type="hidden" name="pose" value="${state.rufus.pose}"><div class="rufus-pose-grid">${poses}</div><div class="modal-actions"><button type="button" class="secondary-button" data-nav="companion">OPEN COMPANION BAY</button><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE POSE</button></div></form>`);
+=======
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> RUFUS AVATAR BAY</div><h2 id="modal-title">Choose Rufus’s mission moment</h2><p>Choose a pose from the supplied character art. Equip gear in the companion bay to personalize Rufus.</p><div class="rufus-preview" id="rufus-preview">${rufusImage(state.rufus.pose, 'rufus-preview-art')}<div><strong>Rufus</strong><span id="rufus-preview-caption">${rufusArtwork[state.rufus.pose].description}</span></div></div><form id="rufus-form"><input type="hidden" name="pose" value="${state.rufus.pose}"><div class="rufus-pose-grid">${poses}</div><div class="modal-actions"><button type="button" class="secondary-button" data-nav="companion">OPEN COMPANION BAY</button><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE POSE</button></div></form>`);
+>>>>>>> Stashed changes
     renderRufus();
   }
 
@@ -599,16 +625,6 @@
     $('#rufus-stardust').textContent = state.rufus.stardust.toLocaleString();
     $('#rufus-pet-streak').textContent = String(state.rufus.petStreak);
     $('#rufus-mission-count').textContent = `${state.completed.length} / ${missions.length}`;
-    $('#suit-palette-name').textContent = state.rufus.palette === 'custom'
-      ? 'CUSTOM COLORS'
-      : (suitPalettes[state.rufus.palette] || suitPalettes.classic).name.toUpperCase();
-    $('#custom-suit-color').value = state.rufus.customSuit;
-    $('#custom-trim-color').value = state.rufus.customTrim;
-    $$('[data-suit-palette]').forEach((button) => {
-      const selected = state.rufus.palette === button.dataset.suitPalette;
-      button.classList.toggle('selected', selected);
-      button.setAttribute('aria-pressed', String(selected));
-    });
     $('#rufus-inventory').innerHTML = state.rufus.inventory.map((id) => {
       const item = rufusAccessories[id];
       if (!item) return '';
@@ -918,33 +934,6 @@
     if (action === 'customize-rufus') openRufusCustomizer();
     if (action === 'close-modal') closeModal();
     if (action === 'dismiss-notice') event.target.closest('.notice-strip').remove();
-
-    const paletteChoice = event.target.closest('[data-suit-palette]');
-    if (paletteChoice && Object.hasOwn(suitPalettes, paletteChoice.dataset.suitPalette)) {
-      state.rufus.palette = paletteChoice.dataset.suitPalette;
-      state.rufus.customSuit = suitPalettes[state.rufus.palette].suit;
-      state.rufus.customTrim = suitPalettes[state.rufus.palette].trim;
-      persist();
-      renderCompanion();
-      speakRufus(`New flight suit, same Rufus! The ${suitPalettes[state.rufus.palette].name} palette is ready for our next adventure.`, 'SUIT PALETTE UPDATED');
-      return;
-    }
-
-    if (action === 'save-custom-colors') {
-      const suitColor = $('#custom-suit-color').value;
-      const trimColor = $('#custom-trim-color').value;
-      if (!/^#[\da-f]{6}$/i.test(suitColor) || !/^#[\da-f]{6}$/i.test(trimColor)) {
-        showToast('Choose valid suit and trim colors before applying them.');
-        return;
-      }
-      state.rufus.palette = 'custom';
-      state.rufus.customSuit = suitColor;
-      state.rufus.customTrim = trimColor;
-      persist();
-      renderCompanion();
-      speakRufus('Custom colors applied! Rufus is ready to make this suit his own.', 'CUSTOM COLORS APPLIED');
-      return;
-    }
 
     const accessoryToggle = event.target.closest('[data-toggle-accessory]');
     if (accessoryToggle) {

@@ -8,11 +8,19 @@ const APP_SHELL = [
   './icons/astrovital.svg',
   './icons/astrovital-192.png',
   './icons/astrovital-512.png',
+<<<<<<< Updated upstream
   './icons/rufus-wave.png',
   './icons/rufus-confident.png',
   './icons/rufus-rest.png',
   './icons/rufus-sleep.png',
   './icons/rufus-layer-patch.svg',
+=======
+  './icons/rufus-wave-cutout.png',
+  './icons/rufus-confident-cutout.png',
+  './icons/rufus-rest-cutout.png',
+  './icons/rufus-sleep-cutout.png',
+  './icons/rufus-study-cutout.png',
+>>>>>>> Stashed changes
   './icons/rufus-layer-satellite.svg',
   './icons/rufus-layer-wrist.svg',
   './icons/rufus-layer-slate.svg',
