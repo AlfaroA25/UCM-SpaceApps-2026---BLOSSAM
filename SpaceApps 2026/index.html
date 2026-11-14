@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#080d16">
     <meta name="description" content="AstroVital: Mission Health — a simulated, offline-ready astronaut wellness dashboard.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="AstroVital">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="AstroVital: Mission Health">
+    <meta property="og:description" content="An offline-ready astronaut wellness dashboard with Rufus, daily missions, and personal wellbeing tracking.">
+    <meta property="og:url" content="https://alfaroa25.github.io/UCM-SpaceApps-2026---BLOSSAM/">
+    <meta property="og:image" content="https://alfaroa25.github.io/UCM-SpaceApps-2026---BLOSSAM/icons/astrovital-512.png">
+    <meta name="twitter:card" content="summary">
     <title>AstroVital: Mission Health</title>
     <link rel="icon" type="image/svg+xml" href="./icons/astrovital.svg">
     <link rel="apple-touch-icon" href="./icons/astrovital-192.png">
@@ -48,6 +56,7 @@
             <div class="sync-status"><span class="live-dot"></span><span id="sync-label">OFFLINE READY</span></div>
             <span class="topbar-divider"></span>
             <div class="mission-clock"><span class="clock-icon">◷</span><span id="clock">--:--:--</span><small>UTC</small></div>
+            <button class="install-button" id="share-button" type="button" aria-label="Share AstroVital">SHARE</button>
             <button class="install-button" id="install-button" type="button" aria-label="Install AstroVital as an app">INSTALL</button>
             <button class="icon-button alert-button" data-action="alerts" aria-label="View health alerts">♧<span class="alert-badge" id="alert-count">0</span></button>
             <button class="top-avatar" data-action="profile" aria-label="Open crew profile">MC</button>

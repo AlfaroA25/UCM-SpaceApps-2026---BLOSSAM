@@ -1148,6 +1148,36 @@
   $('#fatigue-value').textContent = state.metrics.fatigue;
 
   let installPrompt = null;
+  const shareButton = $('#share-button');
+  shareButton.addEventListener('click', async () => {
+    const shareUrl = new URL(location.href);
+    shareUrl.hash = '';
+    const shareData = {
+      title: document.title,
+      text: 'Explore AstroVital: Mission Health.',
+      url: shareUrl.href
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        console.error('Unable to share AstroVital:', error);
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareData.url);
+      showToast('AstroVital link copied. Share it with your crew.');
+    } catch (error) {
+      console.error('Unable to copy the AstroVital link:', error);
+      openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> SHARE ASTROVITAL</div><h2 id="modal-title">Copy this app link</h2><p>Share this link to open AstroVital:</p><div class="modal-form"><label>APP LINK<input id="share-url" type="url" value="${escapeHtml(shareData.url)}" readonly></label></div><div class="modal-actions"><button class="primary-button" data-action="close-modal">CLOSE</button></div>`);
+      $('#share-url').select();
+    }
+  });
+
   const installButton = $('#install-button');
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
