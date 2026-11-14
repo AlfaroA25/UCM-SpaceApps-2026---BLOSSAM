@@ -1,5 +1,5 @@
-const CACHE_NAME = 'astrovital-shell-v5';
-const APP_SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.webmanifest'];
+const CACHE_NAME = 'rufus-shell-v15';
+const APP_SHELL = ['./', './index.html', './styles.css', './i18n-catalog.js', './i18n.js', './app.js', './nasa-power.js', './manifest.webmanifest', './rufus-placeholder.svg'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
