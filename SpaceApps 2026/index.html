@@ -66,6 +66,22 @@
 
             <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>SIMULATION MODE</strong> &nbsp;All readings are illustrative sample data, not real medical measurements.</span><button aria-label="Dismiss simulation notice" data-action="dismiss-notice">×</button></div>
 
+            <article class="rufus-card" aria-labelledby="rufus-title">
+              <div class="rufus-art">
+                <img id="rufus-avatar" class="rufus-avatar" data-rufus-art="wave" src="./icons/rufus-wave.png" alt="Rufus waves from space in his white and gold astronaut suit" decoding="async">
+              </div>
+              <div class="rufus-copy">
+                <div class="rufus-kicker"><span class="eyebrow-line"></span> YOUR HEALTH BUDDY <span class="rufus-online"><i></i> ON YOUR TEAM</span></div>
+                <h2 id="rufus-title">Rufus <span>MISSION PAL</span></h2>
+                <p id="rufus-message" aria-live="polite">No pressure, crew member. Every small check-in is a win, and rest counts too.</p>
+                <div class="rufus-actions">
+                  <button class="primary-button" type="button" data-action="rufus-cheer">CHEER ME ON <span>✦</span></button>
+                  <button class="rufus-customize-button" type="button" data-action="customize-rufus">CUSTOMIZE RUFUS <span>↗</span></button>
+                </div>
+              </div>
+              <span class="rufus-card-star" aria-hidden="true">✦</span>
+            </article>
+
             <div class="hero-grid">
               <article class="readiness-card">
                 <div class="card-topline"><span>CREW READINESS</span><span class="tiny-info">ⓘ</span></div>
@@ -113,6 +129,7 @@
           <section class="view" id="view-health">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH MONITOR</div><h1>Your health, <span>in context.</span></h1><p>Trends are compared against your own pre-flight baselines, not a generic average.</p></div>
             <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>SIMULATION MODE</strong> &nbsp;All readings are illustrative sample data, not real medical measurements.</span></div>
+            <aside class="rufus-brief health-rufus"><img data-rufus-art="confident" src="./icons/rufus-confident.png" alt="Rufus standing confidently in his astronaut suit" loading="lazy" decoding="async"><div><span class="rufus-brief-label">RUFUS · BASELINE CHECK</span><strong>Your numbers are information, not a score.</strong><p>Notice patterns at your own pace. If a reading concerns you, talk with your flight surgeon.</p></div></aside>
             <div id="health-alerts"></div>
             <div class="health-detail-grid" id="health-metrics"></div>
             <article class="panel full-chart-panel"><div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> HEALTH TIMELINE</div><h2>Personal trends over time</h2></div><div class="range-tabs"><button class="range-tab active" data-range="7">7D</button><button class="range-tab" data-range="30">30D</button></div></div><div class="timeline-legend"><span><i class="legend-dot cyan"></i>HEART RATE</span><span><i class="legend-dot blue"></i>SLEEP (HRS)</span><span><i class="legend-line"></i>BASELINE</span></div><div class="chart-wrap large-chart" id="health-chart"></div></article>
@@ -123,6 +140,7 @@
           <section class="view" id="view-missions">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> MISSION DAY 142 · FLIGHT PLAN</div><h1>Small actions. <span>Stronger missions.</span></h1><p>Choose approved wellness activities that fit your day. Every check-in is progress.</p></div>
             <div class="mission-summary"><div class="summary-icon">◎</div><div><span>DAILY OBJECTIVES</span><strong id="mission-summary-text">0 of 4 complete</strong></div><div class="summary-progress"><div class="progress-track"><span id="mission-summary-progress"></span></div><small>MISSION XP EARNED <strong id="mission-xp-today">0 / 160 XP</strong></small></div><div class="summary-streak"><span>✦</span><strong id="mission-streak">6</strong><small>DAY STREAK</small></div></div>
+            <aside class="rufus-brief mission-rufus"><img data-rufus-art="wave" src="./icons/rufus-wave.png" alt="Rufus waves to the crew before their mission" loading="lazy" decoding="async"><div><span class="rufus-brief-label">RUFUS’S FLIGHT PLAN</span><strong>One small win at a time.</strong><p>Pick what feels manageable today. Rest and recovery are part of looking after your crew.</p></div><span class="rufus-mission-star" aria-hidden="true">✦</span></aside>
             <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> WELLNESS FLIGHT PLAN</div><h2>Today's objectives</h2></div><span class="sim-tag">SIMULATED MISSION DATA</span></div>
             <div class="objective-list" id="mission-objectives"></div>
             <div class="achievement-panel"><div class="achievement-mark">✳</div><div><strong>Consistency unlocks new insignia.</strong><p>Complete daily health check-ins and approved wellness activities to earn mission XP. XP and achievements are for motivation only.</p></div><div class="achievement-badge"><span>◈</span><small>NEXT BADGE</small><strong>STEADY ORBIT</strong></div></div>
@@ -132,6 +150,7 @@
           <section class="view" id="view-cognitive">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> COGNITIVE FITNESS · MIND LAB</div><h1>Keep your mind <span>mission sharp.</span></h1><p>Short, optional brain games offer a fun way to practice focus. They are not clinical cognitive assessments.</p></div>
             <div class="cognitive-stats"><div><span>THIS WEEK</span><strong id="cog-sessions">3 <small>sessions</small></strong></div><div><span>BEST REACTION</span><strong id="cog-best">284 <small>ms</small></strong></div><div><span>FOCUS STREAK</span><strong>✦ 4 <small>days</small></strong></div><span class="sim-tag">SIMULATED SCORES</span></div>
+            <aside class="rufus-brief mind-rufus"><img data-rufus-art="study" src="./icons/rufus-study.png" alt="Rufus explores a glowing mission display" loading="lazy" decoding="async"><div><span class="rufus-brief-label">RUFUS · MIND LAB</span><strong>Curiosity is a great place to start.</strong><p>These are just-for-fun focus games. Take a break whenever you need one.</p></div></aside>
             <div class="game-tabs" role="tablist"><button class="game-tab active" data-game="memory">01 &nbsp; MEMORY</button><button class="game-tab" data-game="reaction">02 &nbsp; REACTION</button><button class="game-tab" data-game="attention">03 &nbsp; ATTENTION</button></div>
             <article class="panel game-panel">
               <div class="game-copy"><div class="eyebrow"><span class="eyebrow-line"></span><span id="game-kicker">MEMORY SEQUENCE</span></div><h2 id="game-title">Sequence protocol</h2><p id="game-description">Watch the sequence, then repeat it in the same order. Each round adds one new step.</p><div class="game-meta"><span>◷ &nbsp;<strong id="game-duration">~1 MIN</strong></span><span>✦ &nbsp;+25 XP COMPLETE</span></div><button class="primary-button" id="game-start">START EXERCISE <span>→</span></button></div>
@@ -142,6 +161,7 @@
 
           <section class="view" id="view-journal">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> DAILY WELLBEING · PRIVATE BY DEFAULT</div><h1>Check in with <span>yourself.</span></h1><p>A quick reflection helps you notice patterns. Your journal stays on this device.</p></div>
+            <aside class="rufus-brief recovery-rufus"><img data-rufus-art="sleep" src="./icons/rufus-sleep.png" alt="Rufus snoozes on a cloud in his spacesuit" loading="lazy" decoding="async"><div><span class="rufus-brief-label">RUFUS · RECOVERY REMINDER</span><strong>Rest is part of the mission.</strong><p>A quiet moment, a good sleep opportunity, and an honest check-in all count.</p></div></aside>
             <div class="journal-grid">
               <article class="panel checkin-panel"><div class="eyebrow"><span class="eyebrow-line"></span> TODAY'S WELLNESS CHECK-IN</div><h2>How are you feeling, Maya?</h2><p class="form-intro">This is a non-clinical wellbeing check-in. Share only what feels comfortable.</p><form id="wellness-form"><label class="field-label">MOOD RIGHT NOW</label><div class="mood-options"><label><input type="radio" name="mood" value="Low"><span>☁</span><small>LOW</small></label><label><input type="radio" name="mood" value="Okay"><span>◒</span><small>OKAY</small></label><label><input type="radio" name="mood" value="Good" checked><span>☀</span><small>GOOD</small></label><label><input type="radio" name="mood" value="Great"><span>✦</span><small>GREAT</small></label></div><label class="field-label" for="energy-slider">FATIGUE LEVEL <strong><span id="fatigue-value">3</span> / 10</strong></label><input id="energy-slider" class="range-input" type="range" min="1" max="10" value="3"><div class="range-labels"><span>FEELING RESTED</span><span>VERY FATIGUED</span></div><label class="field-label" for="journal-note">PRIVATE JOURNAL <span class="optional-label">OPTIONAL · STORED ON THIS DEVICE</span></label><textarea id="journal-note" rows="4" maxlength="500" placeholder="Anything you'd like to reflect on? Only you can see this note on this device."></textarea><div class="form-footer"><span>UP TO 500 CHARACTERS</span><button class="primary-button" type="submit">SAVE CHECK-IN <span>→</span></button></div><div class="form-feedback" id="journal-feedback" aria-live="polite"></div></form></article>
               <aside class="wellness-aside"><article class="panel mood-summary"><div class="eyebrow"><span class="eyebrow-line"></span> YOUR WELLNESS TREND</div><h2>A little reflection goes a long way.</h2><div class="mood-trend"><div class="mood-dots"><span>☀</span><span>◒</span><span>☀</span><span>✦</span><span>☀</span><span>◒</span><span class="today-dot">☀</span></div><div class="mood-days"><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span><span>MON</span><span>TUE</span><span>TODAY</span></div></div><p>Patterns are personal. Use your check-ins to reflect on what helps you feel your best.</p></article><article class="privacy-card"><span>◉</span><div><strong>Your privacy matters</strong><p>Check-ins and journal entries are stored locally in this browser. They are not sent to a server. Avoid recording sensitive information on a shared device.</p></div></article><button class="subtle-button log-mission" data-nav="missions">EXPLORE WELLNESS ACTIVITIES <span>↗</span></button></aside>
@@ -154,7 +174,7 @@
     </div>
 
     <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"><section class="modal" id="app-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button class="modal-close" data-action="close-modal" aria-label="Close dialog">×</button><div id="modal-content"></div></section></div>
-    <div class="toast" id="toast" aria-live="polite"></div>
+    <div class="toast" id="toast" aria-live="polite"><img data-rufus-art="wave" src="./icons/rufus-wave.png" alt="" aria-hidden="true" loading="eager" decoding="async"><span id="toast-message"></span></div>
     <script src="./app.js"></script>
   </body>
 </html>

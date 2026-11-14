@@ -1,4 +1,4 @@
-const CACHE_NAME = 'astrovital-shell-v6';
+const CACHE_NAME = 'astrovital-shell-v10';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,7 +7,12 @@ const APP_SHELL = [
   './manifest.webmanifest',
   './icons/astrovital.svg',
   './icons/astrovital-192.png',
-  './icons/astrovital-512.png'
+  './icons/astrovital-512.png',
+  './icons/rufus-wave.png',
+  './icons/rufus-confident.png',
+  './icons/rufus-rest.png',
+  './icons/rufus-sleep.png',
+  './icons/rufus-study.png'
 ];
 
 self.addEventListener('install', (event) => {
