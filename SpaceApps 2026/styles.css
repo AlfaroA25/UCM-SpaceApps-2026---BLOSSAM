@@ -55,6 +55,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .mission-clock{font:11px var(--mono);color:#d5e0e8;display:flex;align-items:center;gap:7px}
 .mission-clock small{font-size:8px;color:#718294}
 .clock-icon{font-size:14px;color:#79a6c0}
+.install-button{height:30px;padding:0 10px;border:1px solid #31515b;border-radius:5px;background:#10232b;color:#9be7e9;font:9px var(--mono);letter-spacing:.7px;cursor:pointer;white-space:nowrap}
+.install-button:hover{border-color:#65d4da;background:#15313a}
 .icon-button{width:30px;height:30px;border:1px solid #223040;border-radius:6px;background:#0e1722;color:#8da2b5;cursor:pointer;position:relative;font-size:17px}
 .alert-badge{position:absolute;top:-4px;right:-4px;min-width:14px;height:14px;padding:0 3px;border-radius:10px;background:#ec8b71;color:#20120e;font:9px var(--mono);display:grid;place-items:center}
 .top-avatar{width:31px;height:31px;cursor:pointer}

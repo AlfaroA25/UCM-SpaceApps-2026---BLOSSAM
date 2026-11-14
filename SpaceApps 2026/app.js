@@ -676,6 +676,45 @@
   $('#energy-slider').value = state.metrics.fatigue;
   $('#fatigue-value').textContent = state.metrics.fatigue;
 
+  let installPrompt = null;
+  const installButton = $('#install-button');
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    installPrompt = event;
+  });
+  window.addEventListener('appinstalled', () => {
+    installPrompt = null;
+    showToast('AstroVital is installed on this device.');
+  });
+  installButton.addEventListener('click', async () => {
+    if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true) {
+      showToast('AstroVital is already installed on this device.');
+      return;
+    }
+
+    if (!installPrompt) {
+      const isAppleMobile = /iPad|iPhone|iPod/.test(navigator.userAgent)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isAppleMobile) {
+        openModal('<div class="eyebrow"><span class="eyebrow-line"></span> INSTALL ASTROVITAL</div><h2 id="modal-title">Add to your Home Screen</h2><p>In Safari, tap the Share button, then choose <strong>Add to Home Screen</strong>. AstroVital runs as a standalone app and keeps your entries on this device.</p><div class="modal-actions"><button class="primary-button" data-action="close-modal">GOT IT</button></div>');
+      } else {
+        showToast('Open your browser menu and choose Install AstroVital or Add to Home Screen.');
+      }
+      return;
+    }
+
+    const prompt = installPrompt;
+    installPrompt = null;
+    try {
+      await prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      showToast(outcome === 'accepted' ? 'AstroVital is installed on this device.' : 'Installation canceled.');
+    } catch (error) {
+      console.error('Unable to install AstroVital:', error);
+      showToast('Unable to start installation. Use your browser menu to install the app.');
+    }
+  });
+
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').then(() => {

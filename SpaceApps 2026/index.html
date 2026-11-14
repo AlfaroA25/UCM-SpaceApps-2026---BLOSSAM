@@ -6,6 +6,8 @@
     <meta name="theme-color" content="#080d16">
     <meta name="description" content="AstroVital: Mission Health — a simulated, offline-ready astronaut wellness dashboard.">
     <title>AstroVital: Mission Health</title>
+    <link rel="icon" type="image/svg+xml" href="./icons/astrovital.svg">
+    <link rel="apple-touch-icon" href="./icons/astrovital-192.png">
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="stylesheet" href="./styles.css">
   </head>
@@ -45,6 +47,7 @@
             <div class="sync-status"><span class="live-dot"></span><span id="sync-label">OFFLINE READY</span></div>
             <span class="topbar-divider"></span>
             <div class="mission-clock"><span class="clock-icon">◷</span><span id="clock">--:--:--</span><small>UTC</small></div>
+            <button class="install-button" id="install-button" type="button" aria-label="Install AstroVital as an app">INSTALL</button>
             <button class="icon-button alert-button" data-action="alerts" aria-label="View health alerts">♧<span class="alert-badge" id="alert-count">0</span></button>
             <button class="top-avatar" data-action="profile" aria-label="Open crew profile">MC</button>
           </div>
