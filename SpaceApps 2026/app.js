@@ -431,13 +431,13 @@
 
   function renderRufus() {
     $$('[data-rufus-art]').forEach((image) => {
-      const pose = image.matches('[data-avatar-canvas]')
+      const pose = image.matches('[data-rufus-live]')
         ? rufusReactionPose || state.rufus.pose
         : image.dataset.rufusArt;
       const art = rufusArtwork[pose] || rufusArtwork.wave;
       image.dataset.rufusArt = pose in rufusArtwork ? pose : 'wave';
       if (image.matches('[data-avatar-canvas]')) {
-        paintRufusCanvas(image);
+        paintRufusCanvas(image, pose);
         return;
       }
       image.src = art.src;
@@ -503,8 +503,8 @@
       : preset || suitPalettes.classic;
   }
 
-  async function paintRufusCanvas(canvas) {
-    const pose = state.rufus.pose;
+  async function paintRufusCanvas(canvas, pose = canvas.dataset.rufusArt) {
+    pose = Object.hasOwn(rufusArtwork, pose) ? pose : 'wave';
     const art = rufusArtwork[pose] || rufusArtwork.wave;
     const renderId = Number(canvas.dataset.renderId || 0) + 1;
     canvas.dataset.renderId = String(renderId);
@@ -546,14 +546,21 @@
     return `<img class="${className}" data-rufus-art="${safePose}" src="${art.src}" alt="${escapeHtml(alt || art.description)}" loading="lazy" decoding="async">`;
   }
 
+  function rufusCanvas(pose, className, alt) {
+    const art = rufusArtwork[pose] || rufusArtwork.wave;
+    const safePose = Object.hasOwn(rufusArtwork, pose) ? pose : 'wave';
+    const label = alt || `Rufus: ${art.description}`;
+    return `<canvas class="${className}" width="245" height="360" data-rufus-art="${safePose}" data-avatar-canvas role="img" aria-label="${escapeHtml(label)}"></canvas>`;
+  }
+
   function openRufusCustomizer() {
     const poses = Object.entries(rufusArtwork).map(([pose, art]) => `
       <button class="rufus-pose-choice ${state.rufus.pose === pose ? 'selected' : ''}" type="button" data-rufus-choice="${pose}" aria-pressed="${state.rufus.pose === pose}">
-        ${rufusImage(pose, 'rufus-pose-thumb', `${art.name}: ${art.description}`)}
+        ${rufusCanvas(pose, 'rufus-pose-thumb', `Rufus, ${art.name.toLowerCase()}: ${art.description}`)}
         <span><strong>${art.name}</strong><small>${art.description}</small></span>
       </button>`).join('');
 
-    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> RUFUS AVATAR BAY</div><h2 id="modal-title">Choose Rufus’s mission moment</h2><p>Choose an expression from the supplied character art. Suit colors and gear can be changed in the companion bay.</p><div class="rufus-preview" id="rufus-preview">${rufusImage(state.rufus.pose, 'rufus-preview-art')}<div><strong>Rufus</strong><span id="rufus-preview-caption">${rufusArtwork[state.rufus.pose].description}</span></div></div><form id="rufus-form"><input type="hidden" name="pose" value="${state.rufus.pose}"><div class="rufus-pose-grid">${poses}</div><div class="modal-actions"><button type="button" class="secondary-button" data-nav="companion">OPEN COMPANION BAY</button><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE POSE</button></div></form>`);
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> RUFUS AVATAR BAY</div><h2 id="modal-title">Choose Rufus’s mission moment</h2><p>Choose an expression from the supplied character art. Suit colors and gear can be changed in the companion bay.</p><div class="rufus-preview" id="rufus-preview">${rufusCanvas(state.rufus.pose, 'rufus-preview-art')}<div><strong>Rufus</strong><span id="rufus-preview-caption">${rufusArtwork[state.rufus.pose].description}</span></div></div><form id="rufus-form"><input type="hidden" name="pose" value="${state.rufus.pose}"><div class="rufus-pose-grid">${poses}</div><div class="modal-actions"><button type="button" class="secondary-button" data-nav="companion">OPEN COMPANION BAY</button><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE POSE</button></div></form>`);
     renderRufus();
   }
 
@@ -980,8 +987,8 @@
       $('#rufus-form [name="pose"]').value = pose;
       const preview = $('.rufus-preview-art', $('#modal-content'));
       preview.dataset.rufusArt = pose;
-      preview.src = art.src;
-      preview.alt = art.description;
+      preview.setAttribute('aria-label', `Rufus: ${art.description}`);
+      paintRufusCanvas(preview, pose);
       $('#rufus-preview-caption').textContent = art.description;
       $$('[data-rufus-choice]').forEach((choice) => {
         const selected = choice === rufusChoice;
