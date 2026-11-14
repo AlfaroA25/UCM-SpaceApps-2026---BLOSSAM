@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#080d16">
+    <meta name="description" content="AstroVital: Mission Health — a simulated, offline-ready astronaut wellness dashboard.">
+    <title>AstroVital: Mission Health</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#overview" aria-label="AstroVital home" data-nav="overview">
+          <span class="brand-mark"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="13"/><ellipse cx="20" cy="20" rx="18" ry="7" transform="rotate(-35 20 20)"/><circle class="brand-star" cx="30" cy="10" r="2"/></svg></span>
+          <span><strong>ASTRO<span>VITAL</span></strong><small>MISSION HEALTH</small></span>
+        </a>
+        <div class="sidebar-label">MISSION CONTROL</div>
+        <nav class="main-nav" aria-label="Main navigation">
+          <button class="nav-link active" data-nav="overview"><span class="nav-icon">◈</span> Overview <span class="nav-count">01</span></button>
+          <button class="nav-link" data-nav="health"><span class="nav-icon">⌁</span> Health monitor</button>
+          <button class="nav-link" data-nav="missions"><span class="nav-icon">◎</span> Daily missions <span class="nav-dot"></span></button>
+          <button class="nav-link" data-nav="cognitive"><span class="nav-icon">⌘</span> Mind lab</button>
+          <button class="nav-link" data-nav="journal"><span class="nav-icon">▤</span> Wellbeing log</button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="mission-card">
+            <div class="mission-card-head"><span class="live-dot"></span> MISSION DAY</div>
+            <div class="mission-day">142 <span>/ 365</span></div>
+            <div class="progress-track"><span style="width:39%"></span></div>
+            <div class="mission-card-foot"><span>ORBITAL YEAR</span><span>39%</span></div>
+          </div>
+          <button class="nav-link settings-link" data-action="profile"><span class="nav-icon">⚙</span> Crew profile</button>
+          <div class="sidebar-user">
+            <div class="avatar">MC</div><div class="user-lines"><strong>Maya Chen</strong><small>FLIGHT SPECIALIST</small></div><span class="user-menu">···</span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div class="breadcrumb"><span>CREW HEALTH</span><span class="crumb-slash">/</span><strong id="page-crumb">OVERVIEW</strong></div>
+          <div class="topbar-right">
+            <div class="sync-status"><span class="live-dot"></span><span id="sync-label">OFFLINE READY</span></div>
+            <span class="topbar-divider"></span>
+            <div class="mission-clock"><span class="clock-icon">◷</span><span id="clock">--:--:--</span><small>UTC</small></div>
+            <button class="icon-button alert-button" data-action="alerts" aria-label="View health alerts">♧<span class="alert-badge" id="alert-count">0</span></button>
+            <button class="top-avatar" data-action="profile" aria-label="Open crew profile">MC</button>
+          </div>
+        </header>
+
+        <div class="content-wrap">
+          <section class="view active" id="view-overview">
+            <div class="welcome-row">
+              <div>
+                <div class="eyebrow"><span class="eyebrow-line"></span> WEDNESDAY, MISSION DAY 142</div>
+                <h1>Good morning, <span id="welcome-name">Maya.</span></h1>
+                <p class="welcome-copy">Your body is your most important instrument. Here's your status report.</p>
+              </div>
+              <button class="primary-button" data-action="checkin"><span>＋</span> Log health check-in</button>
+            </div>
+
+            <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>SIMULATION MODE</strong> &nbsp;All readings are illustrative sample data, not real medical measurements.</span><button aria-label="Dismiss simulation notice" data-action="dismiss-notice">×</button></div>
+
+            <div class="hero-grid">
+              <article class="readiness-card">
+                <div class="card-topline"><span>CREW READINESS</span><span class="tiny-info">ⓘ</span></div>
+                <div class="readiness-body">
+                  <div class="readiness-score"><div class="score-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-track" cx="60" cy="60" r="51"/><circle class="ring-value" cx="60" cy="60" r="51"/></svg><div class="score-text"><strong id="readiness-score">86</strong><small>/ 100</small></div></div><div class="status-pill"><span></span> MISSION READY</div></div>
+                  <div class="readiness-copy"><h2>Looking good,<br>crew member.</h2><p>Your overall indicators are tracking close to your personal baseline. Keep your recovery routine on course.</p><button class="text-button" data-nav="health">VIEW HEALTH REPORT <span>↗</span></button></div>
+                </div>
+                <div class="readiness-foot"><span><i class="legend-dot cyan"></i>WITHIN YOUR BASELINE</span><span>LAST CHECK-IN <strong id="last-checkin">TODAY, 07:42</strong></span></div>
+                <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
+              </article>
+              <article class="xp-card">
+                <div class="card-topline"><span>MISSION EXPERIENCE</span><span class="xp-star">✳</span></div>
+                <div class="xp-level"><span class="level-chip">LVL 08</span><span class="xp-total"><strong id="xp-total">2,480</strong> XP</span></div>
+                <h2>Orbit explorer</h2>
+                <div class="xp-track"><span id="xp-progress" style="width:48%"></span></div>
+                <div class="xp-foot"><span><strong id="xp-to-next">520</strong> XP to next level</span><span>LEVEL 09</span></div>
+                <div class="streak-row"><span class="streak-flame">✦</span><span><strong id="streak-value">6 day streak</strong><small>Consistency is your superpower</small></span><span class="streak-spark">↗</span></div>
+              </article>
+            </div>
+
+            <div class="section-heading metric-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> LIVE VITALS</div><h2>Your health at a glance</h2></div><button class="subtle-button" data-nav="health">FULL HEALTH REPORT <span>↗</span></button></div>
+            <div class="metric-grid" id="overview-metrics">
+              <article class="metric-card"><div class="metric-top"><span class="metric-icon heart-icon">♡</span><span class="metric-trend good">↘ &nbsp;2 bpm</span></div><div class="metric-name">RESTING HEART RATE</div><div class="metric-reading"><strong id="metric-heart">64</strong><span>bpm</span></div><div class="metric-baseline">BASELINE <strong>58–72 bpm</strong></div><div class="sparkline heart-spark"><svg viewBox="0 0 120 32" preserveAspectRatio="none"><path d="M0 22 C9 21 9 10 18 15 S29 24 38 16 48 18 55 12 64 18 74 9 86 13 92 14 106 4 120 8"/></svg></div></article>
+              <article class="metric-card"><div class="metric-top"><span class="metric-icon sleep-icon">☾</span><span class="metric-trend good">↗ &nbsp;0.8h</span></div><div class="metric-name">SLEEP DURATION</div><div class="metric-reading"><strong id="metric-sleep">7.4</strong><span>hrs</span></div><div class="metric-baseline">TARGET <strong>7.5–9 hrs</strong></div><div class="sparkline sleep-spark"><svg viewBox="0 0 120 32" preserveAspectRatio="none"><path d="M0 25 C10 19 14 22 22 14 S33 20 42 13 51 9 60 14 69 9 78 12 91 5 98 9 110 6 120 4"/></svg></div></article>
+              <article class="metric-card"><div class="metric-top"><span class="metric-icon move-icon">↗</span><span class="metric-trend muted">DAILY GOAL</span></div><div class="metric-name">EXERCISE</div><div class="metric-reading"><strong id="metric-exercise">42</strong><span>min</span></div><div class="metric-baseline">TARGET <strong>60 min</strong></div><div class="mini-progress"><span id="exercise-progress" style="width:70%"></span></div></article>
+              <article class="metric-card"><div class="metric-top"><span class="metric-icon fatigue-icon">◌</span><span class="metric-trend good">↓ &nbsp;1 level</span></div><div class="metric-name">FATIGUE</div><div class="metric-reading"><strong id="metric-fatigue">3</strong><span>/ 10</span></div><div class="metric-baseline">PERSONAL BASELINE <strong>2–4 / 10</strong></div><div class="fatigue-bars"><i></i><i></i><i class="filled"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
+            </div>
+
+            <div class="lower-grid">
+              <article class="panel trend-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL TRENDS</div><h2>Resting heart rate</h2></div><button class="range-select" data-range="7">7 DAYS⌄</button></div>
+                <div class="chart-meta"><strong><span id="chart-latest">64</span> <small>bpm</small></strong><span class="chart-change"><span>↓</span> 2 bpm <small>from last week</small></span></div>
+                <div class="chart-wrap" id="heart-chart" role="img" aria-label="Seven day resting heart rate chart"></div>
+                <div class="chart-footer"><span><i class="legend-dot cyan"></i>DAILY AVERAGE</span><span><i class="legend-line"></i>PERSONAL BASELINE</span></div>
+              </article>
+              <article class="panel missions-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> YOUR DAILY FLIGHT PLAN</div><h2>Mission objectives</h2></div><button class="circle-arrow" data-nav="missions" aria-label="View all missions">↗</button></div>
+                <div class="mission-list" id="overview-mission-list"></div>
+                <button class="all-missions" data-nav="missions">VIEW ALL OBJECTIVES <span>→</span></button>
+              </article>
+            </div>
+            <footer class="disclaimer"><span>✳</span> AstroVital is a wellness companion, not a medical diagnostic system. Always consult your flight surgeon regarding health concerns.</footer>
+          </section>
+
+          <section class="view" id="view-health">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH MONITOR</div><h1>Your health, <span>in context.</span></h1><p>Trends are compared against your own pre-flight baselines, not a generic average.</p></div>
+            <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>SIMULATION MODE</strong> &nbsp;All readings are illustrative sample data, not real medical measurements.</span></div>
+            <div id="health-alerts"></div>
+            <div class="health-detail-grid" id="health-metrics"></div>
+            <article class="panel full-chart-panel"><div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> HEALTH TIMELINE</div><h2>Personal trends over time</h2></div><div class="range-tabs"><button class="range-tab active" data-range="7">7D</button><button class="range-tab" data-range="30">30D</button></div></div><div class="timeline-legend"><span><i class="legend-dot cyan"></i>HEART RATE</span><span><i class="legend-dot blue"></i>SLEEP (HRS)</span><span><i class="legend-line"></i>BASELINE</span></div><div class="chart-wrap large-chart" id="health-chart"></div></article>
+            <div class="health-note"><span>ⓘ</span><div><strong>About your personal baseline</strong><p>Baselines are personalized reference ranges shown for this simulated crew profile. A reading outside your usual range is a prompt to review and, if needed, contact your flight surgeon — it is not a diagnosis.</p></div></div>
+            <footer class="disclaimer"><span>✳</span> AstroVital is a wellness companion, not a medical diagnostic system. Always consult your flight surgeon regarding health concerns.</footer>
+          </section>
+
+          <section class="view" id="view-missions">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> MISSION DAY 142 · FLIGHT PLAN</div><h1>Small actions. <span>Stronger missions.</span></h1><p>Choose approved wellness activities that fit your day. Every check-in is progress.</p></div>
+            <div class="mission-summary"><div class="summary-icon">◎</div><div><span>DAILY OBJECTIVES</span><strong id="mission-summary-text">0 of 4 complete</strong></div><div class="summary-progress"><div class="progress-track"><span id="mission-summary-progress"></span></div><small>MISSION XP EARNED <strong id="mission-xp-today">0 / 160 XP</strong></small></div><div class="summary-streak"><span>✦</span><strong id="mission-streak">6</strong><small>DAY STREAK</small></div></div>
+            <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> WELLNESS FLIGHT PLAN</div><h2>Today's objectives</h2></div><span class="sim-tag">SIMULATED MISSION DATA</span></div>
+            <div class="objective-list" id="mission-objectives"></div>
+            <div class="achievement-panel"><div class="achievement-mark">✳</div><div><strong>Consistency unlocks new insignia.</strong><p>Complete daily health check-ins and approved wellness activities to earn mission XP. XP and achievements are for motivation only.</p></div><div class="achievement-badge"><span>◈</span><small>NEXT BADGE</small><strong>STEADY ORBIT</strong></div></div>
+            <footer class="disclaimer"><span>✳</span> Wellness activities shown are illustrative. Follow your mission medical officer's approved exercise and recovery plan.</footer>
+          </section>
+
+          <section class="view" id="view-cognitive">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> COGNITIVE FITNESS · MIND LAB</div><h1>Keep your mind <span>mission sharp.</span></h1><p>Short, optional brain games offer a fun way to practice focus. They are not clinical cognitive assessments.</p></div>
+            <div class="cognitive-stats"><div><span>THIS WEEK</span><strong id="cog-sessions">3 <small>sessions</small></strong></div><div><span>BEST REACTION</span><strong id="cog-best">284 <small>ms</small></strong></div><div><span>FOCUS STREAK</span><strong>✦ 4 <small>days</small></strong></div><span class="sim-tag">SIMULATED SCORES</span></div>
+            <div class="game-tabs" role="tablist"><button class="game-tab active" data-game="memory">01 &nbsp; MEMORY</button><button class="game-tab" data-game="reaction">02 &nbsp; REACTION</button><button class="game-tab" data-game="attention">03 &nbsp; ATTENTION</button></div>
+            <article class="panel game-panel">
+              <div class="game-copy"><div class="eyebrow"><span class="eyebrow-line"></span><span id="game-kicker">MEMORY SEQUENCE</span></div><h2 id="game-title">Sequence protocol</h2><p id="game-description">Watch the sequence, then repeat it in the same order. Each round adds one new step.</p><div class="game-meta"><span>◷ &nbsp;<strong id="game-duration">~1 MIN</strong></span><span>✦ &nbsp;+25 XP COMPLETE</span></div><button class="primary-button" id="game-start">START EXERCISE <span>→</span></button></div>
+              <div class="game-stage" id="game-stage"><div class="game-idle"><div class="game-emblem">⌘</div><span>COGNITIVE TRAINING MODULE</span><small>SELECT START TO BEGIN</small></div></div>
+            </article>
+            <div class="health-note"><span>ⓘ</span><div><strong>Not a cognitive assessment</strong><p>These games are for optional engagement and practice only. Scores can vary with sleep, focus, and your environment. Do not use them to make medical or operational decisions.</p></div></div>
+          </section>
+
+          <section class="view" id="view-journal">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> DAILY WELLBEING · PRIVATE BY DEFAULT</div><h1>Check in with <span>yourself.</span></h1><p>A quick reflection helps you notice patterns. Your journal stays on this device.</p></div>
+            <div class="journal-grid">
+              <article class="panel checkin-panel"><div class="eyebrow"><span class="eyebrow-line"></span> TODAY'S WELLNESS CHECK-IN</div><h2>How are you feeling, Maya?</h2><p class="form-intro">This is a non-clinical wellbeing check-in. Share only what feels comfortable.</p><form id="wellness-form"><label class="field-label">MOOD RIGHT NOW</label><div class="mood-options"><label><input type="radio" name="mood" value="Low"><span>☁</span><small>LOW</small></label><label><input type="radio" name="mood" value="Okay"><span>◒</span><small>OKAY</small></label><label><input type="radio" name="mood" value="Good" checked><span>☀</span><small>GOOD</small></label><label><input type="radio" name="mood" value="Great"><span>✦</span><small>GREAT</small></label></div><label class="field-label" for="energy-slider">FATIGUE LEVEL <strong><span id="fatigue-value">3</span> / 10</strong></label><input id="energy-slider" class="range-input" type="range" min="1" max="10" value="3"><div class="range-labels"><span>FEELING RESTED</span><span>VERY FATIGUED</span></div><label class="field-label" for="journal-note">PRIVATE JOURNAL <span class="optional-label">OPTIONAL · STORED ON THIS DEVICE</span></label><textarea id="journal-note" rows="4" maxlength="500" placeholder="Anything you'd like to reflect on? Only you can see this note on this device."></textarea><div class="form-footer"><span>UP TO 500 CHARACTERS</span><button class="primary-button" type="submit">SAVE CHECK-IN <span>→</span></button></div><div class="form-feedback" id="journal-feedback" aria-live="polite"></div></form></article>
+              <aside class="wellness-aside"><article class="panel mood-summary"><div class="eyebrow"><span class="eyebrow-line"></span> YOUR WELLNESS TREND</div><h2>A little reflection goes a long way.</h2><div class="mood-trend"><div class="mood-dots"><span>☀</span><span>◒</span><span>☀</span><span>✦</span><span>☀</span><span>◒</span><span class="today-dot">☀</span></div><div class="mood-days"><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span><span>MON</span><span>TUE</span><span>TODAY</span></div></div><p>Patterns are personal. Use your check-ins to reflect on what helps you feel your best.</p></article><article class="privacy-card"><span>◉</span><div><strong>Your privacy matters</strong><p>Check-ins and journal entries are stored locally in this browser. They are not sent to a server. Avoid recording sensitive information on a shared device.</p></div></article><button class="subtle-button log-mission" data-nav="missions">EXPLORE WELLNESS ACTIVITIES <span>↗</span></button></aside>
+            </div>
+            <div class="section-heading journal-history-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> YOUR PERSONAL LOG</div><h2>Recent check-ins</h2></div></div><div class="journal-history" id="journal-history"></div>
+            <footer class="disclaimer"><span>✳</span> AstroVital is a wellness companion, not a medical diagnostic system. Consult your flight surgeon about health concerns.</footer>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"><section class="modal" id="app-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button class="modal-close" data-action="close-modal" aria-label="Close dialog">×</button><div id="modal-content"></div></section></div>
+    <div class="toast" id="toast" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

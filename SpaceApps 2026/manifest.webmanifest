@@ -1,0 +1,9 @@
+{
+  "name": "AstroVital: Mission Health",
+  "short_name": "AstroVital",
+  "description": "An offline-ready, simulated astronaut wellness dashboard.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#080d16",
+  "theme_color": "#080d16"
+}
