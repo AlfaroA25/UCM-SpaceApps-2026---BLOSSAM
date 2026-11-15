@@ -562,7 +562,6 @@ html[dir=rtl] #login-personnel-id{direction:ltr;text-align:left}
 .hydration-day>b{text-align:right;color:#b9c9d4;font:9px var(--mono);font-weight:400}
 @media(max-width:1100px){.hydration-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hydration-layout{grid-template-columns:1fr}}
 @media(max-width:430px){.hydration-summary-grid{grid-template-columns:1fr 1fr;gap:7px}.hydration-summary-card{padding:11px}.hydration-summary-card>strong{font-size:16px}.hydration-progress{padding:11px}.hydration-progress-label{align-items:flex-start;flex-direction:column;gap:5px}.hydration-progress-label strong{text-align:left}.hydration-log-form .entry-inline{grid-template-columns:minmax(0,1fr) 68px}.hydration-log-form .primary-button{grid-column:1/3;width:100%}.hydration-plan-actions{flex-wrap:wrap}.hydration-day{grid-template-columns:54px minmax(45px,1fr) 72px;gap:7px}.hydration-day>b{font-size:8px}.hydration-log-actions .secondary-button{padding:0 5px}}
-<<<<<<< Updated upstream
 .medication-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:17px 0}
 .medication-summary-card{min-width:0;padding:13px;border:1px solid #20384e;border-radius:6px;background:linear-gradient(145deg,#10243a,#0c1929)}
 .medication-summary-card>span,.medication-summary-card>small{display:block;color:#869bad;font:8px var(--mono);letter-spacing:.65px}
@@ -601,91 +600,6 @@ html[dir=rtl] #login-personnel-id{direction:ltr;text-align:left}
 @media(max-width:1100px){.medication-layout{grid-template-columns:1fr}}
 @media(max-width:760px){.medication-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.medication-summary-grid{gap:7px}.medication-summary-card{padding:10px}.medication-summary-card>strong{font-size:14px}.medication-schedule-row{grid-template-columns:55px minmax(0,1fr);gap:8px}.medication-actions{grid-column:1/3;justify-content:flex-end}.medication-actions .secondary-button{flex:1;max-width:110px}.medication-history-row{grid-template-columns:22px minmax(0,1fr)}.medication-history-row>.sim-tag{grid-column:2;justify-self:start}}
-=======
-.meal-toolbar{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:17px 0}
-.meal-toolbar label,.meal-schedule-form label,.nutrition-goals-form label{display:grid;gap:7px;color:#91a5b4;font:8px var(--mono);letter-spacing:.65px}
-.meal-toolbar .entry-control{min-width:170px}
-.nutrition-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:12px 0}
-.nutrition-summary-card{min-width:0;padding:13px;border:1px solid #20384e;border-radius:6px;background:linear-gradient(145deg,#10243a,#0c1929)}
-.nutrition-summary-card>span,.nutrition-summary-card>small{display:block;color:#869bad;font:8px var(--mono);letter-spacing:.6px}
-.nutrition-summary-card>strong{display:block;margin:9px 0 8px;color:#e4f2f7;font:500 19px var(--display);overflow-wrap:anywhere}
-.nutrition-summary-card .progress-track{height:5px}
-.nutrition-summary-card>small{margin-top:7px;letter-spacing:0;font:8px var(--sans)}
-.nutrition-summary-card.incomplete>strong{color:#f2bf72}
-.nutrition-chart-panel{margin-top:13px;padding:16px}
-.nutrition-history-chart{width:100%;min-height:180px;margin-top:8px}
-.nutrition-history-chart svg{display:block;width:100%;height:auto;overflow:visible}
-.nutrition-chart-grid{stroke:#24384a;stroke-width:1}
-.nutrition-chart-label{fill:#879cae;font:9px var(--mono)}
-.nutrition-chart-line{fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
-.nutrition-chart-line.calories{stroke:#5be3ed}
-.nutrition-chart-line.protein{stroke:#729dff}
-.nutrition-chart-line.carbohydrates{stroke:#62e1b4}
-.nutrition-chart-line.fat{stroke:#f2bf72}
-.nutrition-chart-point{stroke:#0d1521;stroke-width:2}
-.nutrition-chart-point.calories{fill:#5be3ed}.nutrition-chart-point.protein{fill:#729dff}.nutrition-chart-point.carbohydrates{fill:#62e1b4}.nutrition-chart-point.fat{fill:#f2bf72}
-.nutrition-chart-legend{display:flex;flex-wrap:wrap;gap:9px 16px;margin-top:8px;color:#8499aa;font:7px var(--mono);letter-spacing:.55px}
-.nutrition-chart-legend span{display:inline-flex;align-items:center;gap:6px}
-.nutrition-chart-legend .legend-dot{width:6px;height:6px}
-.nutrition-chart-legend .green{background:#62e1b4}.nutrition-chart-legend .amber{background:#f2bf72}
-.meal-history-heading{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:22px 0 11px}
-.meal-history-heading h2{margin:7px 0 0;font:500 18px var(--display)}
-.meal-history-list{display:grid;gap:10px}
-.meal-group{padding:13px 15px;border:1px solid #203044;border-radius:7px;background:#0d1521}
-.meal-group-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid #1d2b3b}
-.meal-group-heading h3{margin:0;color:#dcebf4;font:500 14px var(--display)}
-.meal-group-heading>span{color:#88b9c3;font:8px var(--mono)}
-.meal-food-list{display:grid;gap:7px;margin-top:9px}
-.meal-food-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px 9px;border:1px solid #1d3042;border-radius:5px;background:#0a1420}
-.meal-food-row>div:first-child{min-width:0}
-.meal-food-row strong,.meal-food-row small{display:block;overflow-wrap:anywhere}
-.meal-food-row strong{font-size:10px;font-weight:500}
-.meal-food-row small{margin-top:4px;color:#8195a5;font-size:8px;line-height:1.45}
-.meal-food-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px}
-.meal-food-actions button,.meal-group-actions button{height:27px;padding:0 8px;font:7px var(--mono)}
-.meal-group-actions{display:flex;gap:5px}
-.meal-empty{padding:18px;border:1px dashed #263a4d;border-radius:6px;color:#8499aa;font-size:10px;line-height:1.5;text-align:center}
-.meal-schedule-panel,.nutrition-goals-panel{margin-top:13px;padding:16px}
-.meal-helper{color:#8da0af;font-size:10px;line-height:1.55}
-.meal-schedule-form,.nutrition-goals-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:end;gap:10px;margin-top:14px}
-.meal-schedule-form .secondary-button,.nutrition-goals-form .primary-button{min-height:37px}
-.nutrition-goals-form{grid-template-columns:repeat(4,minmax(0,1fr))}
-.meal-reminder-banner{position:fixed;right:20px;bottom:20px;z-index:15;display:grid;grid-template-columns:52px minmax(180px,1fr);align-items:center;gap:11px;width:min(460px,calc(100vw - 32px));padding:12px;border:1px solid #286071;border-radius:9px;background:linear-gradient(145deg,#10263a,#0b1725);box-shadow:0 14px 40px #0008}
-.meal-reminder-banner[hidden]{display:none}
-.meal-reminder-banner>img{width:50px;height:54px;object-fit:contain;object-position:center bottom}
-.meal-reminder-copy strong{color:#d8f8ff;font:500 13px var(--display)}
-.meal-reminder-copy p{margin:5px 0 0;color:#a8bac8;font-size:10px;line-height:1.45}
-.meal-reminder-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}
-.meal-reminder-actions button{height:30px;padding:0 9px;font-size:7px}
-.meal-reminder-actions .secondary-button{border:1px solid #304658;border-radius:4px;background:#111e2a;color:#aabdc9;cursor:pointer}
-.meal-reminder-actions .secondary-button:hover{border-color:#628093;color:#e1edf4}
-@media(max-width:1100px){.nutrition-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.meal-schedule-form,.nutrition-goals-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.meal-toolbar{align-items:stretch;flex-direction:column}.meal-toolbar .entry-control{width:100%}.meal-toolbar .primary-button{width:100%}.meal-food-row{grid-template-columns:1fr}.meal-food-actions{justify-content:flex-start}.meal-history-heading{align-items:flex-start}.nutrition-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nutrition-summary-card{padding:10px}.nutrition-summary-card>strong{font-size:16px}.meal-reminder-banner{right:10px;bottom:10px;width:calc(100vw - 20px)}.meal-schedule-form,.nutrition-goals-form{grid-template-columns:1fr 1fr}}
-.modal .meal-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:13px 0}
-.modal .meal-search-form .primary-button,.modal .meal-manual-toggle{height:37px}
-.meal-search-status{min-height:16px;margin:7px 0;color:#8da0af;font-size:9px;line-height:1.5}
-.meal-search-results,.meal-draft-items{display:grid;gap:6px;max-height:225px;overflow:auto;margin:8px 0}
-.meal-search-result,.meal-draft-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:9px;border:1px solid #20384e;border-radius:5px;background:#0a1624}
-.meal-search-result>div,.meal-draft-row>div{min-width:0}
-.meal-search-result strong,.meal-search-result small,.meal-draft-row strong,.meal-draft-row small{display:block;overflow-wrap:anywhere}
-.meal-search-result strong,.meal-draft-row strong{font-size:10px;font-weight:500}
-.meal-search-result small,.meal-draft-row small{margin-top:4px;color:#8296a7;font-size:8px;line-height:1.45}
-.meal-search-result .secondary-button,.meal-draft-row .secondary-button{height:29px;padding:0 8px;font-size:7px}
-.meal-modal-section{margin-top:14px;padding-top:12px;border-top:1px solid #223447}
-.meal-modal-section h3{margin:0 0 8px;color:#d5e4ed;font:500 12px var(--display)}
-.meal-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-.meal-form-grid label,.meal-portion-editor label,.meal-manual-form label{display:grid;gap:6px;color:#91a5b4;font:8px var(--mono);letter-spacing:.55px}
-.meal-form-grid .entry-control,.meal-portion-editor .entry-control,.meal-manual-form .entry-control{width:100%;min-width:0}
-.meal-portion-editor{display:grid;grid-template-columns:1fr 1.4fr auto;align-items:end;gap:8px;margin-top:10px;padding:10px;border:1px solid #315164;border-radius:6px;background:#0d202d}
-.meal-portion-editor h3{grid-column:1/-1;margin:0;color:#d9f4f3;font:500 12px var(--display)}
-.meal-portion-editor .primary-button{height:37px;padding:0 10px;font-size:8px}
-.meal-nutrient-preview{grid-column:1/-1;color:#9eb3bd;font-size:8px;line-height:1.5}
-.meal-manual-form{display:grid;gap:9px;margin-top:10px}
-.meal-manual-form .manual-nutrient-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
-.meal-modal-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:7px;margin-top:13px;padding-top:12px;border-top:1px solid #223447}
-.meal-modal-actions button{min-height:34px}
-@media(max-width:560px){.meal-form-grid{grid-template-columns:1fr}.meal-portion-editor{grid-template-columns:1fr 1fr}.meal-portion-editor .primary-button{grid-column:1/-1}.meal-manual-form .manual-nutrient-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.modal .meal-search-form{grid-template-columns:1fr}.meal-search-result{grid-template-columns:1fr}.meal-search-result .secondary-button{width:100%}}
->>>>>>> Stashed changes
 .power-query-panel{margin-bottom:13px}
 .power-query-form{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr)) auto;align-items:end;gap:10px}
 .power-query-form label,.power-chart-select{display:grid;gap:7px;color:#91a5b4;font:8px var(--mono);letter-spacing:.65px}
