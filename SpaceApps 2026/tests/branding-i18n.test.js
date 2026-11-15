@@ -333,6 +333,8 @@ test('both app HTML entry points expose install metadata and the translated aler
     const html = fs.readFileSync(path.join(appDirectory, entry), 'utf8');
     assert.match(html, /rel="manifest" href="\.\/manifest\.webmanifest"/, `${entry} should link its PWA manifest`);
     assert.match(html, /rel="icon" type="image\/svg\+xml" href="\.\/icons\/astrovital\.svg"/, `${entry} should use the square SVG icon`);
+    assert.match(html, /property="og:image" content="https:\/\/alfaroa25\.github\.io\/UCM-SpaceApps-2026---BLOSSAM\/SpaceApps%202026\/icons\/astrovital-512\.png"/, `${entry} should use the correct share image URL`);
+    assert.match(html, /name="twitter:image" content="https:\/\/alfaroa25\.github\.io\/UCM-SpaceApps-2026---BLOSSAM\/SpaceApps%202026\/icons\/astrovital-512\.png"/, `${entry} should use the correct social share image URL`);
     assert.match(html, /id="inbox-unread-badge"/, `${entry} should show the unread inbox count`);
     assert.match(html, /id="alerts-page-content"/, `${entry} should render the inbox`);
     assert.match(html, /data-action="enable-browser-notifications"/, `${entry} should let users grant browser notification permission`);
@@ -361,7 +363,15 @@ test('Astro_Vital_Health alias redirects to the installable full app page', () =
   assert.match(alias, /http-equiv="refresh" content="0; url=\.\/AstroVital_Mission_Health\.html"/);
   assert.match(alias, /rel="manifest" href="\.\/manifest\.webmanifest"/);
   assert.match(alias, /name="apple-mobile-web-app-capable" content="yes"/);
+  assert.match(alias, /rel="canonical" href="https:\/\/alfaroa25\.github\.io\/UCM-SpaceApps-2026---BLOSSAM\/"/);
+  assert.match(alias, /property="og:image" content="https:\/\/alfaroa25\.github\.io\/UCM-SpaceApps-2026---BLOSSAM\/SpaceApps%202026\/icons\/astrovital-512\.png"/);
+  assert.match(alias, /name="twitter:image" content="https:\/\/alfaroa25\.github\.io\/UCM-SpaceApps-2026---BLOSSAM\/SpaceApps%202026\/icons\/astrovital-512\.png"/);
+  assert.match(alias, /rel="apple-touch-icon" href="\.\/icons\/astrovital-192\.png"/);
 
   const serviceWorker = fs.readFileSync(path.join(appDirectory, 'sw.js'), 'utf8');
   assert.match(serviceWorker, /'\.\/Astro_Vital_Health\.html'/, 'the alias should be available offline');
+
+  const appScript = fs.readFileSync(path.join(appDirectory, 'app.js'), 'utf8');
+  assert.match(appScript, /icon: '\.\/icons\/astrovital-192\.png'/, 'browser notifications should use the AstroVital logo');
+  assert.match(appScript, /badge: '\.\/icons\/astrovital-192\.png'/, 'notification badges should use the AstroVital logo');
 });
