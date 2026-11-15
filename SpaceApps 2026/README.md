@@ -32,14 +32,29 @@ Installation and offline use require HTTPS or localhost. The GitHub Pages deploy
 - A RUFUS companion panel with original temporary bobcat placeholder artwork and reactions to supported check-ins and activities.
 - Hydration goal and unit setup, preview-before-confirm schedule planning, manual intake entries, edit/delete history, daily progress, and a seven-day summary.
 - Hydration plans and intake entries remain on this device. The schedule appears only in the app; there are no background or operating-system notifications.
+- Meal and nutrition tracking: local breakfast, lunch, dinner, and snack records with date history, multi-food meals, serving quantities, optional personal goals, weekly saved-data trends, editable/deletable entries, and in-app Rufus meal reminders.
+- FoodData Central search is implemented through a separate serverless proxy so the USDA API key is never included in the browser app. Manual food entry and offline meal logging remain available without proxy configuration; USDA nutrients that are absent stay unavailable rather than being estimated.
+- An optional water amount on a meal is linked into the existing Hydration Tracker. Re-editing that meal updates its linked hydration entry rather than duplicating it.
 - NASA POWER Phase 1: a browser-based daily point query for 2 m temperature, 10 m wind speed/direction, surface pressure, and all-sky surface shortwave radiation, with unit-aware summaries, trend chart, date table, and source metadata.
 - Offline app-shell caching for the current assets.
 
-The NASA POWER query requires an internet connection and sends the selected coordinates and dates directly to NASA. NASA POWER does not require an API key, so no secret or `.env` configuration is needed. Results are cached in memory for up to six hours and duplicate in-flight requests are shared. Health readings remain illustrative sample data. Language catalogs are shipped with the app; no translation request or health-data upload is made when switching languages. Satellite imagery, NASA FIRMS, dataset discovery, meal and medication tracking, background notifications, IndexedDB, synchronization, Supabase, and actual sensor integrations are not implemented.
+### USDA FoodData Central proxy setup
+
+The site is static GitHub Pages and must not contain a private USDA key. Deploy `workers/usda-food-proxy.js` as a Cloudflare Worker (or adapt that handler to another serverless provider), then:
+
+1. Obtain a FoodData Central API key from the USDA FoodData Central site.
+2. In the Worker dashboard, add `USDA_API_KEY` as a **secret**, not a plain-text variable.
+3. Add `ALLOWED_ORIGINS` as a plain-text variable containing the app origin(s), comma-separated. For production use `https://alfaroa25.github.io`; for local development you can also include `http://localhost:8000,http://127.0.0.1:8000`.
+4. Deploy the Worker and copy its base URL (for example, `https://astrovital-usda.<your-account>.workers.dev`).
+5. Set `window.ASTROVITAL_USDA_PROXY_URL` in `usda-config.js` to that base URL and deploy the app. Do not put the USDA key in this file, in GitHub Actions, or in the browser.
+
+The app calls `GET /api/foods/search?q=...` on that Worker. If the proxy is not configured, meal logging still works with manual food entries and previously saved records. USDA search itself requires an internet connection.
+
+The NASA POWER query requires an internet connection and sends the selected coordinates and dates directly to NASA. NASA POWER does not require an API key, so no secret or `.env` configuration is needed. Results are cached in memory for up to six hours and duplicate in-flight requests are shared. Health readings remain illustrative sample data. Language catalogs are shipped with the app; no translation request or health-data upload is made when switching languages. Satellite imagery, NASA FIRMS, dataset discovery, medication tracking, background notifications, IndexedDB, synchronization, Supabase, and actual sensor integrations are not implemented.
 
 ## Safety and limitations
 
-Hydration goals are user-entered from an approved plan; RUFUS does not prescribe a target or recommend catch-up drinking. Configure or edit a goal on the Hydration Tracker, review its schedule preview, then explicitly confirm it. Entries are manually logged and can be edited or deleted. The app is a prototype, not a medical device or diagnostic system.
+Hydration goals are user-entered from an approved plan; RUFUS does not prescribe a target or recommend catch-up drinking. Configure or edit a goal on the Hydration Tracker, review its schedule preview, then explicitly confirm it. Entries are manually logged and can be edited or deleted. Meal nutrition goals are optional and user-entered; they are not medical or dietary recommendations. USDA search uses USDA-provided nutrient data; manual entries are user-provided. Missing source data is not imputed. The app is a prototype, not a medical device or diagnostic system.
 
 NASA POWER values are daily Earth-surface environmental estimates, not personal astronaut biometrics, spacecraft conditions, or personal space-radiation exposure. Surface solar radiation must not be interpreted as astronaut radiation dose. The Daily API reports a date and time standard rather than an exact observation timestamp; the UI labels the latest available day and retrieval time separately. Missing measurements are shown as unavailable, not replaced with sample values.
 
