@@ -444,34 +444,62 @@
     const selectedView = aliases[view] || view;
     const isFuturePage = Boolean(futurePages[selectedView] && !$(`#view-${selectedView}`));
     const activeView = isFuturePage ? 'roadmap' : selectedView;
-    $$('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${activeView}`));
-    $$('.nav-link[data-nav]').forEach((button) => button.classList.toggle('active', button.dataset.nav === selectedView));
-    const labels = {
-      overview: 'HOME DASHBOARD', health: 'HEALTH MONITOR', hydration: 'HYDRATION TRACKER', environment: 'NASA ENVIRONMENTAL DATA',
-      meals: 'MEALS & NUTRITION', medications: 'MEDICATION MANAGER', activity: 'PHYSICAL ACTIVITY',
-      insights: 'HEALTH INSIGHTS', sleep: 'SLEEP TRACKING',
-      alerts: 'ALERTS', missions: 'DAILY MISSIONS', cognitive: 'MIND LAB', wellbeing: 'WELLBEING', journal: 'WELLBEING LOG',
-      settings: 'SETTINGS'
+    const currentView = $('.view.active');
+    const nextViewId = `view-${activeView}`;
+    const shouldTravel = Boolean(currentView && window.AstroVitalFlight
+      && (currentView.id !== nextViewId || window.AstroVitalFlight.isRunning));
+    const shouldAnimateArrival = shouldTravel && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const activateView = () => {
+      $$('.view').forEach((section) => {
+        section.classList.remove('is-leaving');
+        section.classList.remove('is-emerging', 'is-revealing');
+        section.classList.toggle('active', section.id === `view-${activeView}`);
+      });
+      const destination = $(`#view-${activeView}`);
+      if (shouldAnimateArrival && destination) destination.classList.add('is-emerging');
+      if (window.AstroVitalSpace) window.AstroVitalSpace.setDestination(activeView, shouldAnimateArrival);
+      $$('.nav-link[data-nav]').forEach((button) => button.classList.toggle('active', button.dataset.nav === selectedView));
+      const labels = {
+        overview: 'HOME DASHBOARD', health: 'HEALTH MONITOR', hydration: 'HYDRATION TRACKER', environment: 'NASA ENVIRONMENTAL DATA',
+        meals: 'MEALS & NUTRITION', medications: 'MEDICATION MANAGER', activity: 'PHYSICAL ACTIVITY',
+        insights: 'HEALTH INSIGHTS', sleep: 'SLEEP TRACKING',
+        alerts: 'ALERTS', missions: 'DAILY MISSIONS', cognitive: 'MIND LAB', wellbeing: 'WELLBEING', journal: 'WELLBEING LOG',
+        settings: 'SETTINGS'
+      };
+      $('#page-crumb').textContent = labels[selectedView] || labels.overview;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (view === 'health') renderHealth();
+      if (selectedView === 'insights') setInsightTab(activeInsightTab);
+      if (view === 'hydration') renderHydration(true);
+      if (view === 'medications') renderMedicationManager();
+      if (view === 'activity') renderActivity();
+      if (view === 'sleep') renderSleep();
+      if (view === 'meals') renderMeals();
+      if (view === 'missions') renderMissions();
+      if (selectedView === 'wellbeing') renderWellbeing();
+      if (view === 'settings') renderSettings();
+      if (view === 'companion') renderCompanion();
+      if (view === 'cognitive') speakRufus('A curious mind is ready for its next little puzzle.', 'Curious', 'confident');
+      if (view === 'alerts') renderAlertsPage();
+      if (isFuturePage) {
+        $('#roadmap-title').textContent = futurePages[selectedView].title;
+        $('#roadmap-phase').textContent = `${futurePages[selectedView].phase} · PLANNED`;
+        $('#roadmap-detail').textContent = futurePages[selectedView].detail;
+      }
     };
-    $('#page-crumb').textContent = labels[selectedView] || labels.overview;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (view === 'health') renderHealth();
-    if (selectedView === 'insights') setInsightTab(activeInsightTab);
-    if (view === 'hydration') renderHydration(true);
-    if (view === 'medications') renderMedicationManager();
-    if (view === 'activity') renderActivity();
-    if (view === 'sleep') renderSleep();
-    if (view === 'meals') renderMeals();
-    if (view === 'missions') renderMissions();
-    if (selectedView === 'wellbeing') renderWellbeing();
-    if (view === 'settings') renderSettings();
-    if (view === 'companion') renderCompanion();
-    if (view === 'cognitive') speakRufus('A curious mind is ready for its next little puzzle.', 'Curious', 'confident');
-    if (view === 'alerts') renderAlertsPage();
-    if (isFuturePage) {
-      $('#roadmap-title').textContent = futurePages[selectedView].title;
-      $('#roadmap-phase').textContent = `${futurePages[selectedView].phase} · PLANNED`;
-      $('#roadmap-detail').textContent = futurePages[selectedView].detail;
+    const revealView = () => {
+      if (!shouldAnimateArrival) return;
+      const destination = $(`#view-${activeView}`);
+      if (!destination) return;
+      destination.classList.remove('is-emerging');
+      destination.classList.add('is-revealing');
+    };
+
+    if (shouldTravel) {
+      currentView.classList.add('is-leaving');
+      window.AstroVitalFlight.travel(activateView, revealView);
+    } else {
+      activateView();
     }
   }
 

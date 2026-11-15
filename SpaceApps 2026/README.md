@@ -2,7 +2,7 @@
 
 **Your Health. Your Mission.**
 
-AstroVital is a local-first astronaut health and wellbeing app. Rufus, your AI health companion, is the personalized guide within AstroVital. The app is a dependency-free HTML, CSS, and JavaScript PWA.
+AstroVital is a local-first astronaut health and wellbeing app. Rufus, your AI health companion, is the personalized guide within AstroVital. The app is a static HTML, CSS, and JavaScript PWA with locally bundled Three.js planet backdrops and star-travel transitions.
 
 ## Run locally
 
@@ -29,6 +29,8 @@ Installation and offline use require HTTPS or localhost. The GitHub Pages deploy
 - The interface supports English, Spanish, French, German, Simplified Chinese, Japanese, and Arabic. UI translations are bundled locally, switching applies immediately, and Arabic uses a right-to-left layout. Dates and numbers follow the selected locale; personal journal notes are not translated.
 - Translations are machine-generated and should be reviewed by fluent speakers before operational or medical use.
 - Responsive navigation, a health monitor, daily missions, Mind Lab, and a unified wellbeing check-in and private journal.
+- Sidebar navigation moves between sections through a fast Three.js starfield transition, then fades the destination content into view. Major layout changes ease between responsive breakpoints; reduced-motion preferences skip animations. The locally bundled renderer works offline.
+- Each app section has a distinct procedurally textured planet or moon in a slow-rotating 3D space backdrop with a denser, multicolored starfield and destination-tinted nebula glows. No remote textures or planetary assets are required.
 - Physical Activity: schedule and log approved activities, track planned/completed/skipped status, review recent history, and sync completed activity minutes with Daily Missions.
 - Sleep Tracking: create sleep-opportunity schedules, log timed sleep periods with optional quality/restedness check-ins, and review duration trends. Periods can cross midnight; health-check-in sleep is integrated without double-counting manual periods.
 - Meals and Nutrition: schedule meals and record eaten, partial, or skipped entries with optional notes. Nutrition details appear only when entered with a source; AstroVital does not calculate or invent nutrition information.

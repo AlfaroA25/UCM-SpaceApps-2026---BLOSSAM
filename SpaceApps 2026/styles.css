@@ -43,8 +43,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .user-lines strong{font-size:11px;font-weight:600}
 .user-lines small{font:8px var(--mono);letter-spacing:.7px;color:#788b9e}
 .user-menu{margin-left:auto;letter-spacing:2px;color:#8091a0}
-.main-content{margin-left:236px;min-height:100vh}
-.topbar{height:66px;padding:0 35px;border-bottom:1px solid #172231;display:flex;justify-content:space-between;align-items:center;background:#090f18}
+.main-content{position:relative;isolation:isolate;margin-left:236px;min-height:100vh}
+.space-background{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:#070c15;--destination-glow:rgba(70,150,220,.32)}
+.space-background::before{content:"";position:absolute;inset:0;z-index:0;background:radial-gradient(circle at 13px 19px,#d9eaffb8 0 1px,transparent 1.6px) 0 0/97px 113px,radial-gradient(circle at 53px 61px,#a7bfff99 0 .8px,transparent 1.5px) 0 0/137px 149px,radial-gradient(circle at 29px 42px,#93edff88 0 .7px,transparent 1.4px) 0 0/173px 181px,radial-gradient(ellipse 34% 29% at 22% 27%,var(--destination-nebula),transparent 78%),radial-gradient(ellipse 40% 32% at 76% 73%,var(--destination-nebula-accent),transparent 80%),radial-gradient(ellipse 36% 34% at 76% 32%,var(--destination-glow),transparent 76%),radial-gradient(ellipse 48% 42% at 22% 80%,#17335629,transparent 76%)}
+.space-background::after{content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(90deg,#080d16a8 0%,#080d1638 55%,#080d1670 100%),radial-gradient(ellipse at 75% 35%,transparent 12%,#050a14a8 100%)}
+.space-background-canvas{position:absolute;inset:0;z-index:1;width:100%;height:100%;display:block}
+.topbar,.content-wrap{position:relative;z-index:1}
+.topbar{height:66px;padding:0 35px;border-bottom:1px solid #172231;display:flex;justify-content:space-between;align-items:center;background:#090f18cf;backdrop-filter:blur(8px)}
 .breadcrumb{color:#738699;font-size:9px;letter-spacing:1px}
 .crumb-slash{padding:0 10px;color:#425368}
 .breadcrumb strong{color:#c3d3df;font-weight:400}
@@ -71,7 +76,18 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .content-wrap{max-width:1390px;margin:0 auto;padding:32px 35px 20px}
 .view{display:none;animation:fade-in .28s ease both}
 .view.active{display:block}
+.view.is-emerging{display:block;animation:none;opacity:0;transform:translateY(8px)}
+.view.is-revealing{animation:view-emerge .72s cubic-bezier(.22,.61,.36,1) both}
+.view.is-leaving{display:block;animation:view-depart .22s ease-in both}
 @keyframes fade-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@keyframes view-depart{to{opacity:0;transform:translateY(-4px)}}
+@keyframes view-emerge{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.star-flight{position:fixed;inset:0;z-index:4;overflow:hidden;pointer-events:none;visibility:hidden;opacity:0;background:radial-gradient(ellipse at center,#071321f7 0,#050b16f4 58%,#03070df7 100%);transition:opacity .16s ease,visibility 0s linear .16s}
+.star-flight.is-running{visibility:visible;opacity:1;transition:opacity .12s ease}
+.star-flight::before{content:"";position:absolute;inset:-55%;opacity:0;background-image:radial-gradient(circle at 8% 17%,#d9fbff 0 1px,transparent 1.8px),radial-gradient(circle at 18% 72%,#7feeff 0 1px,transparent 1.7px),radial-gradient(circle at 32% 28%,#a6bdff 0 1px,transparent 1.8px),radial-gradient(circle at 43% 86%,#e0f7ff 0 1px,transparent 1.7px),radial-gradient(circle at 55% 11%,#89e9f8 0 1px,transparent 1.8px),radial-gradient(circle at 66% 63%,#c2d8ff 0 1px,transparent 1.7px),radial-gradient(circle at 76% 34%,#f0fcff 0 1px,transparent 1.8px),radial-gradient(circle at 89% 79%,#8fe5fa 0 1px,transparent 1.7px);transform:scale(.3)}
+.star-flight.is-running::before{animation:star-flight-fallback .76s cubic-bezier(.25,.65,.25,1) both}
+.star-flight-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+@keyframes star-flight-fallback{0%{opacity:.12;transform:scale(.3)}24%{opacity:.7;transform:scale(.75)}58%{opacity:1;transform:scale(1.45)}100%{opacity:.08;transform:scale(2.4)}}
 .welcome-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:21px}
 .eyebrow{display:flex;align-items:center;gap:8px;color:#87a0b2;font-size:8px;letter-spacing:1.2px}
 .eyebrow-line{width:13px;height:1px;background:var(--cyan);display:inline-block;box-shadow:0 0 5px #5be3ed88}
@@ -941,6 +957,13 @@ html[dir=rtl] #login-personnel-id{direction:ltr;text-align:left}
 .health-report-actions [role="status"]{color:#9aafc1;font-size:11px}
 @media(max-width:760px){.health-report-controls{grid-template-columns:1fr auto}.health-report-meta{grid-template-columns:repeat(2,minmax(0,1fr))}.health-report-grid{grid-template-columns:1fr}}
 @media(max-width:430px){.insights-toolbar{align-items:flex-start;flex-direction:column}.insight-tabs{gap:4px}.insight-tab{padding:9px 10px;font-size:11px}.health-report-controls{grid-template-columns:1fr}.health-report-document{padding:13px}.health-report-actions{align-items:stretch;flex-direction:column}.health-report-actions button{width:100%}}
+@media(prefers-reduced-motion:no-preference){
+  .sidebar{transition:width .28s ease,padding .28s ease,transform .22s ease,visibility .22s ease,box-shadow .22s ease}
+  .main-content{transition:margin .28s ease}
+  .topbar,.content-wrap{transition:padding .24s ease}
+  .hero-grid,.metric-grid,.health-detail-grid,.lower-grid,.journal-grid,.game-panel,.baseline-metric-grid,.feature-grid,.hydration-summary-grid,.medication-summary-grid,.companion-hero,.health-report-grid{transition:grid-template-columns .28s ease,gap .28s ease}
+  .readiness-card,.xp-card,.metric-card,.panel{transition:padding .24s ease,min-height .24s ease,height .24s ease}
+}
 @page{margin:14mm}
 @media print{
   body{min-width:0!important;background:#fff!important;color:#111!important}

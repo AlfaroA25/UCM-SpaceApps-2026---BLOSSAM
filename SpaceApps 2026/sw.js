@@ -1,6 +1,6 @@
-const CACHE_NAME = 'astrovital-shell-v43';
+const CACHE_NAME = 'astrovital-shell-v51';
 const APP_SHELL = [
-  './', './index.html', './AstroVital_Mission_Health.html', './styles.css', './i18n-catalog.js', './i18n.js', './app.js', './nasa-power.js', './nasa-research.js', './nasa-usgs.js', './feature-data.js', './health-baseline.js', './health-reports.js', './manifest.webmanifest',
+  './', './index.html', './AstroVital_Mission_Health.html', './styles.css', './i18n-catalog.js', './i18n.js', './app.js', './star-flight.js', './space-background.js', './vendor/three.min.js', './vendor/THREE-LICENSE.txt', './nasa-power.js', './nasa-research.js', './nasa-usgs.js', './feature-data.js', './health-baseline.js', './health-reports.js', './manifest.webmanifest',
   './data/nasa-eda-historical.json', './data/nasa-human-spaceflight.json',
   './icons/astrovital.svg', './icons/astrovital-192.png', './icons/astrovital-512.png',
   './icons/rufus-wave.png', './icons/rufus-confident.png', './icons/rufus-rest.png', './icons/rufus-sleep.png',
