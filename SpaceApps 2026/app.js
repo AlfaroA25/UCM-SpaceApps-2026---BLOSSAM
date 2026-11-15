@@ -1203,9 +1203,8 @@
     const list = compact ? missions.slice(0, 3) : missions;
     container.innerHTML = list.map((mission) => {
       const done = state.completed.includes(mission.id);
-      const missionLabel = window.RufusI18n.translate(mission.title);
-      const actionLabel = window.RufusI18n.translate(done ? 'Mark uncompleted' : 'Mark completed');
-      return `<div class="mission-row"><button class="mission-check ${done ? 'done' : ''}" data-complete="${mission.id}" aria-label="${escapeHtml(`${actionLabel} ${missionLabel}`)}" aria-pressed="${done}">${done ? '✓' : ''}</button><div class="mission-copy"><strong>${escapeHtml(mission.title)}</strong><small>${escapeHtml(mission.description)}</small></div><span class="mission-reward">${done ? 'DONE' : `+${formatNumber(mission.reward)} XP`}</span></div>`;
+      const actionLabel = `${done ? 'Mark uncompleted' : 'Mark completed'} ${mission.title}`;
+      return `<div class="mission-row"><button class="mission-check ${done ? 'done' : ''}" data-complete="${mission.id}" aria-label="${escapeHtml(actionLabel)}" aria-pressed="${done}">${done ? '✓' : ''}</button><div class="mission-copy"><strong>${escapeHtml(mission.title)}</strong><small>${escapeHtml(mission.description)}</small></div><span class="mission-reward">${done ? 'DONE' : `+${formatNumber(mission.reward)} XP`}</span></div>`;
     }).join('');
   }
 

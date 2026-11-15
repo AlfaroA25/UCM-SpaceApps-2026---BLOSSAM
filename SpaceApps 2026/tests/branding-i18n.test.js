@@ -182,6 +182,118 @@ test('health report interface and privacy copy are translated in every supported
   }
 });
 
+test('Rufus companion page copy and dynamic labels are translated in every supported language', () => {
+  const i18n = loadI18n();
+  const languages = ['es', 'fr', 'de', 'zh', 'ja', 'ar'];
+  const strings = [
+    'Your crewmate,',
+    'your mission.',
+    'Drop in, say hello, and choose Rufus’s pose and mission gear. Your companion progress stays on this device.',
+    'Pet Rufus. Each visit can build your friendship.',
+    'Rufus in his customized astronaut suit',
+    'CREW BOND',
+    'LEVEL __RUFUS_VAR_0__',
+    'New crewmates',
+    'Trusted orbiters',
+    'Mission partners',
+    'Cosmic companions',
+    '/ 100 BOND XP · EARNED BY SHOWING UP',
+    'MISSION STARDUST',
+    'HELLO STREAK',
+    'MISSIONS TODAY',
+    'Pocket satellite put away. Mix and match any gear you own.',
+    '__RUFUS_VAR_0__ equipped. Mix and match any gear you own.',
+    '__RUFUS_VAR_0__ put away. Mix and match any gear you own.',
+    'VIEW TODAY’S MISSIONS',
+    'GEAR LOCKER',
+    'Accessories & inventory',
+    'EARNED WITH MISSIONS',
+    'Equip any gear you own. Complete a daily mission to earn stardust toward new items.',
+    'Your locker is ready for its first mission reward.',
+    'Pocket satellite',
+    'A tiny satellite companion circling Rufus.',
+    'Wrist computer',
+    'A compact mission communicator on Rufus’s cuff.',
+    'Holographic slate',
+    'A luminous field slate for curious explorers.',
+    'Comms pack',
+    'A flight-ready communications pack.',
+    'EQUIP',
+    'EQUIPPED',
+    'OWNED',
+    'MISSION SUPPLY',
+    'Unlock new gear',
+    'GROW TOGETHER',
+    'Today’s crew missions',
+    'ALL WELLNESS GOALS ↗',
+    'Rufus celebrates actions already supported by AstroVital. Mission data is illustrative and isn’t medical advice.',
+    'Rufus is a friendly wellness companion, not a medical diagnostic system. Progress and rewards are motivational only.',
+    'No pressure, crew member. Every small check-in is a win, and rest counts too.',
+    'Thanks for checking in. Looking after yourself is a mission win.',
+    'Flight plan complete! Take a moment to celebrate your effort.',
+    'Every mission starts with a little hello. Want to see the flight plan?',
+    'Oh! A friendly space-pat. My whiskers are receiving excellent signals.',
+    'You came back! I saved you the comfiest spot in the observation deck.',
+    'Crew check: you are doing better than you think. No rush, okay?',
+    'Boop received. Mission morale is now orbiting at a very respectable altitude.',
+    'I would high-five you, but these astronaut gloves are delightfully enormous.',
+    'You do not have to do it all at once. One small step is plenty.',
+    'Checking in with yourself is brave work. I am cheering you on!',
+    'Your pace is the right pace. Rest is part of the mission, too.',
+    'A little progress still counts as progress. You have got this, crew member!',
+    'Fun fact: the stars are very far away, but your next small win is right here.',
+    'LOOK AT YOU! Your whole flight plan is complete. Rufus is doing a tiny victory dance!',
+    'Mission accomplished, crew member! Thanks for checking in with yourself. That counts.',
+    'Nice work getting your movement mission logged. One small win, right on course.',
+    'Curiosity beacon: activated! Rufus loved exploring that Mind Lab puzzle with you.',
+    'A mindful pause logged. Rufus says a little reset can be a lovely mission moment.',
+    'FLIGHT PLAN COMPLETE · CELEBRATION TIME',
+    'MISSION MILESTONE · +10 STARDUST',
+    'NEW MISSION INSIGNIA',
+    'NEW GEAR UNLOCKED',
+    'Curious',
+    'Mission wave',
+    'Rufus waves hello in his flight suit.',
+    'Steady orbit',
+    'Rufus stands ready with a confident smile.',
+    'Recharge',
+    'Rufus takes a comfortable moment to rest.',
+    'Sleep cycle',
+    'Rufus drifts off for a well-earned rest.',
+    'Choose Rufus’s mission moment',
+    'Choose a pose from the supplied character art. Equip gear in the companion bay to personalize Rufus.',
+    'OPEN COMPANION BAY',
+    'SAVE POSE',
+    'Milestone unlocked: __RUFUS_VAR_0__!',
+    '__RUFUS_VAR_0__ unlocked and equipped! That is some excellent mission gear.',
+    'LOCKER UPDATED',
+    'Mark completed __RUFUS_VAR_0__',
+    'Mark uncompleted __RUFUS_VAR_0__'
+  ];
+
+  for (const language of languages) {
+    i18n.setLocale(language);
+    for (const source of strings) {
+      assert.notEqual(i18n.translate(source), source, `${source} should be translated for ${language}`);
+    }
+
+    const level = i18n.translate('LEVEL 2');
+    assert.notEqual(level, 'LEVEL 2', `Companion levels should be translated for ${language}`);
+    assert.ok(level.includes('2'), `Translated companion levels should retain the level for ${language}`);
+
+    const accessibleMission = i18n.translate('Mark completed Complete your health check-in');
+    assert.notEqual(accessibleMission, 'Mark completed Complete your health check-in', `Mission accessibility labels should be translated for ${language}`);
+    assert.doesNotMatch(accessibleMission, /Complete your health check-in/, `Mission names in accessibility labels should be translated for ${language}`);
+    assert.doesNotMatch(accessibleMission, /__RUFUS_VAR_/);
+
+    const companionGreeting = i18n.translate('Nice work, crew member. You have 2 small wins logged today. Keep your own pace.');
+    assert.doesNotMatch(companionGreeting, /Nice work|crew member|small wins/, `Dynamic companion messages should be translated for ${language}`);
+
+    const gearUnlock = i18n.translate('Pocket satellite unlocked and equipped! That is some excellent mission gear.');
+    assert.doesNotMatch(gearUnlock, /Pocket satellite|excellent mission gear/, `Dynamic gear messages should be translated for ${language}`);
+  }
+});
+
 test('both app HTML entry points expose install metadata and the translated alert inbox', () => {
   const entries = ['index.html', 'AstroVital_Mission_Health.html'];
   for (const entry of entries) {
