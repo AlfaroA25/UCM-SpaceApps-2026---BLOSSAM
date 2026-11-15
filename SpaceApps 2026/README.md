@@ -1,8 +1,8 @@
-# RUFUS
+# AstroVital
 
-**Your Health. Your Mission. Your Companion.**
+**Your Health. Your Mission.**
 
-RUFUS is a local-first astronaut health and wellbeing companion prototype. It is a dependency-free HTML, CSS, and JavaScript PWA.
+AstroVital is a local-first astronaut health and wellbeing app. Rufus, your AI health companion, is the personalized guide within AstroVital. The app is a dependency-free HTML, CSS, and JavaScript PWA.
 
 ## Run locally
 
@@ -16,7 +16,7 @@ Open <http://localhost:8000>. Serving over localhost enables the service worker;
 
 ## Share and install
 
-After deployment, share the [RUFUS GitHub Pages app](https://alfaroa25.github.io/UCM-SpaceApps-2026---BLOSSAM/) with its link. Choose **Install app** on the welcome screen or **Install** in the app header. On desktop Chrome or Edge, accept the browser prompt (or choose **Install RUFUS** from the browser menu). On Android, open the link in Chrome and choose **Install app** or **Add to Home screen**. On iPhone or iPad, open the link in Safari, tap **Share**, then choose **Add to Home Screen**.
+After deployment, share the [AstroVital GitHub Pages app](https://alfaroa25.github.io/UCM-SpaceApps-2026---BLOSSAM/) with its link. Choose **Install app** on the welcome screen or **Install** in the app header. On desktop Chrome or Edge, accept the browser prompt (or choose **Install AstroVital** from the browser menu). On Android, open the link in Chrome and choose **Install app** or **Add to Home screen**. On iPhone or iPad, open the link in Safari, tap **Share**, then choose **Add to Home Screen**.
 
 Installation and offline use require HTTPS or localhost. The GitHub Pages deployment workflow publishes the contents of this directory at the repository’s Pages URL.
 
@@ -31,10 +31,10 @@ Installation and offline use require HTTPS or localhost. The GitHub Pages deploy
 - Responsive navigation, a health monitor, daily missions, Mind Lab, and a unified wellbeing check-in and private journal.
 - Physical Activity: schedule and log approved activities, track planned/completed/skipped status, review recent history, and sync completed activity minutes with Daily Missions.
 - Sleep Tracking: create sleep-opportunity schedules, log timed sleep periods with optional quality/restedness check-ins, and review duration trends. Periods can cross midnight; health-check-in sleep is integrated without double-counting manual periods.
-- Meals and Nutrition: schedule meals and record eaten, partial, or skipped entries with optional notes. Nutrition details appear only when entered with a source; RUFUS does not calculate or invent nutrition information.
+- Meals and Nutrition: schedule meals and record eaten, partial, or skipped entries with optional notes. Nutrition details appear only when entered with a source; AstroVital does not calculate or invent nutrition information.
 - Wellbeing: mood, fatigue, stress, crew connection, and optional private reflections are kept together in one local journal with editable history. Existing wellbeing entries are preserved when profiles load.
 - Personal Health Baseline: collect daily self-reported indicators, establish a reference from the first 30 unique dated records spanning at least 30 calendar days, and review personal trends, illustrative scores, and rule-based flags. A generic synthetic demo is available and is clearly labeled.
-- A RUFUS companion panel with original temporary bobcat placeholder artwork and reactions to supported check-ins and activities.
+- A Rufus companion panel with original temporary bobcat placeholder artwork and reactions to supported check-ins and activities.
 - Hydration goal and unit setup, preview-before-confirm schedule planning, manual intake entries, edit/delete history, daily progress, and a seven-day summary.
 - Hydration plans and intake entries remain on this device. The schedule appears only in the app; there are no background or operating-system notifications.
 - NASA POWER Phase 1: a browser-based daily point query for 2 m temperature, 10 m wind speed/direction, surface pressure, and all-sky surface shortwave radiation, with unit-aware summaries, trend chart, date table, and source metadata.
@@ -44,7 +44,7 @@ The NASA POWER query requires an internet connection and sends the selected coor
 
 ## Safety and limitations
 
-Hydration goals are user-entered from an approved plan; RUFUS does not prescribe a target or recommend catch-up drinking. Configure or edit a goal on the Hydration Tracker, review its schedule preview, then explicitly confirm it. Entries are manually logged and can be edited or deleted. The app is a prototype, not a medical device or diagnostic system.
+Hydration goals are user-entered from an approved plan; AstroVital does not prescribe a target or recommend catch-up drinking. Configure or edit a goal on the Hydration Tracker, review its schedule preview, then explicitly confirm it. Entries are manually logged and can be edited or deleted. The app is a prototype, not a medical device or diagnostic system.
 
 Activity and sleep schedules are personal planning aids and do not replace crew medical guidance. Wellbeing entries are self-reported and non-clinical. Meal entries are not a nutrition analysis tool; use only mission-approved menus and verified nutrition sources.
 

@@ -1,7 +1,7 @@
 {
-  "name": "RUFUS — Your Health. Your Mission. Your Companion.",
-  "short_name": "RUFUS",
-  "description": "A local-first astronaut health and wellbeing companion prototype.",
+  "name": "AstroVital — Your Health. Your Mission.",
+  "short_name": "AstroVital",
+  "description": "A local-first astronaut health monitoring app with personalized guidance from Rufus.",
   "id": "./",
   "start_url": "./index.html",
   "scope": "./",

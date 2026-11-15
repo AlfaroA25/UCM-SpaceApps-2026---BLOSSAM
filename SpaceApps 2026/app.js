@@ -32,7 +32,7 @@
     'comms-pack': { name: 'Comms pack', description: 'A flight-ready communications pack.', src: './icons/rufus-layer-pack.svg', cost: 60 }
   };
   const futurePages = {
-    meals: { title: 'Meals and nutrition', phase: 'PHASE 3', detail: 'Meal schedules and meal logs are planned for Phase 3. RUFUS will not invent nutrition information.' },
+    meals: { title: 'Meals and nutrition', phase: 'PHASE 3', detail: 'Meal schedules and meal logs are planned for Phase 3. AstroVital will not invent nutrition information.' },
     activity: { title: 'Physical activity', phase: 'PHASE 5', detail: 'This prototype can log mission-approved activity through Daily Missions. A dedicated schedule and activity-history view are planned for Phase 5.' },
     mental: { title: 'Mental wellness', phase: 'PHASE 5', detail: 'The current wellbeing log supports private, local check-ins. Expanded stress, sleep-quality, and wellness-history tools are planned for Phase 5.' },
     sleep: { title: 'Sleep tracking', phase: 'PHASE 5', detail: 'Sleep duration can be entered in the simulated health check-in. Dedicated sleep schedules, quality check-ins, and trends are planned for Phase 5.' },
@@ -131,7 +131,7 @@
       const saved = localStorage.getItem(storageKey);
       if (!saved) return clone(seed);
       const parsed = JSON.parse(saved);
-      if (!parsed || parsed.version !== 1 || typeof parsed.metrics !== 'object' || typeof parsed.profile !== 'object') throw new Error('Saved RUFUS data has an unsupported format.');
+      if (!parsed || parsed.version !== 1 || typeof parsed.metrics !== 'object' || typeof parsed.profile !== 'object') throw new Error('Saved AstroVital data has an unsupported format.');
       const savedRufus = parsed.rufus && typeof parsed.rufus === 'object' ? parsed.rufus : {};
       const savedPose = typeof savedRufus.pose === 'string' ? savedRufus.pose : 'wave';
       const inventory = Array.isArray(savedRufus.inventory) ? [...new Set(savedRufus.inventory.filter((item) => Object.hasOwn(rufusAccessories, item)))] : clone(seed.rufus.inventory);
@@ -188,7 +188,7 @@
       if (needsGearCleanup) { try { localStorage.setItem(storageKey, JSON.stringify(normalized)); } catch { /* The in-memory profile remains sanitized. */ } }
       return normalized;
     } catch (error) {
-      console.error('Unable to load saved RUFUS data:', error);
+      console.error('Unable to load saved AstroVital data:', error);
       setTimeout(() => showToast('Saved data could not be read. Showing the sample profile.'), 0);
       return clone(seed);
     }
@@ -198,7 +198,7 @@
       localStorage.setItem(activeStorageKey, JSON.stringify(state));
       return true;
     } catch (error) {
-      console.error('Unable to save RUFUS data:', error);
+      console.error('Unable to save AstroVital data:', error);
       showToast('Unable to save locally. Check this browser’s storage settings.');
       return false;
     }
@@ -840,7 +840,7 @@
       timeZone
     });
     clearHydrationPreview();
-    $('#hydration-feedback').textContent = 'Intake recorded locally. RUFUS does not infer intake from reminders.';
+    $('#hydration-feedback').textContent = 'Intake recorded locally. AstroVital does not infer intake from reminders.';
     const summary = hydrationSummary();
     reactToActivity(summary.goalMl !== null && summary.consumedMl >= summary.goalMl ? 'hydration-complete' : 'hydration');
     persist();
@@ -1301,7 +1301,7 @@
 
   function openProfile() {
     const checkedInterests = (interest) => state.profile.interests.includes(interest) ? 'checked' : '';
-    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> RUFUS · LOCAL PROFILE</div>
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> LOCAL PROFILE</div>
       <h2 id="modal-title">Profile and preferences</h2>
       <p>Your crew profile and preferences stay in this browser. Set or edit hydration goals on the Hydration Tracker, where you can preview the schedule before saving it.</p>
       <form id="profile-form">
@@ -1438,7 +1438,7 @@
         <span><strong>${art.name}</strong><small>${art.description}</small></span>
       </button>`).join('');
 
-    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> RUFUS AVATAR BAY</div><h2 id="modal-title">Choose Rufus’s mission moment</h2><p>Choose a pose from the supplied character art. Equip gear in the companion bay to personalize Rufus.</p><div class="rufus-preview" id="rufus-preview">${rufusImage(state.rufus.pose, 'rufus-preview-art')}<div><strong>Rufus</strong><span id="rufus-preview-caption">${rufusArtwork[state.rufus.pose].description}</span></div></div><form id="rufus-form"><input type="hidden" name="pose" value="${state.rufus.pose}"><div class="rufus-pose-grid">${poses}</div><div class="modal-actions"><button type="button" class="secondary-button" data-nav="companion">OPEN COMPANION BAY</button><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE POSE</button></div></form>`);
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> Rufus avatar bay</div><h2 id="modal-title">Choose Rufus’s mission moment</h2><p>Choose a pose from the supplied character art. Equip gear in the companion bay to personalize Rufus.</p><div class="rufus-preview" id="rufus-preview">${rufusImage(state.rufus.pose, 'rufus-preview-art')}<div><strong>Rufus</strong><span id="rufus-preview-caption">${rufusArtwork[state.rufus.pose].description}</span></div></div><form id="rufus-form"><input type="hidden" name="pose" value="${state.rufus.pose}"><div class="rufus-pose-grid">${poses}</div><div class="modal-actions"><button type="button" class="secondary-button" data-nav="companion">OPEN COMPANION BAY</button><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE POSE</button></div></form>`);
     renderRufusArtwork();
   }
 
@@ -1446,7 +1446,7 @@
     rufusDialogue = message;
     $('#rufus-message').textContent = message;
     if ($('#rufus-home-dialogue')) $('#rufus-home-dialogue').textContent = message;
-    if ($('#rufus-stage-caption')) $('#rufus-stage-caption').textContent = reaction.toUpperCase();
+    if ($('#rufus-stage-caption')) $('#rufus-stage-caption').textContent = reaction;
     clearTimeout(rufusReactionTimer);
     if (Object.hasOwn(rufusArtwork, reactionPose)) {
       rufusReactionPose = reactionPose;
@@ -1510,7 +1510,7 @@
       void node.offsetWidth;
       node.classList.add('rufus-bounce');
     });
-    speakRufus(greetings[(state.rufus.petCount - 1) % greetings.length], 'RUFUS IS HAPPY YOU DROPPED BY', 'wave');
+    speakRufus(greetings[(state.rufus.petCount - 1) % greetings.length], 'Rufus is happy you dropped by', 'wave');
     persist();
     renderCompanion();
     renderRufusArtwork();
@@ -1554,7 +1554,7 @@
       'Fun fact: the stars are very far away, but your next small win is right here.'
     ];
     const cheerPose = ['confident', 'wave', 'rest'][rufusCheerIndex % 3];
-    speakRufus(cheers[rufusCheerIndex % cheers.length], 'RUFUS HAS A MESSAGE FOR YOU', cheerPose);
+    speakRufus(cheers[rufusCheerIndex % cheers.length], 'Rufus has a message for you', cheerPose);
     rufusCheerIndex += 1;
     const avatar = $('#rufus-avatar') || $('#rufus-portrait') || $('#rufus-home-avatar');
     avatar.classList.remove('rufus-bounce');
@@ -3009,7 +3009,7 @@
     shareUrl.hash = '';
     const shareData = {
       title: document.title,
-      text: 'Try RUFUS, a personal astronaut health and wellbeing companion.',
+      text: window.RufusI18n.translate('Try AstroVital, the local-first astronaut health app.'),
       url: shareUrl.href
     };
 
@@ -3028,7 +3028,7 @@
       showToast('AstroVital link copied. Share it with your crew.');
     } catch (error) {
       console.error('Unable to copy the AstroVital link:', error);
-      openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> SHARE ASTROVITAL</div><h2 id="modal-title">Copy this app link</h2><p>Share this link to open AstroVital:</p><div class="modal-form"><label>APP LINK<input id="share-url" type="url" value="${escapeHtml(shareData.url)}" readonly></label></div><div class="modal-actions"><button class="primary-button" data-action="close-modal">CLOSE</button></div>`);
+      openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> SHARE APP</div><h2 id="modal-title">Copy this app link</h2><p>Share this link to open AstroVital:</p><div class="modal-form"><label>APP LINK<input id="share-url" type="url" value="${escapeHtml(shareData.url)}" readonly></label></div><div class="modal-actions"><button class="primary-button" data-action="close-modal">CLOSE</button></div>`);
       $('#share-url').select();
     }
   });
@@ -3054,12 +3054,12 @@
         ? 'Open this link in Safari, tap the Share button, then choose <strong>Add to Home Screen</strong>.'
         : /Android/i.test(navigator.userAgent)
           ? 'In Chrome, open the menu <strong>⋮</strong> and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.'
-          : 'In Chrome or Edge, use the install icon in the address bar or choose <strong>Install RUFUS</strong> from the browser menu.';
+          : 'In Chrome or Edge, use the install icon in the address bar or choose <strong>Install AstroVital</strong> from the browser menu.';
       const secureOrigin = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
       const availability = secureOrigin
         ? ''
         : '<p>Home-screen installation requires the published HTTPS link or a local development server; opening this file directly is not installable.</p>';
-      openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> INSTALL RUFUS</div><h2 id="modal-title">Add to your Home Screen</h2><p>${instructions}</p><p>RUFUS opens like an app and keeps your profile on this device.</p>${availability}<div class="modal-actions"><button class="primary-button" data-action="close-modal">GOT IT</button></div>`);
+      openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> Install AstroVital</div><h2 id="modal-title">Add to your Home Screen</h2><p>${instructions}</p><p>AstroVital opens like an app and keeps your profile on this device.</p>${availability}<div class="modal-actions"><button class="primary-button" data-action="close-modal">GOT IT</button></div>`);
       return;
     }
 
