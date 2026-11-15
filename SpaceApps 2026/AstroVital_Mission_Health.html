@@ -51,6 +51,7 @@
             </select>
             <p class="entry-note">Choose your preferred language. The interface and app-generated messages are translated locally; personal notes remain unchanged.</p>
             <p class="entry-privacy">This prototype uses illustrative readings and does not connect to sensors or medical systems.</p>
+            <button class="primary-button entry-install" id="entry-install-button" type="button" aria-label="Install AstroVital as an app">INSTALL APP</button>
           </div>
         </div>
       </section>
@@ -163,7 +164,7 @@
               <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon temperature-icon">⌁</span><span class="metric-trend muted">NOT CONNECTED</span></div><div class="metric-name">BODY TEMPERATURE</div><div class="metric-reading"><strong>—</strong><span>no sensor</span></div><div class="metric-baseline">SOURCE <strong>NOT AVAILABLE</strong></div></article>
               <article class="metric-card"><div class="metric-top"><span class="metric-icon hydration-icon">◍</span><span class="metric-trend muted" id="hydration-status">NO TARGET</span></div><div class="metric-name">HYDRATION GOAL</div><div class="metric-reading"><strong id="metric-hydration">0 mL</strong><span id="hydration-unit">logged today</span></div><div class="metric-baseline">INTAKE TRACKING <strong>AVAILABLE · LOCAL</strong></div></article>
               <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon meal-icon">◒</span><span class="metric-trend muted">NOT SET</span></div><div class="metric-name">NEXT MEAL</div><div class="metric-reading"><strong>—</strong><span>no schedule</span></div><div class="metric-baseline">MEAL REMINDERS <strong>PLANNED · PHASE 3</strong></div></article>
-              <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon medication-icon">＋</span><span class="metric-trend muted">NOT SET</span></div><div class="metric-name">MEDICATION SCHEDULE</div><div class="metric-reading"><strong>—</strong><span>no schedule</span></div><div class="metric-baseline">TRACKING <strong>PLANNED · PHASE 3</strong></div></article>
+              <article class="metric-card"><div class="metric-top"><span class="metric-icon medication-icon">＋</span><span class="metric-trend muted" id="medication-overview-status">DEMO SCHEDULE</span></div><div class="metric-name">MEDICATION DEMO</div><div class="metric-reading"><strong id="medication-overview-count">0 / 2</strong><span>logged today</span></div><div class="metric-baseline">SAMPLE DATA <strong>LOCAL ONLY</strong></div></article>
             </div>
 
             <div class="lower-grid">
@@ -236,6 +237,35 @@
             <footer class="disclaimer"><span>✳</span> RUFUS records what you enter. It does not set medical hydration targets or recommend drinking beyond your configured goal.</footer>
           </section>
 
+          <section class="view" id="view-medications">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> MEDICATION MANAGER · DEMO</div><h1>Medication <span>log.</span></h1><p>Practice with fictional sample entries. No dosing advice or live reminders.</p></div>
+            <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>FICTIONAL DATA</strong> &nbsp;Sample item, times, supply, and expiry only.</span></div>
+            <div class="medication-summary-grid">
+              <article class="medication-summary-card"><span>TODAY</span><strong id="medication-today-count">0 / 2</strong><small>Entries logged</small></article>
+              <article class="medication-summary-card"><span>SUPPLY</span><strong id="medication-supply-value">12 sample packs</strong><small>Example only</small></article>
+              <article class="medication-summary-card"><span>REMINDERS</span><strong>IN-APP</strong><small>No background alerts</small></article>
+            </div>
+            <div class="medication-layout">
+              <article class="panel medication-schedule-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> TODAY</div><h2>Sample schedule</h2></div><span class="sim-tag">DEMO</span></div>
+                <div id="medication-schedule-list" class="medication-schedule-list"></div>
+                <p class="medication-limitation">Follow approved instructions. Contact your crew medical officer with questions.</p>
+              </article>
+              <aside class="panel medication-supply-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> INVENTORY</div><h2>Sample supply</h2></div></div>
+                <div class="medication-detail-row"><span>ITEM</span><strong>Fictional sample A</strong></div>
+                <div class="medication-detail-row"><span>COUNT</span><strong>12 sample packs</strong></div>
+                <div class="medication-detail-row"><span>EXPIRES</span><strong id="medication-expiry-value">2030-06 · demo</strong></div>
+                <div class="health-note medication-support"><span>ⓘ</span><div><strong>Need guidance?</strong><p>Follow approved instructions or contact your flight surgeon or crew medical officer. This demo sends no alerts or messages.</p></div></div>
+              </aside>
+            </div>
+            <article class="panel medication-history-panel">
+              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> LOCAL HISTORY</div><h2>Recent entries</h2></div><span class="sim-tag">DEMO</span></div>
+              <div id="medication-history-list" class="medication-history-list" aria-live="polite"></div>
+            </article>
+            <footer class="disclaimer"><span>✳</span> Sample log only. Not a prescription or reliable reminder.</footer>
+          </section>
+
           <section class="view" id="view-environment">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> NASA ENVIRONMENTAL DATA · PHASE 1</div><h1>Earth conditions, <span>in context.</span></h1><p>Explore daily surface meteorology and solar measurements from NASA POWER for a selected coordinate and date range.</p></div>
             <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>ENVIRONMENTAL DATA ONLY</strong> &nbsp;These are gridded Earth-surface observations/estimates, not astronaut biometrics, spacecraft conditions, or personal space-radiation exposure. Data are daily aggregates and may be delayed.</span></div>
@@ -289,7 +319,7 @@
               <div id="settings-summary" class="settings-summary"></div>
               <button class="primary-button" data-action="profile">EDIT PROFILE & PREFERENCES <span>→</span></button>
             </article>
-            <div class="health-note"><span>ⓘ</span><div><strong>Local-only prototype</strong><p>Hydration tracking and an in-app schedule are available on the Hydration Tracker. Meal and medication tracking, background notifications, full translations, and cloud sync are not implemented.</p></div></div>
+            <div class="health-note"><span>ⓘ</span><div><strong>Local-only prototype</strong><p>Hydration and medication demo entries save on this device. Background notifications, meal tracking, full translations, and cloud sync are not implemented.</p></div></div>
           </section>
 
           <section class="view" id="view-roadmap">
