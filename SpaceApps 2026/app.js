@@ -56,7 +56,7 @@
     companion: { state: 'hello' }, hydrationLogs: [], medicationLog: [], xp: 2480, streak: 6, lastCheckin: '', checkinDate: '', lastCheckinDate: '',
     checkinHistory: [], symptomLogs: [], activityEntries: [], sleepSchedule: [], sleepLogs: [], mealEntries: [],
     healthBaseline: { records: [], baseline: null, isSynthetic: false, personalRecordsBackup: [], personalBaselineBackup: null },
-    completed: [], completedDate: today, achievements: [], cognitiveSessions: 0, bestReaction: null,
+    completed: [], completedDate: today, achievements: [], inboxMessages: [], cognitiveSessions: 0, bestReaction: null,
     userCognitiveSessions: 0, userBestReaction: null, hasUserCognitiveResult: false,
     heartHistory: [], sleepHistory: []
   };  const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -189,6 +189,22 @@
             .map((entry) => ({ ...entry, note: typeof entry.note === 'string' ? entry.note.slice(0, 200) : '' }))
             .slice(0, 100)
           : clone(seed.medicationLog),
+        inboxMessages: Array.isArray(parsed.inboxMessages)
+          ? parsed.inboxMessages.filter((message) => message && typeof message === 'object'
+            && typeof message.id === 'string' && message.id.length <= 200
+            && typeof message.title === 'string' && message.title.length <= 200
+            && typeof message.detail === 'string' && message.detail.length <= 1000
+            && typeof message.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(message.date))
+            .map((message) => ({
+              id: message.id,
+              title: message.title,
+              detail: message.detail,
+              date: message.date,
+              createdAt: typeof message.createdAt === 'string' ? message.createdAt : '',
+              read: message.read === true
+            }))
+            .slice(-200)
+          : clone(seed.inboxMessages),
         completed: Array.isArray(parsed.completed) ? parsed.completed : [], achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
         checkinHistory: window.AstroVitalFeatureData.normalizeWellbeingHistory(parsed.checkinHistory),
         symptomLogs: Array.isArray(parsed.symptomLogs) ? parsed.symptomLogs.filter((entry) => entry
@@ -383,21 +399,67 @@
     const alerts = [];
     const snapshot = personalHealthSnapshot();
     const checkin = currentPersonalCheckin();
-    const t = window.RufusI18n.translate;
     if (!snapshot.latestRecord) return alerts;
     if (['Moderate', 'Severe'].includes(checkin?.immuneSymptoms)) {
       alerts.push({
+        key: 'symptoms-review',
+        date: checkin?.date || snapshot.latestRecord.date,
         title: 'Review your self-reported check-in',
         detail: 'This symptom entry cannot identify a cause. Follow mission medical guidance if you have concerns.'
       });
     }
     if (snapshot.connection === 'Isolated') {
       alerts.push({
+        key: 'connection-review',
+        date: snapshot.latestWellbeing?.date || snapshot.latestRecord.date,
         title: 'Review your self-reported check-in',
         detail: 'You recorded feeling isolated. This is a personal check-in, not a behavioral-health assessment.'
       });
     }
-    return alerts.map((alert) => ({ title: t(alert.title), detail: t(alert.detail) }));
+    return alerts;
+  }
+
+  function syncAlertInbox(alerts = currentAlerts()) {
+    let changed = false;
+    for (const alert of alerts) {
+      const id = `health:${alert.date}:${alert.key}`;
+      if (state.inboxMessages.some((message) => message.id === id)) continue;
+      state.inboxMessages.push({
+        id,
+        title: alert.title,
+        detail: alert.detail,
+        date: alert.date,
+        createdAt: new Date().toISOString(),
+        read: false
+      });
+      changed = true;
+    }
+    if (changed) {
+      state.inboxMessages = state.inboxMessages.slice(-200);
+      persist();
+    }
+    updateInboxBadge();
+  }
+
+  function updateInboxBadge() {
+    const unreadCount = state.inboxMessages.filter((message) => !message.read).length;
+    const count = formatNumber(unreadCount);
+    const badge = $('#inbox-unread-badge');
+    if (badge) {
+      badge.textContent = count;
+      badge.hidden = unreadCount === 0;
+      badge.setAttribute('aria-label', `${count} ${window.RufusI18n.translate('Unread')}`);
+    }
+    const overviewCount = $('#alert-count');
+    if (overviewCount) overviewCount.textContent = count;
+  }
+
+  function setInboxRead(messageId, read) {
+    const message = state.inboxMessages.find((entry) => entry.id === messageId);
+    if (!message || message.read === read) return;
+    message.read = read;
+    persist();
+    renderAlertsPage();
   }
 
   function metricStatus(metric, snapshot) {
@@ -568,9 +630,30 @@
 
   function renderAlertsPage() {
     const alerts = currentAlerts();
-    $('#alerts-page-content').innerHTML = alerts.length
-      ? alerts.map((alert) => `<div class="alert-card"><span class="alert-mark">ⓘ</span><div><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.detail)}</p></div></div>`).join('')
-      : '<div class="alert-empty">No personal review prompts are available. This app is not continuous or emergency monitoring.</div>';
+    syncAlertInbox(alerts);
+    const translate = window.RufusI18n.translate;
+    const unreadCount = state.inboxMessages.filter((message) => !message.read).length;
+    const inboxMessages = state.inboxMessages.slice().reverse();
+    $('#alerts-page-content').innerHTML = `
+      <div class="inbox-heading"><h2>${escapeHtml(translate('Messages'))}</h2></div>
+      <div class="inbox-toolbar">
+        <p>${escapeHtml(translate('In-app alerts are saved in this profile on this device. Push notifications are not configured.'))}</p>
+        <button class="secondary-button" type="button" data-action="mark-inbox-read" ${unreadCount ? '' : 'disabled'}>${escapeHtml(translate('Mark all as read'))}</button>
+      </div>
+      <div class="inbox-list">${inboxMessages.length ? inboxMessages.map((message) => {
+        const title = translate(message.title);
+        const detail = translate(message.detail);
+        const date = formatAppDate(message.date);
+        return `<article class="alert-card inbox-message${message.read ? ' is-read' : ''}">
+          <span class="alert-mark" aria-hidden="true">${message.read ? '✓' : 'ⓘ'}</span>
+          <div class="inbox-message-copy">
+            <div class="inbox-message-heading"><strong>${escapeHtml(title)}</strong><span class="inbox-status">${escapeHtml(translate(message.read ? 'Read' : 'Unread'))}</span></div>
+            <p>${escapeHtml(detail)}</p><time datetime="${escapeHtml(message.date)}">${escapeHtml(date)}</time>
+          </div>
+          <button class="secondary-button inbox-read-toggle" type="button" data-action="toggle-inbox-read" data-inbox-id="${escapeHtml(message.id)}" aria-pressed="${String(message.read)}">${escapeHtml(translate(message.read ? 'Mark as unread' : 'Mark as read'))}</button>
+        </article>`;
+      }).join('') : `<div class="alert-empty">${escapeHtml(translate('No inbox alerts yet.'))}</div>`}</div>`;
+    updateInboxBadge();
   }
 
   function volumeToMl(amount, unit) {
@@ -1053,6 +1136,7 @@
     resetDailyProgressIfNeeded();
     updateProfileLabels();
     renderXp();
+    syncAlertInbox();
     const snapshot = personalHealthSnapshot();
     const t = window.RufusI18n.translate;
     const displayValue = (value, decimal = false) => Number.isFinite(value)
@@ -1108,7 +1192,6 @@
     const lastRecordDate = snapshot.latestRecord?.date || snapshot.latestWellbeing?.date
       || state.activityEntries[0]?.date || state.sleepLogs[0]?.date;
     $('#last-checkin').textContent = lastRecordDate || t('NOT RECORDED');
-    $('#alert-count').textContent = formatNumber(currentAlerts().length);
     renderRufus();
     renderMedicationOverview();
     renderMissionList($('#overview-mission-list'), true);
@@ -1141,10 +1224,11 @@
 
   function renderHealth() {
     const alerts = currentAlerts();
+    syncAlertInbox(alerts);
     const snapshot = personalHealthSnapshot();
     const t = window.RufusI18n.translate;
     const alertRoot = $('#health-alerts');
-    alertRoot.innerHTML = alerts.map((alert) => `<div class="alert-card"><span class="alert-mark">⚠</span><div><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.detail)}</p></div></div>`).join('');
+    alertRoot.innerHTML = alerts.map((alert) => `<div class="alert-card"><span class="alert-mark">⚠</span><div><strong>${escapeHtml(t(alert.title))}</strong><p>${escapeHtml(t(alert.detail))}</p></div></div>`).join('');
     $('#health-metrics').innerHTML = metricCards.map((metric) => {
       const value = snapshot[metric.key];
       const displayValue = value === null || value === undefined ? '—'
@@ -1733,7 +1817,7 @@
       <label>SLEEP DURATION · HOURS<input name="sleep" type="number" min="0" max="24" step=".1" value="${sleepValue}" ${hasSleepPeriods ? 'readonly' : ''} required></label>
       <label>EXERCISE · MINUTES TODAY<input name="exercise" type="number" min="0" max="600" value="${optionalValue(savedCheckin?.exercise)}" required></label>
       <label>RESISTANCE EXERCISE · MINUTES<input name="resistanceExercise" type="number" min="0" max="300" value="${optionalValue(savedCheckin?.resistanceExercise)}" required></label>
-      <label>SYMPTOMS TODAY<select name="immuneSymptoms" required><option value="" ${savedCheckin?.immuneSymptoms ? '' : 'selected'}>Not recorded</option><option ${savedCheckin?.immuneSymptoms === 'None' ? 'selected' : ''}>None</option><option ${savedCheckin?.immuneSymptoms === 'Mild' ? 'selected' : ''}>Mild</option><option ${savedCheckin?.immuneSymptoms === 'Moderate' ? 'selected' : ''}>Moderate</option><option ${savedCheckin?.immuneSymptoms === 'Severe' ? 'selected' : ''}>Severe</option></select></label>
+      <label>SYMPTOMS TODAY<select name="immuneSymptoms" required><option value="" ${savedCheckin?.immuneSymptoms ? '' : 'selected'}>Not recorded</option><option value="None" ${savedCheckin?.immuneSymptoms === 'None' ? 'selected' : ''}>None</option><option value="Mild" ${savedCheckin?.immuneSymptoms === 'Mild' ? 'selected' : ''}>Mild</option><option value="Moderate" ${savedCheckin?.immuneSymptoms === 'Moderate' ? 'selected' : ''}>Moderate</option><option value="Severe" ${savedCheckin?.immuneSymptoms === 'Severe' ? 'selected' : ''}>Severe</option></select></label>
       <label class="feature-full-width">SYMPTOM NOTES · OPTIONAL<textarea name="symptomNotes" rows="3" maxlength="500" placeholder="If you’re experiencing symptoms, describe what you’re noticing. This private note is saved on this device.">${escapeHtml(savedCheckin?.symptomNotes || '')}</textarea></label>
       <label>SLEEP EFFICIENCY · % · OPTIONAL<input name="sleepEfficiency" type="number" min="0" max="100" step=".1" value="${optionalValue(savedCheckin?.sleepEfficiency)}"></label>
       <label>HRV · ms · OPTIONAL<input name="hrv" type="number" min="0" max="300" step=".1" value="${optionalValue(savedCheckin?.hrv)}"></label>
@@ -2177,7 +2261,8 @@
 
   function openAlerts() {
     const alerts = currentAlerts();
-    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL RECORD REVIEW</div><h2 id="modal-title">Health review prompts</h2><p>Prompts use self-reported records only. They are descriptive and are not diagnoses or continuous monitoring.</p><div class="alert-list">${alerts.length ? alerts.map((alert) => `<div class="alert-card"><span class="alert-mark">ⓘ</span><div><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.detail)}</p></div></div>`).join('') : '<div class="alert-empty">No personal review prompts are available. This app is not continuous or emergency monitoring.</div>'}</div><div class="modal-actions"><button class="secondary-button" data-action="close-modal">CLOSE</button><button class="primary-button" data-nav="health">VIEW HEALTH LOG</button></div>`);
+    const t = window.RufusI18n.translate;
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL RECORD REVIEW</div><h2 id="modal-title">Health review prompts</h2><p>Prompts use self-reported records only. They are descriptive and are not diagnoses or continuous monitoring.</p><div class="alert-list">${alerts.length ? alerts.map((alert) => `<div class="alert-card"><span class="alert-mark">ⓘ</span><div><strong>${escapeHtml(t(alert.title))}</strong><p>${escapeHtml(t(alert.detail))}</p></div></div>`).join('') : `<div class="alert-empty">${escapeHtml(t('No personal review prompts are available. This app is not continuous or emergency monitoring.'))}</div>`}</div><div class="modal-actions"><button class="secondary-button" data-action="close-modal">CLOSE</button><button class="primary-button" data-nav="health">VIEW HEALTH LOG</button></div>`);
   }
 
   function setGame(game) {
@@ -2904,6 +2989,28 @@
       return;
     }
     const action = event.target.closest('[data-action]')?.dataset.action;
+    if (action === 'toggle-inbox-read') {
+      const messageId = event.target.closest('[data-inbox-id]')?.dataset.inboxId;
+      if (messageId) {
+        const message = state.inboxMessages.find((entry) => entry.id === messageId);
+        if (message) setInboxRead(messageId, !message.read);
+      }
+      return;
+    }
+    if (action === 'mark-inbox-read') {
+      let changed = false;
+      for (const message of state.inboxMessages) {
+        if (!message.read) {
+          message.read = true;
+          changed = true;
+        }
+      }
+      if (changed) {
+        persist();
+        renderAlertsPage();
+      }
+      return;
+    }
     const medicationStatusButton = event.target.closest('[data-medication-status]');
     if (medicationStatusButton) {
       openMedicationLogModal(medicationStatusButton.dataset.medicationSlot, medicationStatusButton.dataset.medicationStatus);
@@ -3612,6 +3719,7 @@
     renderHydration();
     renderSettings();
     if ($('#view-insights').classList.contains('active')) setInsightTab(activeInsightTab);
+    if ($('#view-alerts').classList.contains('active')) renderAlertsPage();
   });
   $('#modal-backdrop').addEventListener('click', (event) => {
     if (event.target.id === 'modal-backdrop') closeModal();

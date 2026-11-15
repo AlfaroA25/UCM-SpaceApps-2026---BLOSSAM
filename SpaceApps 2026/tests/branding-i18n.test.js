@@ -125,16 +125,82 @@ test('health report interface and privacy copy are translated in every supported
     'Export CSV',
     'Print / Save PDF',
     'Future report dates are unavailable.',
-    'Rufus, your AI health companion. This summary describes saved records only; it does not assess risk or replace mission medical guidance.'
+    'Rufus, your AI health companion. This summary describes saved records only; it does not assess risk or replace mission medical guidance.',
+    'In-app alerts are saved in this profile on this device. Push notifications are not configured.',
+    'Alert inbox',
+    'Messages',
+    'Health review prompts use self-reported records only. They are descriptive and are not diagnoses or continuous monitoring.',
+    'Hydration, activity, sleep, meals, wellbeing, medication entries, and inbox alerts are saved on this device. Push notifications and cloud sync are not configured.',
+    'Mark all as read',
+    'Read',
+    'Unread',
+    'Mark as read',
+    'Mark as unread',
+    'No inbox alerts yet.',
+    'INSTALL APP',
+    'INSTALL',
+    'SHARE',
+    'Share AstroVital',
+    'OPEN WELLBEING',
+    'VIEW HEALTH LOG',
+    'LOCAL LOG',
+    'MEALS',
+    'check meal schedule',
+    'MEAL TRACKING',
+    'AVAILABLE · LOCAL',
+    'DEMO SCHEDULE',
+    'MEDICATION DEMO',
+    'SAMPLE DATA',
+    'LOCAL ONLY',
+    'DONE',
+    'DAILY HEALTH · SELF-REPORTED',
+    'CANCEL',
+    'Health check-in',
+    'Enter values you choose to record. Empty fields stay unavailable; this prototype does not connect to medical sensors or assess health status.',
+    'Not recorded',
+    'None',
+    'Mild',
+    'Moderate',
+    'Severe',
+    'SYMPTOM NOTES · OPTIONAL',
+    'HRV · ms · OPTIONAL',
+    'Optional measurements',
+    'Leave unavailable measurements blank. Check-in values are self-reported, not sensor readings or clinical assessments.',
+    'SAVE CHECK-IN'
   ];
 
   for (const language of languages) {
     i18n.setLocale(language);
     for (const source of strings) {
       const translated = i18n.translate(source);
-      assert.notEqual(translated, source, `${source} should be translated for ${language}`);
+      if (source !== 'Messages') {
+        assert.notEqual(translated, source, `${source} should be translated for ${language}`);
+      }
       if (source.includes('AstroVital')) assert.match(translated, /AstroVital/);
       if (source.includes('Rufus')) assert.match(translated, /Rufus/);
     }
+  }
+});
+
+test('both app HTML entry points expose install metadata and the translated alert inbox', () => {
+  const entries = ['index.html', 'AstroVital_Mission_Health.html'];
+  for (const entry of entries) {
+    const html = fs.readFileSync(path.join(appDirectory, entry), 'utf8');
+    assert.match(html, /rel="manifest" href="\.\/manifest\.webmanifest"/, `${entry} should link its PWA manifest`);
+    assert.match(html, /rel="icon" type="image\/svg\+xml" href="\.\/icons\/astrovital\.svg"/, `${entry} should use the square SVG icon`);
+    assert.match(html, /id="inbox-unread-badge"/, `${entry} should show the unread inbox count`);
+    assert.match(html, /id="alerts-page-content"/, `${entry} should render the inbox`);
+    assert.match(html, /src="\.\/app\.js"/, `${entry} should load the shared app behavior`);
+  }
+
+  const manifest = JSON.parse(fs.readFileSync(path.join(appDirectory, 'manifest.webmanifest'), 'utf8'));
+  assert.equal(manifest.display, 'standalone');
+  assert.ok(manifest.icons.some((icon) => icon.purpose === 'maskable'));
+  const icon = fs.readFileSync(path.join(appDirectory, 'icons/astrovital.svg'), 'utf8');
+  assert.match(icon, /<rect width="512" height="512" fill="#080d16"\/>/);
+  assert.doesNotMatch(icon, /<rect[^>]*rx=/);
+  const appScript = fs.readFileSync(path.join(appDirectory, 'app.js'), 'utf8');
+  for (const symptom of ['None', 'Mild', 'Moderate', 'Severe']) {
+    assert.ok(appScript.includes(`<option value="${symptom}"`), `${symptom} must keep a stable value when its label is translated`);
   }
 });

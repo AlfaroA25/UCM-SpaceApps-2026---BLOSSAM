@@ -9,6 +9,8 @@
     <title>AstroVital — Your Health. Your Mission.</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="AstroVital">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta property="og:type" content="website">
     <meta property="og:title" content="AstroVital — Your Health. Your Mission.">
     <meta property="og:description" content="A local-first health monitoring app for long-duration missions, with wellbeing and self-check-in tools.">
@@ -19,6 +21,7 @@
     <meta name="twitter:title" content="AstroVital — Your Health. Your Mission.">
     <meta name="twitter:description" content="A local-first health monitoring app for long-duration missions.">
     <meta name="twitter:image" content="https://alfaroa25.github.io/UCM-SpaceApps-2026---BLOSSAM/icons/astrovital-512.png">
+    <link rel="icon" type="image/svg+xml" href="./icons/astrovital.svg">
     <link rel="icon" type="image/png" sizes="512x512" href="./icons/astrovital-512.png">
     <link rel="apple-touch-icon" href="./icons/astrovital-192.png">
     <link rel="manifest" href="./manifest.webmanifest">
@@ -51,7 +54,7 @@
             </select>
             <p class="entry-note">Choose your preferred language. The interface and app-generated messages are translated locally; personal notes remain unchanged.</p>
             <p class="entry-privacy">This prototype uses illustrative readings and does not connect to sensors or medical systems.</p>
-            <button class="primary-button entry-install" id="entry-install-button" type="button" aria-label="Install AstroVital as an app">INSTALL APP</button>
+            <button class="primary-button entry-install" id="entry-install-button" type="button" aria-label="INSTALL APP">INSTALL APP</button>
           </div>
         </div>
       </section>
@@ -75,7 +78,7 @@
           <button class="nav-link" data-nav="activity" title="Physical activity"><span class="nav-icon">↗</span> Physical activity</button>
           <button class="nav-link" data-nav="wellbeing" title="Wellbeing"><span class="nav-icon">☼</span> Wellbeing</button>
           <button class="nav-link" data-nav="sleep" title="Sleep tracking"><span class="nav-icon">☾</span> Sleep tracking</button>
-          <button class="nav-link" data-nav="alerts" title="Alerts and notifications"><span class="nav-icon">♧</span> Alerts</button>
+          <button class="nav-link" data-nav="alerts" title="Alerts and notifications"><span class="nav-icon">♧</span> Alerts <span class="inbox-unread-badge" id="inbox-unread-badge" aria-live="polite" hidden></span></button>
           <button class="nav-link" data-nav="missions" title="Daily missions"><span class="nav-icon">◎</span> Daily missions</button>
           <button class="nav-link" data-nav="cognitive" title="Mind lab"><span class="nav-icon">⌘</span> Mind lab</button>
           <button class="nav-link" data-nav="settings" title="Settings"><span class="nav-icon">⚙</span> Settings</button>
@@ -108,7 +111,7 @@
             <span class="topbar-divider"></span>
             <div class="mission-clock"><span class="clock-icon">◷</span><div class="clock-readouts"><div class="clock-readout"><span id="clock">--:--:--</span><small>UTC</small></div><div class="clock-readout profile-clock-readout"><span id="profile-clock">--:--:--</span><small id="profile-clock-zone">America/Los_Angeles</small></div></div></div>
             <button class="install-button" id="share-button" type="button" aria-label="Share AstroVital">SHARE</button>
-            <button class="install-button" id="install-button" type="button" aria-label="Install AstroVital as an app">INSTALL</button>
+            <button class="install-button" id="install-button" type="button" aria-label="INSTALL">INSTALL</button>
             <button class="icon-button alert-button" data-action="alerts" aria-label="View health alerts">♧<span class="alert-badge" id="alert-count">0</span></button>
             <button class="top-avatar" data-action="profile" aria-label="Open crew profile">MC</button>
           </div>
@@ -184,7 +187,7 @@
           </section>
 
           <section class="view" id="view-alerts">
-            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH MONITOR</div><h1>Review your <span>alerts.</span></h1><p>These are prompts to review self-reported or illustrative readings, not diagnoses or emergency monitoring.</p></div>
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL RECORD REVIEW</div><h1>Alert inbox</h1><p>Health review prompts use self-reported records only. They are descriptive and are not diagnoses or continuous monitoring.</p></div>
             <div id="alerts-page-content"></div>
             <div class="health-note"><span>ⓘ</span><div><strong>Need medical guidance?</strong><p>Follow your mission medical protocols and contact your crew medical officer. AstroVital does not replace medical care.</p></div></div>
           </section>
@@ -539,7 +542,7 @@
               <div id="settings-summary" class="settings-summary"></div>
               <button class="primary-button" data-action="profile">EDIT PROFILE & PREFERENCES <span>→</span></button>
             </article>
-            <div class="health-note"><span>ⓘ</span><div><strong>Local-only prototype</strong><p>Hydration, activity, sleep, meals, wellbeing, and medication entries save on this device. Background notifications and cloud sync are not implemented.</p></div></div>
+            <div class="health-note"><span>ⓘ</span><div><strong>Local-only prototype</strong><p>Hydration, activity, sleep, meals, wellbeing, medication entries, and inbox alerts are saved on this device. Push notifications and cloud sync are not configured.</p></div></div>
           </section>
 
           <section class="view" id="view-roadmap">
