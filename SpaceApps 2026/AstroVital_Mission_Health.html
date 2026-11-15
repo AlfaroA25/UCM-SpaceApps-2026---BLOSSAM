@@ -188,6 +188,14 @@
 
           <section class="view" id="view-alerts">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL RECORD REVIEW</div><h1>Alert inbox</h1><p>Health review prompts use self-reported records only. They are descriptive and are not diagnoses or continuous monitoring.</p></div>
+            <article class="panel notification-demo-panel">
+              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> BROWSER PERMISSION TEST</div><h2>Demo notifications</h2></div><span class="sim-tag">TEST ONLY</span></div>
+              <p>To try a notification, open AstroVital over HTTPS or localhost, enable browser notifications, allow the browser prompt, then send a demo notification.</p>
+              <div class="notification-demo-actions"><button class="secondary-button" type="button" data-action="enable-browser-notifications">Enable browser notifications</button><button class="primary-button" type="button" data-action="send-demo-notification" disabled>Send demo notification</button><button class="secondary-button" type="button" data-action="preview-inapp-notification">Preview in-app demo</button></div>
+              <div class="notification-demo-status" id="notification-demo-status" role="status" aria-live="polite"></div>
+              <div class="notification-demo-preview" id="notification-demo-preview" hidden></div>
+              <p class="notification-demo-limit">The test notification is sent only when you press the button. Scheduled alerts and delivery after closing the app require a push service and server; they are not configured. In-app inbox alerts remain available.</p>
+            </article>
             <div id="alerts-page-content"></div>
             <div class="health-note"><span>ⓘ</span><div><strong>Need medical guidance?</strong><p>Follow your mission medical protocols and contact your crew medical officer. AstroVital does not replace medical care.</p></div></div>
           </section>

@@ -452,6 +452,14 @@ textarea::placeholder{color:#617483}
 .inbox-heading>span{color:#f0c77d;font:8px var(--mono);letter-spacing:.6px;text-transform:uppercase}
 .inbox-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;color:#91a6b4;font-size:10px;line-height:1.55}
 .inbox-toolbar p{margin:0;max-width:620px}
+.notification-demo-panel{margin-bottom:20px}
+.notification-demo-panel>p{max-width:760px;color:#91a6b4;font-size:11px;line-height:1.6}
+.notification-demo-actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.notification-demo-actions button:disabled{opacity:.48;cursor:not-allowed}
+.notification-demo-status{min-height:17px;color:#9ad9c0;font-size:10px;line-height:1.5}
+.notification-demo-preview{margin-top:8px;padding:12px;border:1px solid #304150;border-radius:5px;background:#101b26;color:#d6e5ed;font-size:11px}
+.notification-demo-preview[hidden]{display:none}
+.notification-demo-panel .notification-demo-limit{margin-bottom:0;color:#788b99;font-size:10px}
 .inbox-list{display:grid;gap:9px}
 .inbox-message{align-items:center;margin:0}
 .inbox-message.is-read{border-color:#284239;background:#101b1a;opacity:.78}

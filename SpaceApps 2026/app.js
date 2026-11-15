@@ -619,7 +619,7 @@
       ['REMINDERS PER DAY', state.profile.hydrationScheduleConfirmed
         ? state.profile.reminderCount
         : state.profile.reminderCount ? 'Preference only · confirm on Hydration Tracker' : 'Not set'],
-      ['REMINDER PREFERENCE', state.profile.notifications ? 'Saved as enabled · delivery not implemented' : 'Off'],
+      ['REMINDER PREFERENCE', window.RufusI18n.translate(state.profile.notifications ? 'Saved preference · browser permission configured in Alerts' : 'Off')],
       ['WELLNESS INTERESTS', Array.isArray(state.profile.interests) && state.profile.interests.length ? state.profile.interests.join(', ') : 'None selected']
     ];
     $('#settings-summary').innerHTML = rows.map(([label, value]) => {
@@ -654,6 +654,91 @@
         </article>`;
       }).join('') : `<div class="alert-empty">${escapeHtml(translate('No inbox alerts yet.'))}</div>`}</div>`;
     updateInboxBadge();
+    renderNotificationDemoStatus();
+  }
+
+  function renderNotificationDemoStatus(message) {
+    const status = $('#notification-demo-status');
+    const sendButton = $('[data-action="send-demo-notification"]');
+    if (!status || !sendButton) return;
+    const translate = window.RufusI18n.translate;
+    let statusMessage = message;
+    if (!statusMessage) {
+      if (!('Notification' in window)) statusMessage = 'Browser notifications are unsupported in this browser.';
+      else if (!window.isSecureContext) statusMessage = 'Notifications require HTTPS or localhost.';
+      else if (Notification.permission === 'granted') statusMessage = 'Notifications are enabled. Use Send demo notification to test them.';
+      else if (Notification.permission === 'denied') statusMessage = 'Notifications are blocked. Allow them in this site’s browser or device settings.';
+      else statusMessage = 'Enable browser notifications to try the demo.';
+    }
+    status.textContent = translate(statusMessage);
+    sendButton.disabled = !('Notification' in window)
+      || !window.isSecureContext
+      || Notification.permission !== 'granted';
+  }
+
+  async function enableBrowserNotifications() {
+    if (!('Notification' in window)) {
+      renderNotificationDemoStatus('Browser notifications are unsupported in this browser.');
+      return;
+    }
+    if (!window.isSecureContext) {
+      renderNotificationDemoStatus('Notifications require HTTPS or localhost.');
+      return;
+    }
+    try {
+      const permission = Notification.permission === 'default'
+        ? await Notification.requestPermission()
+        : Notification.permission;
+      if (permission !== 'granted') {
+        state.profile.notifications = false;
+        persist();
+        renderSettings();
+        renderNotificationDemoStatus(permission === 'denied'
+          ? 'Notifications are blocked. Allow them in this site’s browser or device settings.'
+          : 'Notification permission was not granted.');
+        return;
+      }
+      state.profile.notifications = true;
+      persist();
+      renderSettings();
+      renderNotificationDemoStatus('Notifications are enabled. Use Send demo notification to test them.');
+    } catch (error) {
+      console.error('Unable to request browser notification permission:', error);
+      renderNotificationDemoStatus('Notification permission was not granted.');
+    }
+  }
+
+  async function sendDemoNotification() {
+    if (!('Notification' in window) || !window.isSecureContext) {
+      renderNotificationDemoStatus(!window.isSecureContext
+        ? 'Notifications require HTTPS or localhost.'
+        : 'Browser notifications are unsupported in this browser.');
+      return;
+    }
+    if (Notification.permission !== 'granted') {
+      renderNotificationDemoStatus('Allow browser notifications first, then send the demo.');
+      return;
+    }
+    const translate = window.RufusI18n.translate;
+    try {
+      const registration = await navigator.serviceWorker?.getRegistration();
+      const options = {
+        body: translate('This is a test notification from AstroVital. Notifications are sent only when you request them.'),
+        icon: './icons/astrovital-192.png',
+        badge: './icons/astrovital-192.png',
+        tag: 'astrovital-notification-demo'
+      };
+      if (registration && 'showNotification' in registration) {
+        await registration.showNotification(translate('AstroVital notification demo'), options);
+      } else {
+        new Notification(translate('AstroVital notification demo'), options);
+      }
+      renderNotificationDemoStatus('Demo notification sent.');
+      showToast(translate('Demo notification sent.'));
+    } catch (error) {
+      console.error('Unable to send the AstroVital demo notification:', error);
+      renderNotificationDemoStatus('Unable to send the demo notification. Check your browser settings.');
+    }
   }
 
   function volumeToMl(amount, unit) {
@@ -1794,7 +1879,7 @@
           <label>SIMULATED SCENARIO MARKER · NOT PERSONAL EXPOSURE · mSv<input name="radiationReviewAt" type="number" min="1" max="1000" step=".1" value="${state.profile.radiationReviewAt}" required></label>
         </div>
         <div class="profile-preferences">
-          <label><input type="checkbox" name="notifications" ${state.profile.notifications ? 'checked' : ''}> Save in-app reminder preference <small>Delivery is not implemented in Phase 1.</small></label>
+          <label><input type="checkbox" name="notifications" ${state.profile.notifications ? 'checked' : ''}> Save in-app reminder preference <small>This does not grant browser permission or schedule delivery. Use Alerts to test notifications.</small></label>
           <label><input type="checkbox" name="interests" value="movement" ${checkedInterests('movement')}> Movement</label>
           <label><input type="checkbox" name="interests" value="sleep" ${checkedInterests('sleep')}> Sleep</label>
           <label><input type="checkbox" name="interests" value="mindfulness" ${checkedInterests('mindfulness')}> Mindfulness</label>
@@ -3008,6 +3093,20 @@
         persist();
         renderAlertsPage();
       }
+      return;
+    }
+    if (action === 'enable-browser-notifications') {
+      enableBrowserNotifications();
+      return;
+    }
+    if (action === 'send-demo-notification') {
+      sendDemoNotification();
+      return;
+    }
+    if (action === 'preview-inapp-notification') {
+      const preview = $('#notification-demo-preview');
+      preview.textContent = window.RufusI18n.translate('This is a demo notification preview.');
+      preview.hidden = false;
       return;
     }
     const medicationStatusButton = event.target.closest('[data-medication-status]');

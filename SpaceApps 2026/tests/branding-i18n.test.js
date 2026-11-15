@@ -294,6 +294,39 @@ test('Rufus companion page copy and dynamic labels are translated in every suppo
   }
 });
 
+test('notification demo controls and guidance are translated in every supported language', () => {
+  const i18n = loadI18n();
+  const strings = [
+    'BROWSER PERMISSION TEST',
+    'Demo notifications',
+    'TEST ONLY',
+    'To try a notification, open AstroVital over HTTPS or localhost, enable browser notifications, allow the browser prompt, then send a demo notification.',
+    'Enable browser notifications',
+    'Send demo notification',
+    'Preview in-app demo',
+    'The test notification is sent only when you press the button. Scheduled alerts and delivery after closing the app require a push service and server; they are not configured. In-app inbox alerts remain available.',
+    'Browser notifications are unsupported in this browser.',
+    'Notifications require HTTPS or localhost.',
+    'Notifications are enabled. Use Send demo notification to test them.',
+    'Notifications are blocked. Allow them in this site’s browser or device settings.',
+    'Enable browser notifications to try the demo.',
+    'Allow browser notifications first, then send the demo.',
+    'Notification permission was not granted.',
+    'Demo notification sent.',
+    'Unable to send the demo notification. Check your browser settings.',
+    'This is a demo notification preview.',
+    'AstroVital notification demo',
+    'This is a test notification from AstroVital. Notifications are sent only when you request them.'
+  ];
+
+  for (const language of ['es', 'fr', 'de', 'zh', 'ja', 'ar']) {
+    i18n.setLocale(language);
+    for (const source of strings) {
+      assert.notEqual(i18n.translate(source), source, `${source} should be translated for ${language}`);
+    }
+  }
+});
+
 test('both app HTML entry points expose install metadata and the translated alert inbox', () => {
   const entries = ['index.html', 'AstroVital_Mission_Health.html'];
   for (const entry of entries) {
@@ -302,6 +335,9 @@ test('both app HTML entry points expose install metadata and the translated aler
     assert.match(html, /rel="icon" type="image\/svg\+xml" href="\.\/icons\/astrovital\.svg"/, `${entry} should use the square SVG icon`);
     assert.match(html, /id="inbox-unread-badge"/, `${entry} should show the unread inbox count`);
     assert.match(html, /id="alerts-page-content"/, `${entry} should render the inbox`);
+    assert.match(html, /data-action="enable-browser-notifications"/, `${entry} should let users grant browser notification permission`);
+    assert.match(html, /data-action="send-demo-notification"/, `${entry} should include a native notification demo`);
+    assert.match(html, /data-action="preview-inapp-notification"/, `${entry} should include an in-app notification preview`);
     assert.match(html, /src="\.\/app\.js"/, `${entry} should load the shared app behavior`);
   }
 
@@ -312,7 +348,20 @@ test('both app HTML entry points expose install metadata and the translated aler
   assert.match(icon, /<rect width="512" height="512" fill="#080d16"\/>/);
   assert.doesNotMatch(icon, /<rect[^>]*rx=/);
   const appScript = fs.readFileSync(path.join(appDirectory, 'app.js'), 'utf8');
+  assert.match(appScript, /Notification\.requestPermission\(\)/);
+  assert.match(appScript, /registration\.showNotification/);
+  assert.match(appScript, /data-action === 'send-demo-notification'/);
   for (const symptom of ['None', 'Mild', 'Moderate', 'Severe']) {
     assert.ok(appScript.includes(`<option value="${symptom}"`), `${symptom} must keep a stable value when its label is translated`);
   }
+});
+
+test('Astro_Vital_Health alias redirects to the installable full app page', () => {
+  const alias = fs.readFileSync(path.join(appDirectory, 'Astro_Vital_Health.html'), 'utf8');
+  assert.match(alias, /http-equiv="refresh" content="0; url=\.\/AstroVital_Mission_Health\.html"/);
+  assert.match(alias, /rel="manifest" href="\.\/manifest\.webmanifest"/);
+  assert.match(alias, /name="apple-mobile-web-app-capable" content="yes"/);
+
+  const serviceWorker = fs.readFileSync(path.join(appDirectory, 'sw.js'), 'utf8');
+  assert.match(serviceWorker, /'\.\/Astro_Vital_Health\.html'/, 'the alias should be available offline');
 });

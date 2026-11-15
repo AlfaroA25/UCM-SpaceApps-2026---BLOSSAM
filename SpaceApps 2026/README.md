@@ -20,6 +20,16 @@ After deployment, share the [AstroVital GitHub Pages app](https://alfaroa25.gith
 
 Installation and offline use require HTTPS or localhost. The GitHub Pages deployment workflow publishes the contents of this directory at the repository’s Pages URL.
 
+Both `index.html` and `AstroVital_Mission_Health.html` load the same translated app and PWA assets. The alternate `Astro_Vital_Health.html` filename redirects to the full app page.
+
+## Try a browser notification
+
+1. Open the hosted HTTPS app (or a localhost development URL) and select **Alerts and notifications**.
+2. Select **Enable browser notifications**, then allow notifications in the browser or device prompt. If permission was previously blocked, change it in that site’s browser/device settings.
+3. Select **Send demo notification** to display a real operating-system notification, or **Preview in-app demo** to see a preview without granting permission.
+
+The demo notification is sent only after you press its button. Health review prompts are saved to the in-app inbox; the app does not schedule hydration reminders or send alerts while closed. Automatic background delivery requires a push subscription and a server-side push service, which are not configured. On iPhone/iPad, add the HTTPS app to the Home Screen first; notification support depends on the iOS version and device settings.
+
 ## Implemented
 
 - Crew members enter only a Personnel ID. Demo ID `1234` opens the local profile named Rufus; other IDs open or create separate local profiles named Crew Member by default.
@@ -41,15 +51,16 @@ Installation and offline use require HTTPS or localhost. The GitHub Pages deploy
 - Mind Lab includes timed target-scan and Memory Match stopwatches, plus a six-pair Memory Match game. Match time can be paused, resumed, and reset; these are optional games, not cognitive assessments.
 - A Rufus companion panel with original temporary bobcat placeholder artwork and reactions to supported check-ins and activities.
 - Hydration goal and unit setup, preview-before-confirm schedule planning, manual intake entries, edit/delete history, daily progress, and a seven-day summary.
-- Hydration plans and intake entries remain on this device. The schedule appears only in the app; there are no background or operating-system notifications.
+- Hydration plans and intake entries remain on this device. The schedule appears only in the app; no scheduled or background hydration reminders are implemented.
 - Self-reported health review prompts are also added to a local inbox, with unread counts and read/unread controls. Inbox messages are saved per local profile on this device; push notifications and cross-device delivery are not configured.
+- The Alerts page includes a browser-permission demo for sending a user-triggered operating-system notification; it does not schedule or remotely deliver alerts.
 - NASA POWER Phase 1: a browser-based daily point query for 2 m temperature, 10 m wind speed/direction, surface pressure, and all-sky surface shortwave radiation, with unit-aware summaries, trend chart, date table, and source metadata.
 - NASA Research & Mission Data: NASA EDA mission telemetry for ISS-side temperature, CO₂, relative humidity, and historical radiation, with mission comparison, date filters, chart tooltips, units, and source links. Bundled, daily aggregates cover RR-1 (2014), RR-3 (2016), and RR-6 (2017–2018); telemetry means are calculated from valid NASA EDA samples and radiation readings are preserved as reported.
 - NASA OSDR discovery: human in-flight datasets queried using the documented OSDR API, restricted to `Homo sapiens` and in-flight studies and excluding cell, tissue, and animal material types. The bundled snapshot includes OSD-174, OSD-483, and OSD-530 with study-provided descriptions and links to NASA metadata/repository pages.
 - NASA and USGS source explorer: NASA GIBS/Worldview image layers, NASA FIRMS country feeds, the USGS Earthquake GeoJSON feed, USGS Water Data monitoring locations and latest reported continuous observations, and USGS Landsat Collection 2 STAC scene discovery with an official-query-link fallback when browser CORS blocks the API.
 - Offline app-shell caching for the current assets.
 
-The NASA POWER query requires an internet connection and sends the selected coordinates and dates directly to NASA. NASA POWER does not require an API key, so no secret or `.env` configuration is needed. Results are cached in memory for up to six hours and duplicate in-flight requests are shared. NASA EDA and OSDR live API requests are attempted and cached in memory; the static app may be prevented from reading those APIs by browser cross-origin restrictions, so verified NASA-sourced snapshots are bundled as an offline fallback. The NASA EDA API documentation is linked in the dashboard. Health readings remain illustrative sample data. Language catalogs are shipped with the app; no translation request or health-data upload is made when switching languages. NASA RadLab was returning HTTP 500 during integration; the dashboard labels this limitation and does not fabricate RadLab data. Push notifications, background alerts, IndexedDB, synchronization, Supabase, and actual personal sensor integrations are not implemented.
+The NASA POWER query requires an internet connection and sends the selected coordinates and dates directly to NASA. NASA POWER does not require an API key, so no secret or `.env` configuration is needed. Results are cached in memory for up to six hours and duplicate in-flight requests are shared. NASA EDA and OSDR live API requests are attempted and cached in memory; the static app may be prevented from reading those APIs by browser cross-origin restrictions, so verified NASA-sourced snapshots are bundled as an offline fallback. The NASA EDA API documentation is linked in the dashboard. Health readings remain illustrative sample data. Language catalogs are shipped with the app; no translation request or health-data upload is made when switching languages. NASA RadLab was returning HTTP 500 during integration; the dashboard labels this limitation and does not fabricate RadLab data. Push subscriptions and server-side background delivery, scheduled reminders, IndexedDB, synchronization, Supabase, and actual personal sensor integrations are not implemented.
 
 NASA GIBS imagery uses its public EPSG:4326 WMS. NASA FIRMS requests require a user-provided MAP_KEY; AstroVital sends it directly to the official FIRMS endpoint for that request and does not save it. USGS earthquake and Water Data OGC API v1 endpoints are queried directly and are cached briefly in memory; returned water records may be historical, and their source timestamps and units are displayed. USGS LandsatLook STAC search is attempted in-browser, but the service may reject cross-origin reads from a static localhost or hosted origin; the explorer then provides a link to the exact official USGS STAC query rather than substituting scene metadata.
 
