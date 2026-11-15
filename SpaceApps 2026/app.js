@@ -29,14 +29,8 @@
     'wrist-computer': { name: 'Wrist computer', description: 'A compact mission communicator on Rufus’s cuff.', src: './icons/rufus-layer-wrist.svg', cost: 35 },
     'holo-slate': { name: 'Holographic slate', description: 'A luminous field slate for curious explorers.', src: './icons/rufus-layer-slate.svg', cost: 50 },
     'comms-pack': { name: 'Comms pack', description: 'A flight-ready communications pack.', src: './icons/rufus-layer-pack.svg', cost: 60 }
-<<<<<<< Updated upstream
   };  const futurePages = {
     meals: { title: 'Meals and nutrition', phase: 'PHASE 3', detail: 'Meal schedules and meal logs are planned for Phase 3. RUFUS will not invent nutrition information.' },
-=======
-  };
-  const futurePages = {
-    medications: { title: 'Medication manager', phase: 'PHASE 3', detail: 'Medication schedules and dose-history tracking are planned for Phase 3. This build does not provide dosing guidance.' },
->>>>>>> Stashed changes
     activity: { title: 'Physical activity', phase: 'PHASE 5', detail: 'This prototype can log mission-approved activity through Daily Missions. A dedicated schedule and activity-history view are planned for Phase 5.' },
     mental: { title: 'Mental wellness', phase: 'PHASE 5', detail: 'The current wellbeing log supports private, local check-ins. Expanded stress, sleep-quality, and wellness-history tools are planned for Phase 5.' },
     sleep: { title: 'Sleep tracking', phase: 'PHASE 5', detail: 'Sleep duration can be entered in the simulated health check-in. Dedicated sleep schedules, quality check-ins, and trends are planned for Phase 5.' },
@@ -44,34 +38,15 @@
   };
   const languageNames = { en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch', zh: '简体中文', ja: '日本語', ar: 'العربية' };
   const millilitersPerUnit = { mL: 1, L: 1000, 'fl oz': 29.5735295625 };
-  const mealCategories = [
-    { id: 'breakfast', label: 'Breakfast', icon: '☼' },
-    { id: 'lunch', label: 'Lunch', icon: '◒' },
-    { id: 'dinner', label: 'Dinner', icon: '☾' },
-    { id: 'snacks', label: 'Snacks', icon: '✦' }
-  ];
-  const nutritionNutrients = [
-    { key: 'calories', label: 'Calories', unit: 'kcal', goalUnit: 'kcal', color: 'cyan' },
-    { key: 'protein', label: 'Protein', unit: 'g', goalUnit: 'g', color: 'blue' },
-    { key: 'carbohydrates', label: 'Carbohydrates', unit: 'g', goalUnit: 'g', color: 'green' },
-    { key: 'fat', label: 'Fat', unit: 'g', goalUnit: 'g', color: 'amber' },
-    { key: 'fiber', label: 'Fiber', unit: 'g', goalUnit: 'g', color: 'green' },
-    { key: 'sugar', label: 'Sugar', unit: 'g', goalUnit: 'g', color: 'amber' },
-    { key: 'sodium', label: 'Sodium', unit: 'mg', goalUnit: 'mg', color: 'blue' }
-  ];
-  const emptyNutrients = () => Object.fromEntries(nutritionNutrients.map(({ key }) => [key, null]));
-  const foodProxyUrl = String(window.ASTROVITAL_USDA_PROXY_URL || '').trim().replace(/\/+$/, '');
   const seed = {
     version: 1,
-    profile: { name: 'Astronaut', personnelId: '', role: 'Crew Member', missionId: '', language: 'en', timezone: localTimeZone, notifications: false, hydrationGoal: '', hydrationUnit: 'mL', reminderStart: '', reminderEnd: '', reminderCount: '', hydrationScheduleConfirmed: false, mealSchedules: { breakfast: '', lunch: '', dinner: '', snacks: '' }, interests: [], onboarded: false, heartMin: 58, heartMax: 72, sleepMin: 7.5, sleepMax: 9, radiationReviewAt: 50 },
+    profile: { name: 'Astronaut', personnelId: '', role: 'Crew Member', missionId: '', language: 'en', timezone: localTimeZone, notifications: false, hydrationGoal: '', hydrationUnit: 'mL', reminderStart: '', reminderEnd: '', reminderCount: '', hydrationScheduleConfirmed: false, interests: [], onboarded: false, heartMin: 58, heartMax: 72, sleepMin: 7.5, sleepMax: 9, radiationReviewAt: 50 },
     rufus: { pose: 'wave', inventory: ['orbit-satellite'], accessories: ['orbit-satellite'], stardust: 0, bondXp: 0, petDate: today, petCount: 0, petStreak: 0, lastPetDate: '' },
     metrics: { heart: 64, sleep: 7.4, exercise: 42, resistanceExercise: 24, fatigue: 3, mood: 'Good', connection: 'Connected', immuneSymptoms: 'None', cognition: 92, radiation: 38 },
     companion: { state: 'hello' }, hydrationLogs: [], medicationLog: [], xp: 2480, streak: 6, lastCheckin: 'TODAY, 07:42', checkinDate: today, lastCheckinDate: today,
     checkinHistory: [], completed: [], completedDate: today, achievements: [], cognitiveSessions: 3, bestReaction: 284,
-    meals: [], nutritionGoals: {}, mealReminderStatus: {},
     heartHistory: [68, 66, 67, 65, 66, 64, 64], sleepHistory: [6.8, 7.1, 7.6, 6.9, 7.8, 7.2, 7.4]
-  };
-  const clone = (value) => JSON.parse(JSON.stringify(value));
+  };  const clone = (value) => JSON.parse(JSON.stringify(value));
   const DEMO_PERSONNEL_ID = '1234';
   const normalizePersonnelId = (value) => String(value || '').trim().toUpperCase();
   const isValidPersonnelId = (value) => value.length <= 20 && /^[A-Z0-9][A-Z0-9-]*$/.test(value);
@@ -92,14 +67,6 @@
   let nasaPowerData = null;
   let nasaPowerRequestId = 0;
   let welcomeLanguageTouched = false;
-  let mealDraft = [];
-  let mealSearchResults = new Map();
-  let selectedMealFood = null;
-  let selectedMealFoodIndex = -1;
-  let mealEditId = null;
-  let mealSearchRequestId = 0;
-  let activeMealReminder = null;
-  let mealReminderTimer = null;
   let rufusDialogue = '';
   let rufusReactionPose = '';
   let rufusReactionTimer;
@@ -125,14 +92,7 @@
       const inventory = Array.isArray(savedRufus.inventory) ? [...new Set(savedRufus.inventory.filter((item) => Object.hasOwn(rufusAccessories, item)))] : clone(seed.rufus.inventory);
       const accessories = Array.isArray(savedRufus.accessories) ? [...new Set(savedRufus.accessories.filter((item) => inventory.includes(item) && Object.hasOwn(rufusAccessories, item)))] : clone(seed.rufus.accessories);
       const normalized = {
-        ...clone(seed), ...parsed, profile: {
-          ...seed.profile,
-          ...parsed.profile,
-          mealSchedules: Object.fromEntries(mealCategories.map(({ id }) => {
-            const time = parsed.profile.mealSchedules?.[id];
-            return [id, typeof time === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time) ? time : ''];
-          }))
-        },
+        ...clone(seed), ...parsed, profile: { ...seed.profile, ...parsed.profile },
         rufus: {
           pose: Object.hasOwn(rufusArtwork, savedPose) ? savedPose : seed.rufus.pose, inventory, accessories,
           stardust: Number.isFinite(savedRufus.stardust) ? Math.max(0, savedRufus.stardust) : seed.rufus.stardust,
@@ -144,7 +104,6 @@
         },
         metrics: { ...seed.metrics, ...parsed.metrics }, companion: { ...seed.companion, ...parsed.companion },
         hydrationLogs: Array.isArray(parsed.hydrationLogs) ? parsed.hydrationLogs : [],
-<<<<<<< Updated upstream
         medicationLog: Array.isArray(parsed.medicationLog)
           ? parsed.medicationLog.filter((entry) => entry && typeof entry === 'object'
             && typeof entry.id === 'string'
@@ -155,13 +114,6 @@
             .map((entry) => ({ ...entry, note: typeof entry.note === 'string' ? entry.note.slice(0, 200) : '' }))
             .slice(0, 100)
           : clone(seed.medicationLog),
-=======
-        meals: Array.isArray(parsed.meals)
-          ? parsed.meals.filter((meal) => meal && typeof meal === 'object' && Array.isArray(meal.foods) && meal.foods.every((food) => food && typeof food === 'object'))
-          : [],
-        nutritionGoals: parsed.nutritionGoals && typeof parsed.nutritionGoals === 'object' && !Array.isArray(parsed.nutritionGoals) ? parsed.nutritionGoals : {},
-        mealReminderStatus: parsed.mealReminderStatus && typeof parsed.mealReminderStatus === 'object' && !Array.isArray(parsed.mealReminderStatus) ? parsed.mealReminderStatus : {},
->>>>>>> Stashed changes
         completed: Array.isArray(parsed.completed) ? parsed.completed : [], achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
         checkinHistory: Array.isArray(parsed.checkinHistory) ? parsed.checkinHistory : [],
         heartHistory: Array.isArray(parsed.heartHistory) ? parsed.heartHistory : clone(seed.heartHistory),
@@ -189,12 +141,6 @@
       showToast('Unable to save locally. Check this browser’s storage settings.');
       return false;
     }
-  }
-
-  function isValidMealDate(value) {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-    const date = new Date(`${value}T12:00:00Z`);
-    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
   }
 
 
@@ -291,7 +237,6 @@
     if (view === 'missions') renderMissions();
     if (view === 'journal') renderJournalHistory();
     if (view === 'settings') renderSettings();
-    if (view === 'meals') renderMeals(true);
     if (view === 'companion') renderCompanion();
     if (view === 'cognitive') speakRufus('A curious mind is ready for its next little puzzle.', 'Curious', 'confident');
     if (view === 'alerts') renderAlertsPage();
@@ -553,468 +498,6 @@
     renderHydrationHistory();
     renderHydrationWeek();
     renderHydrationSchedule(plan);
-  }
-
-  const mealText = (source) => window.RufusI18n.translate(source);
-
-  function mealToday() {
-    return localDateKey(new Date(), state.profile.timezone || localTimeZone);
-  }
-
-  function dateOffset(dateKey, offset) {
-    const [year, month, day] = dateKey.split('-').map(Number);
-    return new Date(Date.UTC(year, month - 1, day + offset, 12));
-  }
-
-  function nutritionForDate(dateKey) {
-    const meals = state.meals.filter((meal) => meal.dateKey === dateKey);
-    const totals = emptyNutrients();
-    const missing = Object.fromEntries(nutritionNutrients.map(({ key }) => [key, 0]));
-    for (const meal of meals) {
-      for (const food of meal.foods) {
-        const quantity = Number(food.quantity);
-        for (const { key } of nutritionNutrients) {
-          const value = food.nutrients?.[key];
-          if (Number.isFinite(Number(value)) && value !== null && Number.isFinite(quantity)) {
-            totals[key] = (totals[key] ?? 0) + Number(value) * quantity;
-          } else {
-            missing[key] += 1;
-          }
-        }
-      }
-    }
-    return { meals, totals, missing };
-  }
-
-  function nutritionText(value, key, incomplete = false) {
-    if (!Number.isFinite(value)) return '—';
-    const number = formatNumber(Number(value), { maximumFractionDigits: 1 });
-    const prefix = incomplete ? '≥ ' : '';
-    const unit = nutritionNutrients.find((item) => item.key === key)?.unit || '';
-    return `${prefix}${number} ${unit}`.trim();
-  }
-
-  function renderNutritionSummary(dateKey) {
-    const { meals, totals, missing } = nutritionForDate(dateKey);
-    $('#nutrition-summary').innerHTML = nutritionNutrients.map((nutrient) => {
-      const total = totals[nutrient.key];
-      const goal = Number(state.nutritionGoals[nutrient.key]);
-      const hasGoal = Number.isFinite(goal) && goal > 0;
-      const incomplete = missing[nutrient.key] > 0 && meals.some((meal) => meal.foods.length);
-      const progress = hasGoal && Number.isFinite(total) ? Math.min(100, total / goal * 100) : 0;
-      const goalText = hasGoal
-        ? `${mealText('Remaining')}: ${formatNumber(Math.max(0, goal - (total || 0)), { maximumFractionDigits: 1 })} ${nutrient.goalUnit} ${mealText('of goal')} ${formatNumber(goal, { maximumFractionDigits: 1 })}`
-        : mealText('Not set');
-      return `<article class="nutrition-summary-card ${incomplete ? 'incomplete' : ''}"><span>${escapeHtml(mealText(nutrient.label))} · ${escapeHtml(nutrient.unit.toUpperCase())}</span><strong>${escapeHtml(nutritionText(total, nutrient.key, incomplete))}</strong><div class="progress-track"><span style="width:${progress}%"></span></div><small>${escapeHtml(goalText)}${incomplete ? ` · ${escapeHtml(mealText('Some nutrients are unavailable'))}` : ''}</small></article>`;
-    }).join('');
-  }
-
-  function renderNutritionChart(endDate) {
-    const width = 720;
-    const height = 190;
-    const left = 32;
-    const right = 12;
-    const top = 14;
-    const bottom = 25;
-    const days = Array.from({ length: 7 }, (_, index) => dateOffset(endDate, index - 6));
-    const series = ['calories', 'protein', 'carbohydrates', 'fat'].map((key) => ({
-      key,
-      values: days.map((date) => {
-        const dateKey = date.toISOString().slice(0, 10);
-        return nutritionForDate(dateKey).totals[key] ?? 0;
-      })
-    }));
-    const plotWidth = width - left - right;
-    const plotHeight = height - top - bottom;
-    const x = (index) => left + index / 6 * plotWidth;
-    const grid = [0, 1, 2, 3].map((step) => {
-      const y = top + step / 3 * plotHeight;
-      return `<line class="nutrition-chart-grid" x1="${left}" y1="${y}" x2="${width - right}" y2="${y}"/>`;
-    }).join('');
-    const lines = series.map(({ key, values }) => {
-      const max = Math.max(1, ...values);
-      const points = values.map((value, index) => `${x(index)},${top + plotHeight - value / max * plotHeight}`);
-      const path = `<polyline class="nutrition-chart-line ${key}" points="${points.join(' ')}"/>`;
-      const circles = values.map((value, index) => `<circle class="nutrition-chart-point ${key}" cx="${x(index)}" cy="${top + plotHeight - value / max * plotHeight}" r="3"><title>${escapeHtml(formatAppDate(days[index].toISOString().slice(0, 10)))} · ${escapeHtml(key)}: ${formatNumber(value, { maximumFractionDigits: 1 })}</title></circle>`).join('');
-      return path + circles;
-    }).join('');
-    const labels = days.map((date, index) => {
-      const label = new Intl.DateTimeFormat(localeTag(), { weekday: 'short', timeZone: 'UTC' }).format(date);
-      return `<text class="nutrition-chart-label" x="${x(index)}" y="${height - 5}" text-anchor="middle">${escapeHtml(label)}</text>`;
-    }).join('');
-    $('#nutrition-history-chart').innerHTML = `<svg viewBox="0 0 ${width} ${height}" aria-label="${escapeHtml(mealText('Nutrition over the last seven days'))}">${grid}${lines}${labels}</svg>`;
-  }
-
-  function renderMealHistory(dateKey) {
-    const meals = state.meals.filter((meal) => meal.dateKey === dateKey)
-      .sort((a, b) => String(a.recordedAt).localeCompare(String(b.recordedAt)));
-    const title = dateKey === mealToday()
-      ? mealText('Meals for today')
-      : `${mealText('Meal history')} · ${formatAppDate(dateKey)}`;
-    $('#meal-history-title').textContent = title;
-    $('#meal-entry-count').textContent = `${formatNumber(meals.length)} ${mealText(meals.length === 1 ? 'meal' : 'meals').toUpperCase()}`;
-    if (!meals.length) {
-      $('#meal-history-list').innerHTML = `<div class="meal-empty">${escapeHtml(mealText('NO MEALS LOGGED FOR THIS DATE'))}</div>`;
-      return;
-    }
-    $('#meal-history-list').innerHTML = mealCategories.map((category) => {
-      const group = meals.filter((meal) => meal.category === category.id);
-      if (!group.length) return '';
-      return group.map((meal) => {
-        const calories = meal.foods.reduce((sum, food) => {
-          const value = food.nutrients?.calories;
-          return Number.isFinite(Number(value)) && value !== null ? sum + Number(value) * Number(food.quantity || 0) : sum;
-        }, 0);
-        const hasCalories = meal.foods.some((food) => Number.isFinite(Number(food.nutrients?.calories)) && food.nutrients?.calories !== null);
-        const time = new Intl.DateTimeFormat(localeTag(), {
-          timeZone: meal.timeZone || state.profile.timezone || localTimeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
-        }).format(new Date(meal.recordedAt));
-        const foodRows = meal.foods.map((food, foodIndex) => {
-          const nutrients = nutritionNutrients.map(({ key, label }) => {
-            const value = food.nutrients?.[key];
-            const total = value !== null && value !== undefined && Number.isFinite(Number(value))
-              ? Number(value) * Number(food.quantity || 0)
-              : NaN;
-            return `${mealText(label)} ${nutritionText(total, key)}`;
-          }).join(' · ');
-          return `<div class="meal-food-row"><div><strong>${escapeHtml(food.name)}</strong><small>${formatNumber(Number(food.quantity), { maximumFractionDigits: 2 })} × ${escapeHtml(food.servingLabel || mealText('USDA serving'))} · ${escapeHtml(nutrients)}${food.source === 'manual' ? ` · ${escapeHtml(mealText('Manual entry'))}` : ''}</small></div><div class="meal-food-actions"><button type="button" class="secondary-button" data-meal-edit-food="${escapeHtml(meal.id)}" data-meal-food-index="${foodIndex}">${escapeHtml(mealText('Edit'))}</button><button type="button" class="secondary-button" data-meal-remove-food="${escapeHtml(meal.id)}" data-meal-food-index="${foodIndex}">${escapeHtml(mealText('Remove'))}</button></div></div>`;
-        }).join('');
-        return `<article class="meal-group"><div class="meal-group-heading"><div><h3>${escapeHtml(mealText(category.label))}</h3><span>${escapeHtml(time)}${meal.note ? ` · ${escapeHtml(meal.note)}` : ''}</span></div><div class="meal-group-actions"><span>${hasCalories ? `${formatNumber(calories, { maximumFractionDigits: 1 })} kcal` : '— kcal'}</span><button type="button" class="secondary-button" data-meal-edit="${escapeHtml(meal.id)}">${escapeHtml(mealText('Edit'))}</button><button type="button" class="secondary-button" data-meal-delete="${escapeHtml(meal.id)}">${escapeHtml(mealText('Delete'))}</button></div></div><div class="meal-food-list">${foodRows}</div></article>`;
-      }).join('');
-    }).join('');
-  }
-
-  function renderMealSchedule(syncForms = false) {
-    if (!syncForms) return;
-    for (const { id } of mealCategories) {
-      const input = $(`#meal-schedule-form [name="${id}"]`);
-      if (input) input.value = state.profile.mealSchedules?.[id] || '';
-    }
-  }
-
-  function renderMeals(syncForms = false) {
-    const dateInput = $('#meal-history-date');
-    const todayDate = mealToday();
-    if (syncForms || !dateInput.value) dateInput.value = todayDate;
-    dateInput.max = todayDate;
-    const dateKey = dateInput.value || todayDate;
-    renderNutritionSummary(dateKey);
-    renderNutritionChart(dateKey);
-    renderMealHistory(dateKey);
-    if (syncForms) {
-      for (const nutrient of nutritionNutrients) {
-        const input = $(`#nutrition-goals-form [name="${nutrient.key}"]`);
-        input.value = Number.isFinite(Number(state.nutritionGoals[nutrient.key])) && state.nutritionGoals[nutrient.key] !== null
-          ? state.nutritionGoals[nutrient.key]
-          : '';
-      }
-      renderMealSchedule(true);
-    }
-  }
-
-  function mealCategoryOptions(selected) {
-    return mealCategories.map(({ id, label }) => `<option value="${id}" ${id === selected ? 'selected' : ''}>${escapeHtml(mealText(label))}</option>`).join('');
-  }
-
-  function safeFood(food) {
-    const nutrients = emptyNutrients();
-    for (const { key } of nutritionNutrients) {
-      const value = food?.nutrients?.[key];
-      nutrients[key] = Number.isFinite(Number(value)) && value !== null ? Number(value) : null;
-    }
-    const servings = Array.isArray(food?.servings) && food.servings.length
-      ? food.servings.filter((serving) => typeof serving.label === 'string' && Number.isFinite(Number(serving.multiplier)) && Number(serving.multiplier) > 0)
-      : [{ label: '100 g', multiplier: 1 }];
-    return {
-      id: String(food?.id || ''),
-      name: String(food?.name || '').slice(0, 240),
-      brand: String(food?.brand || '').slice(0, 120),
-      dataType: String(food?.dataType || ''),
-      source: food?.source === 'manual' ? 'manual' : 'usda',
-      nutrients,
-      servings
-    };
-  }
-
-  function openMealEditor(meal = null, category = 'breakfast', dateKey = $('#meal-history-date').value || mealToday(), editFoodIndex = -1) {
-    mealEditId = meal?.id || null;
-    mealDraft = meal ? meal.foods.map((food) => ({ ...food, nutrients: { ...food.nutrients }, baseNutrients: { ...(food.baseNutrients || food.nutrients) }, servings: food.servings || [{ label: food.servingLabel, multiplier: 1 }] })) : [];
-    selectedMealFood = null;
-    selectedMealFoodIndex = -1;
-    mealSearchResults = new Map();
-    const initialCategory = meal?.category || category;
-    const initialDate = meal?.dateKey || dateKey;
-    const timeLabel = mealText(meal ? 'Edit meal' : 'New meal');
-    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> ${escapeHtml(mealText('Meal history'))}</div><h2 id="modal-title">${escapeHtml(timeLabel)}</h2>
-      <div class="meal-form-grid"><label>${escapeHtml(mealText('Meal category'))}<select id="meal-category">${mealCategoryOptions(initialCategory)}</select></label><label>${escapeHtml(mealText('MEAL HISTORY DATE'))}<input id="meal-date" class="entry-control" type="date" max="${mealToday()}" value="${escapeHtml(initialDate)}" required></label></div>
-      <div class="meal-modal-section"><h3>${escapeHtml(mealText('Search USDA FoodData Central'))}</h3><form id="meal-search-form" class="meal-search-form"><input id="meal-food-search" class="entry-control" type="search" minlength="2" maxlength="100" placeholder="${escapeHtml(mealText('Food name'))}" autocomplete="off"><button type="submit" class="primary-button">${escapeHtml(mealText('Search'))}</button></form>
-      <p class="meal-search-status" id="meal-search-status" role="status" aria-live="polite">${escapeHtml(foodProxyUrl ? mealText('Enter at least 2 characters to search USDA foods.') : mealText('USDA search is not configured. Manual food entry is available.'))}</p><div id="meal-search-results" class="meal-search-results"></div>
-      <button type="button" class="secondary-button meal-manual-toggle" data-action="toggle-manual-food">${escapeHtml(mealText('Manual food entry'))}</button>
-      <div id="meal-manual-wrap" hidden><form id="meal-manual-food-form" class="meal-manual-form">
-        <label>${escapeHtml(mealText('Food name'))}<input class="entry-control" name="name" maxlength="120" required></label>
-        <label>${escapeHtml(mealText('Serving label'))}<input class="entry-control" name="servingLabel" maxlength="80" placeholder="${escapeHtml(mealText('Example: 1 bowl or 100 g'))}" value="${escapeHtml(mealText('1 serving'))}" required></label>
-        <div class="manual-nutrient-grid">${nutritionNutrients.map(({ key, label, unit }) => `<label>${escapeHtml(mealText(label))} · ${unit.toUpperCase()}<input class="entry-control" type="number" min="0" max="1000000" step="any" name="${key}" placeholder="—"></label>`).join('')}</div>
-        <button type="submit" class="secondary-button">${escapeHtml(mealText('Add food'))}</button>
-      </form></div></div>
-      <div id="meal-portion-editor"></div>
-      <div class="meal-modal-section"><h3>${escapeHtml(mealText('Add food'))} · ${escapeHtml(mealText('Meal history'))}</h3><div id="meal-draft-items" class="meal-draft-items"></div></div>
-      <div class="meal-form-grid"><label>${escapeHtml(mealText('Optional note'))}<input id="meal-note" class="entry-control" maxlength="120" value="${escapeHtml(meal?.note || '')}"></label><label>${escapeHtml(mealText('Water'))} · mL <input id="meal-water-ml" class="entry-control" type="number" min="0" max="20000" step="any" value="${Number(meal?.waterMl || 0)}"></label></div>
-      <p class="meal-helper">${escapeHtml(mealText('Water can be recorded once in the existing Hydration Tracker. Re-saving this meal updates its linked entry instead of adding a duplicate.'))}</p>
-      <div class="meal-modal-actions"><button type="button" class="secondary-button" data-action="close-modal">${escapeHtml(mealText('Cancel'))}</button><button type="button" class="primary-button" data-action="save-meal">${escapeHtml(mealText('Save meal'))}</button></div>`);
-    renderMealDraft();
-    if (editFoodIndex >= 0 && mealDraft[editFoodIndex]) {
-      const existing = mealDraft[editFoodIndex];
-      selectedMealFoodIndex = editFoodIndex;
-      selectedMealFood = safeFood({
-        id: existing.foodId, name: existing.name, brand: existing.brand, source: existing.source,
-        nutrients: existing.baseNutrients || existing.nutrients, servings: existing.servings
-      });
-      renderMealPortionEditor(existing.quantity, existing.servingIndex || 0);
-    }
-  }
-
-  function renderMealDraft() {
-    const target = $('#meal-draft-items');
-    if (!target) return;
-    target.innerHTML = mealDraft.length
-      ? mealDraft.map((food, index) => `<div class="meal-draft-row"><div><strong>${escapeHtml(food.name)}</strong><small>${formatNumber(Number(food.quantity), { maximumFractionDigits: 2 })} × ${escapeHtml(food.servingLabel)} · ${escapeHtml(mealText(food.source === 'manual' ? 'Manual entry' : 'USDA data'))}</small></div><div class="meal-food-actions"><button type="button" class="secondary-button" data-meal-draft-edit="${index}">${escapeHtml(mealText('Edit'))}</button><button type="button" class="secondary-button" data-meal-draft-remove="${index}">${escapeHtml(mealText('Remove'))}</button></div></div>`).join('')
-      : `<div class="meal-empty">${escapeHtml(mealText('No foods added yet. Search for a food or use manual entry.'))}</div>`;
-  }
-
-  function renderMealPortionEditor(quantity = 1, servingIndex = 0) {
-    if (!selectedMealFood) return;
-    const food = selectedMealFood;
-    const servings = food.servings;
-    const safeIndex = Math.min(Math.max(0, Number(servingIndex) || 0), servings.length - 1);
-    const preview = (factor, amount) => nutritionNutrients.slice(0, 4).map(({ key, label }) => {
-      const value = food.nutrients[key];
-      return `${mealText(label)} ${nutritionText(Number.isFinite(value) ? value * factor * amount : NaN, key)}`;
-    }).join(' · ');
-    $('#meal-portion-editor').innerHTML = `<form id="meal-portion-form" class="meal-portion-editor"><h3>${escapeHtml(food.name)}</h3><label>${escapeHtml(mealText('Quantity (servings)'))}<input class="entry-control" name="quantity" type="number" min="0.01" max="10000" step="any" value="${Number(quantity) > 0 ? Number(quantity) : 1}" required></label><label>${escapeHtml(mealText('Serving size'))}<select class="entry-control" name="servingIndex">${servings.map((serving, index) => `<option value="${index}" ${index === safeIndex ? 'selected' : ''}>${escapeHtml(serving.label)}</option>`).join('')}</select></label><button class="primary-button" type="submit">${escapeHtml(mealText(selectedMealFoodIndex >= 0 ? 'Update food' : 'Add to meal'))}</button><div class="meal-nutrient-preview" id="meal-nutrient-preview">${escapeHtml(preview(Number(servings[safeIndex].multiplier), Number(quantity) || 1))}</div></form>`;
-  }
-
-  function updateMealPortionPreview() {
-    if (!selectedMealFood || !$('#meal-portion-form')) return;
-    const form = $('#meal-portion-form');
-    const quantity = Number(new FormData(form).get('quantity'));
-    const index = Number(new FormData(form).get('servingIndex'));
-    const serving = selectedMealFood.servings[index];
-    if (!serving || !(quantity > 0)) return;
-    $('#meal-nutrient-preview').textContent = nutritionNutrients.slice(0, 4).map(({ key, label }) => {
-      const value = selectedMealFood.nutrients[key];
-      return `${mealText(label)} ${nutritionText(Number.isFinite(value) ? value * Number(serving.multiplier) * quantity : NaN, key)}`;
-    }).join(' · ');
-  }
-
-  async function searchMealFoods(query) {
-    const status = $('#meal-search-status');
-    const results = $('#meal-search-results');
-    if (query.trim().length < 2) {
-      status.textContent = mealText('Enter at least 2 characters to search USDA foods.');
-      results.replaceChildren();
-      return;
-    }
-    if (!foodProxyUrl) {
-      status.textContent = mealText('USDA search is not configured. Manual food entry is available.');
-      return;
-    }
-    const requestId = ++mealSearchRequestId;
-    status.textContent = mealText('Searching USDA FoodData Central…');
-    results.replaceChildren();
-    try {
-      const url = new URL(`${foodProxyUrl}/api/foods/search`);
-      url.searchParams.set('q', query.trim());
-      const response = await fetch(url, { headers: { accept: 'application/json' } });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || mealText('Search failed. Check the proxy configuration or your connection.'));
-      if (requestId !== mealSearchRequestId || !$('#meal-search-results')) return;
-      const foods = Array.isArray(payload.foods) ? payload.foods.map(safeFood) : [];
-      mealSearchResults = new Map(foods.map((food) => [food.id, food]));
-      if (!foods.length) {
-        status.textContent = mealText('No matching foods found. Try another search or enter a food manually.');
-        return;
-      }
-      status.textContent = `${formatNumber(foods.length)} ${mealText('USDA results')}`;
-      results.innerHTML = foods.map((food) => {
-        const shown = nutritionNutrients.map(({ key, label }) => `${mealText(label)} ${nutritionText(food.nutrients[key], key)}`).join(' · ');
-        return `<article class="meal-search-result"><div><strong>${escapeHtml(food.name)}</strong><small>${escapeHtml(food.brand || food.dataType || mealText('USDA FoodData Central'))} · ${escapeHtml(shown)}</small><small>${escapeHtml(mealText('Serving size'))}: ${escapeHtml(food.servings.map((serving) => serving.label).join(', '))}</small></div><button type="button" class="secondary-button" data-meal-select="${escapeHtml(food.id)}">${escapeHtml(mealText('Add food'))}</button></article>`;
-      }).join('');
-    } catch (error) {
-      if (requestId !== mealSearchRequestId) return;
-      console.error('USDA food search failed:', error);
-      status.textContent = error instanceof Error ? error.message : mealText('Search failed. Check the proxy configuration or your connection.');
-    }
-  }
-
-  function addFoodToMealDraft(form) {
-    if (!selectedMealFood) return;
-    const data = new FormData(form);
-    const quantity = Number(data.get('quantity'));
-    const servingIndex = Number(data.get('servingIndex'));
-    const serving = selectedMealFood.servings[servingIndex];
-    if (!(quantity > 0) || quantity > 10000 || !Number.isFinite(quantity) || !serving) {
-      showToast(mealText('Enter a food name and a valid quantity.'));
-      return;
-    }
-    const baseNutrients = { ...selectedMealFood.nutrients };
-    const item = {
-      foodId: selectedMealFood.id || null,
-      name: selectedMealFood.name,
-      brand: selectedMealFood.brand || '',
-      source: selectedMealFood.source,
-      quantity,
-      servingIndex,
-      servingLabel: serving.label,
-      servings: selectedMealFood.servings,
-      baseNutrients,
-      nutrients: Object.fromEntries(nutritionNutrients.map(({ key }) => [
-        key,
-        Number.isFinite(baseNutrients[key]) ? baseNutrients[key] * Number(serving.multiplier) : null
-      ]))
-    };
-    if (selectedMealFoodIndex >= 0) mealDraft[selectedMealFoodIndex] = item;
-    else mealDraft.push(item);
-    selectedMealFood = null;
-    selectedMealFoodIndex = -1;
-    $('#meal-portion-editor').replaceChildren();
-    renderMealDraft();
-  }
-
-  function addManualFood(form) {
-    const data = new FormData(form);
-    const name = String(data.get('name') || '').trim();
-    const servingLabel = String(data.get('servingLabel') || '').trim();
-    if (!name || !servingLabel) {
-      showToast(mealText('Enter a food name and a valid quantity.'));
-      return;
-    }
-    const nutrients = Object.fromEntries(nutritionNutrients.map(({ key }) => {
-      const raw = String(data.get(key) || '').trim();
-      const value = raw === '' ? null : Number(raw);
-      return [key, Number.isFinite(value) && value >= 0 ? value : null];
-    }));
-    selectedMealFoodIndex = -1;
-    selectedMealFood = safeFood({
-      name, source: 'manual', nutrients, servings: [{ label: servingLabel, multiplier: 1 }]
-    });
-    renderMealPortionEditor();
-    $('#meal-manual-wrap').hidden = true;
-  }
-
-  function linkMealWater(meal, waterMl) {
-    if (!(waterMl > 0) || !Number.isFinite(waterMl)) return false;
-    const existing = state.hydrationLogs.find((log) => log.mealId === meal.id);
-    const now = new Date();
-    const timeZone = state.profile.timezone || localTimeZone;
-    if (existing) {
-      existing.amountMl = Math.round(waterMl * 10) / 10;
-      existing.localDate = meal.dateKey;
-    } else {
-      state.hydrationLogs.unshift({
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        mealId: meal.id,
-        amountMl: Math.round(waterMl * 10) / 10,
-        recordedAt: now.toISOString(),
-        localDate: meal.dateKey,
-        timeZone
-      });
-    }
-    return true;
-  }
-
-  function saveMeal() {
-    const category = $('#meal-category').value;
-    const dateKey = $('#meal-date').value;
-    const validDate = isValidMealDate(dateKey) && dateKey <= mealToday();
-    if (!mealCategories.some((item) => item.id === category) || !validDate || !mealDraft.length) {
-      showToast(mealText('Add at least one food and choose a valid date and meal category.'));
-      return;
-    }
-    const previous = mealEditId ? state.meals.find((meal) => meal.id === mealEditId) : null;
-    const now = new Date();
-    const meal = {
-      id: mealEditId || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      category,
-      dateKey,
-      timeZone: state.profile.timezone || localTimeZone,
-      recordedAt: previous?.recordedAt || now.toISOString(),
-      note: $('#meal-note').value.trim(),
-      waterMl: Number($('#meal-water-ml').value) || 0,
-      foods: mealDraft.map((food) => ({ ...food, nutrients: { ...food.nutrients }, baseNutrients: { ...food.baseNutrients } }))
-    };
-    if (previous) state.meals = state.meals.map((entry) => entry.id === previous.id ? meal : entry);
-    else state.meals.push(meal);
-    const waterLinked = linkMealWater(meal, meal.waterMl);
-    if (!persist()) return;
-    closeModal();
-    renderMeals();
-    renderOverview();
-    if (waterLinked) renderHydration();
-    speakRufus(mealText('Meal saved on this device.'), mealText('MEAL LOGGED'), 'confident');
-    showToast(mealText(previous ? 'Meal updated on this device.' : 'Meal saved on this device.'));
-  }
-
-  function confirmDeleteMeal(id) {
-    if (!state.meals.some((meal) => meal.id === id)) return;
-    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> ${escapeHtml(mealText('Meal history'))}</div><h2 id="modal-title">${escapeHtml(mealText('Delete meal'))}?</h2><p>${escapeHtml(mealText('This removes this meal and its foods from your local history. A linked water entry remains in the Hydration Tracker.'))}</p><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">${escapeHtml(mealText('Cancel'))}</button><button type="button" class="primary-button" data-action="confirm-delete-meal" data-meal-id="${escapeHtml(id)}">${escapeHtml(mealText('Delete'))}</button></div>`);
-  }
-
-  function showMealReminder(dateKey, category) {
-    const banner = $('#meal-reminder-banner');
-    const categoryLabel = mealText(mealCategories.find((item) => item.id === category)?.label || 'meal');
-    const message = category === 'breakfast'
-      ? mealText('Good morning, astronaut! It is time for breakfast. Let us fuel up for your mission!')
-      : category === 'lunch'
-        ? mealText('Hey, astronaut! Do not forget your scheduled lunch.')
-        : mealText('Time to refuel! Your body needs energy for the mission.');
-    activeMealReminder = { dateKey, category };
-    $('#meal-reminder-title').textContent = `${mealText('Rufus has a mission reminder')} · ${categoryLabel}`;
-    $('#meal-reminder-message').textContent = message;
-    banner.hidden = false;
-    speakRufus(message, mealText('MEAL REMINDER'), 'wave');
-  }
-
-  function checkMealReminders() {
-    if (document.body.classList.contains('show-entry')) return;
-    const banner = $('#meal-reminder-banner');
-    const dateKey = mealToday();
-    const currentMinute = currentLocalMinute(state.profile.timezone || localTimeZone);
-    const due = mealCategories.find(({ id }) => {
-      const time = state.profile.mealSchedules?.[id];
-      if (!time || state.meals.some((meal) => meal.dateKey === dateKey && meal.category === id)) return false;
-      const status = state.mealReminderStatus[`${dateKey}:${id}`];
-      if (status?.dismissed || (status?.snoozedUntil && Date.now() < status.snoozedUntil)) return false;
-      const [hour, minute] = time.split(':').map(Number);
-      return Number.isInteger(hour) && Number.isInteger(minute) && currentMinute >= hour * 60 + minute;
-    });
-    if (!due) {
-      activeMealReminder = null;
-      banner.hidden = true;
-      return;
-    }
-    if (activeMealReminder?.dateKey === dateKey && activeMealReminder.category === due.id) return;
-    showMealReminder(dateKey, due.id);
-  }
-
-  function handleMealReminderAction(action) {
-    if (!activeMealReminder) return;
-    const { dateKey, category } = activeMealReminder;
-    const key = `${dateKey}:${category}`;
-    if (action === 'meal-reminder-log') {
-      activeMealReminder = null;
-      $('#meal-reminder-banner').hidden = true;
-      $('#meal-history-date').value = dateKey;
-      openMealEditor(null, category, dateKey);
-      return;
-    }
-    if (action === 'meal-reminder-snooze') {
-      state.mealReminderStatus[key] = { snoozedUntil: Date.now() + 15 * 60 * 1000 };
-    } else {
-      state.mealReminderStatus[key] = { dismissed: true };
-    }
-    activeMealReminder = null;
-    $('#meal-reminder-banner').hidden = true;
-    persist();
   }
 
   function localDateInputValue(date) {
@@ -1286,17 +769,6 @@
     $('#mission-streak').textContent = state.streak;
   }
 
-  function nextMealSchedule() {
-    const dateKey = mealToday();
-    const now = currentLocalMinute(state.profile.timezone || localTimeZone);
-    const candidates = mealCategories
-      .filter(({ id }) => state.profile.mealSchedules?.[id] && !state.meals.some((meal) => meal.dateKey === dateKey && meal.category === id))
-      .map((category) => ({ ...category, time: state.profile.mealSchedules[category.id], minute: localDayMinute(state.profile.mealSchedules[category.id]) }))
-      .filter((item) => Number.isInteger(item.minute))
-      .sort((a, b) => a.minute - b.minute);
-    return candidates.find((item) => item.minute >= now) || candidates[0] || null;
-  }
-
   function renderOverview() {
     resetDailyProgressIfNeeded();
     updateProfileLabels();
@@ -1314,10 +786,6 @@
     $('#hydration-status').textContent = hydration.goalMl === null
       ? (hydration.consumedMl > 0 ? 'LOGGED' : 'NO TARGET')
       : `${formatNumber(Math.round(hydration.percent))}%`;
-    const nextMeal = nextMealSchedule();
-    $('#overview-next-meal-status').textContent = nextMeal ? (nextMeal.minute >= currentLocalMinute(state.profile.timezone || localTimeZone) ? 'SCHEDULED' : 'DUE') : 'NOT SET';
-    $('#overview-next-meal-time').textContent = nextMeal?.time || '—';
-    $('#overview-next-meal-name').textContent = nextMeal ? mealText(nextMeal.label) : 'no schedule';
     $('.checkin-panel h2').textContent = `How are you feeling, ${state.profile.name.split(/\s+/)[0]}?`;
     $$('.fatigue-bars i').forEach((bar, index) => bar.classList.toggle('filled', index < Number(state.metrics.fatigue)));
     $('#exercise-progress').style.width = `${Math.min(100, Number(state.metrics.exercise) / 60 * 100)}%`;
@@ -2077,13 +1545,6 @@
     if (action === 'pet-rufus') petRufus();
     if (action === 'customize-rufus') openRufusCustomizer();
     if (action === 'close-modal') closeModal();
-    if (action === 'add-meal') openMealEditor();
-    if (action === 'save-meal') saveMeal();
-    if (action === 'toggle-manual-food') {
-      const manualWrap = $('#meal-manual-wrap');
-      manualWrap.hidden = !manualWrap.hidden;
-    }
-    if (['meal-reminder-log', 'meal-reminder-snooze', 'meal-reminder-dismiss'].includes(action)) handleMealReminderAction(action);
     if (action === 'dismiss-notice') event.target.closest('.notice-strip').remove();
     if (action === 'confirm-hydration-plan') {
       if (!pendingHydrationPlan) {
@@ -2123,80 +1584,6 @@
       renderOverview();
       renderHydration();
       showToast('Intake entry deleted');
-    }
-    if (action === 'confirm-delete-meal') {
-      const id = event.target.closest('[data-meal-id]')?.dataset.mealId;
-      if (!id || !state.meals.some((meal) => meal.id === id)) {
-        closeModal();
-        showToast(mealText('That meal is no longer available.'));
-        return;
-      }
-      state.meals = state.meals.filter((meal) => meal.id !== id);
-      closeModal();
-      persist();
-      renderMeals();
-      renderOverview();
-      showToast(mealText('Meal deleted.'));
-    }
-
-    const selectedFoodId = event.target.closest('[data-meal-select]')?.dataset.mealSelect;
-    if (selectedFoodId) {
-      selectedMealFood = mealSearchResults.get(selectedFoodId) || null;
-      selectedMealFoodIndex = -1;
-      if (selectedMealFood) renderMealPortionEditor();
-      return;
-    }
-    const draftEditIndex = event.target.closest('[data-meal-draft-edit]')?.dataset.mealDraftEdit;
-    if (draftEditIndex !== undefined) {
-      const index = Number(draftEditIndex);
-      const food = mealDraft[index];
-      if (food) {
-        selectedMealFoodIndex = index;
-        selectedMealFood = safeFood({
-          id: food.foodId, name: food.name, brand: food.brand, source: food.source,
-          nutrients: food.baseNutrients || food.nutrients, servings: food.servings
-        });
-        renderMealPortionEditor(food.quantity, food.servingIndex || 0);
-      }
-      return;
-    }
-    const draftRemoveIndex = event.target.closest('[data-meal-draft-remove]')?.dataset.mealDraftRemove;
-    if (draftRemoveIndex !== undefined) {
-      mealDraft.splice(Number(draftRemoveIndex), 1);
-      selectedMealFood = null;
-      selectedMealFoodIndex = -1;
-      $('#meal-portion-editor').replaceChildren();
-      renderMealDraft();
-      return;
-    }
-    const editFood = event.target.closest('[data-meal-edit-food]');
-    if (editFood) {
-      const meal = state.meals.find((entry) => entry.id === editFood.dataset.mealEditFood);
-      if (meal) openMealEditor(meal, meal.category, meal.dateKey, Number(editFood.dataset.mealFoodIndex));
-      return;
-    }
-    const editMeal = event.target.closest('[data-meal-edit]');
-    if (editMeal) {
-      const meal = state.meals.find((entry) => entry.id === editMeal.dataset.mealEdit);
-      if (meal) openMealEditor(meal, meal.category, meal.dateKey);
-      return;
-    }
-    const deleteMeal = event.target.closest('[data-meal-delete]');
-    if (deleteMeal) {
-      confirmDeleteMeal(deleteMeal.dataset.mealDelete);
-      return;
-    }
-    const removeFood = event.target.closest('[data-meal-remove-food]');
-    if (removeFood) {
-      const meal = state.meals.find((entry) => entry.id === removeFood.dataset.mealRemoveFood);
-      const index = Number(removeFood.dataset.mealFoodIndex);
-      if (!meal || !Number.isInteger(index) || !meal.foods[index]) return;
-      meal.foods.splice(index, 1);
-      if (!meal.foods.length) state.meals = state.meals.filter((entry) => entry.id !== meal.id);
-      persist();
-      renderMeals();
-      renderOverview();
-      return;
     }
 
     const accessoryToggle = event.target.closest('[data-toggle-accessory]');
@@ -2359,7 +1746,6 @@
       welcomeLanguageTouched = false;
       updateProfileLabels();
       window.RufusI18n.setLocale(state.profile.language);
-      checkMealReminders();
       showToast(migrationWarning
         ? 'Your profile was saved, but legacy profile migration could not be marked in this browser.'
         : `Crew profile opened: ${state.profile.name}.`);
@@ -2411,53 +1797,6 @@
       }
       pendingHydrationPlan = { goal, unit, goalMl, start, end, count };
       renderHydrationPreview(pendingHydrationPlan);
-    }
-    if (event.target.id === 'meal-search-form') {
-      event.preventDefault();
-      searchMealFoods($('#meal-food-search').value);
-    }
-    if (event.target.id === 'meal-portion-form') {
-      event.preventDefault();
-      addFoodToMealDraft(event.target);
-    }
-    if (event.target.id === 'meal-manual-food-form') {
-      event.preventDefault();
-      addManualFood(event.target);
-      event.target.reset();
-      const servingLabel = $('#meal-manual-food-form [name="servingLabel"]');
-      if (servingLabel) servingLabel.value = mealText('1 serving');
-    }
-    if (event.target.id === 'meal-schedule-form') {
-      event.preventDefault();
-      const form = new FormData(event.target);
-      const schedule = Object.fromEntries(mealCategories.map(({ id }) => [id, String(form.get(id) || '')]));
-      if (Object.values(schedule).some((time) => time && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time))) {
-        showToast(mealText('Enter valid reminder times.'));
-        return;
-      }
-      state.profile.mealSchedules = schedule;
-      persist();
-      renderMealSchedule(true);
-      checkMealReminders();
-      showToast(mealText('Meal schedule saved.'));
-    }
-    if (event.target.id === 'nutrition-goals-form') {
-      event.preventDefault();
-      const form = new FormData(event.target);
-      const goals = {};
-      for (const { key } of nutritionNutrients) {
-        const raw = String(form.get(key) || '').trim();
-        const value = raw === '' ? null : Number(raw);
-        if (value !== null && (!Number.isFinite(value) || value < 0 || value > 1000000)) {
-          showToast(mealText('Enter a non-negative number for each goal, or leave it blank.'));
-          return;
-        }
-        goals[key] = value;
-      }
-      state.nutritionGoals = goals;
-      persist();
-      renderMeals();
-      showToast(mealText('Nutrition goals saved.'));
     }
     if (event.target.id === 'nasa-power-form') {
       event.preventDefault();
@@ -2560,15 +1899,12 @@
 
   document.addEventListener('input', (event) => {
     if (event.target.id === 'energy-slider') $('#fatigue-value').textContent = event.target.value;
-    if (event.target.closest('#meal-portion-form')) updateMealPortionPreview();
     if (event.target.closest('#hydration-plan-form')) {
       clearHydrationPreview();
     }
   });
   document.addEventListener('change', (event) => {
     if (event.target.id === 'power-chart-parameter' && nasaPowerData) renderPowerChart(nasaPowerData);
-    if (event.target.id === 'meal-history-date') renderMeals();
-    if (event.target.closest('#meal-portion-form')) updateMealPortionPreview();
     if (event.target.id === 'welcome-language') {
       welcomeLanguageTouched = true;
       window.RufusI18n.setLocale(event.target.value);
@@ -2585,7 +1921,6 @@
     renderJournalHistory();
     renderMedicationManager();
     renderHydration();
-    renderMeals();
     renderSettings();
     if (nasaPowerData) renderPowerResults(nasaPowerData);
   });
@@ -2604,12 +1939,10 @@
   initializeNasaPowerDates();
   updateClock();
   setInterval(updateClock, 1000);
-  mealReminderTimer = setInterval(checkMealReminders, 60000);
   renderOverview();
   renderHealth();
   renderMissions();
   renderJournalHistory();
-  renderMeals(true);
   renderSettings();
   $('#cog-sessions').innerHTML = `${state.cognitiveSessions} <small>sessions</small>`;
   $('#cog-best').innerHTML = `${state.bestReaction} <small>ms</small>`;
