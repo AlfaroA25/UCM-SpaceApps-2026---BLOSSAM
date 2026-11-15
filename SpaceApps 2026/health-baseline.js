@@ -29,7 +29,9 @@
     && Number.isFinite(Date.parse(`${value}T00:00:00Z`))
     && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
   const dayNumber = (value) => Date.parse(`${value}T00:00:00Z`) / 86400000;
-  const numeric = (value) => value !== '' && value !== null && value !== undefined && Number.isFinite(Number(value))
+  const numeric = (value) => value !== '' && value !== null && value !== undefined
+    && !(typeof value === 'string' && !value.trim())
+    && Number.isFinite(Number(value))
     ? Number(value)
     : null;
 
@@ -125,18 +127,17 @@
     const totalWeight = available.reduce((sum, category) => sum + category.weight, 0);
     if (!totalWeight) return { score: null, status: 'unavailable', categories: {} };
     const score = Math.round(available.reduce((sum, category) => sum + category.score * category.weight, 0) / totalWeight);
-    const status = score >= 90 ? 'excellent' : score >= 75 ? 'good' : score >= 60 ? 'watch' : 'alert';
     return {
       score,
-      status,
+      status: 'experimental',
       categories: Object.fromEntries(available.map(({ key, score: categoryScore }) => [key, Math.round(categoryScore)]))
     };
   }
 
-  function detectRisks(current, baseline) {
+  function detectPatterns(current, baseline) {
     const comparison = compareToBaseline(current, baseline);
     const change = (key) => comparison[key].percentChange;
-    const risks = [];
+    const patterns = [];
     const sleep = change('sleepHours');
     const efficiency = change('sleepEfficiency');
     const reaction = change('reactionTime');
@@ -144,30 +145,24 @@
     const heart = change('restingHeartRate');
     const hrv = change('hrv');
     if ((sleep !== null && sleep < -15) || (efficiency !== null && efficiency < -10 && reaction !== null && reaction > 5)) {
-      risks.push({
-        risk: 'Fatigue',
-        severity: sleep !== null && sleep < -25 ? 'High' : 'Moderate',
-        ruleStrength: 0.86,
+      patterns.push({
+        pattern: 'Sleep and reaction-time changes',
         reasons: [sleep !== null && sleep < -15 ? `Sleep duration is ${Math.abs(sleep).toFixed(1)}% below baseline.` : '', efficiency !== null && efficiency < -10 ? `Sleep efficiency is ${Math.abs(efficiency).toFixed(1)}% lower.` : '', reaction !== null && reaction > 5 ? `Reaction time is ${reaction.toFixed(1)}% slower.` : ''].filter(Boolean)
       });
     }
     if (mood !== null && mood < -15 && sleep !== null && sleep < -10) {
-      risks.push({
-        risk: 'Behavioral health',
-        severity: 'Moderate',
-        ruleStrength: 0.88,
+      patterns.push({
+        pattern: 'Mood and sleep changes',
         reasons: [`Mood score is ${Math.abs(mood).toFixed(1)}% below baseline.`, `Sleep duration is ${Math.abs(sleep).toFixed(1)}% below baseline.`]
       });
     }
     if ((heart !== null && heart > 10) || (hrv !== null && hrv < -15)) {
-      risks.push({
-        risk: 'Cardiovascular watch',
-        severity: (heart !== null && heart > 15) || (hrv !== null && hrv < -25) ? 'High' : 'Moderate',
-        ruleStrength: 0.8,
+      patterns.push({
+        pattern: 'Heart-rate or HRV changes',
         reasons: [heart !== null && heart > 10 ? `Resting heart rate is ${heart.toFixed(1)}% above baseline.` : '', hrv !== null && hrv < -15 ? `HRV is ${Math.abs(hrv).toFixed(1)}% below baseline.` : ''].filter(Boolean)
       });
     }
-    return risks;
+    return patterns;
   }
 
   function generateSampleData(days = 180, endDate = new Date().toISOString().slice(0, 10)) {
@@ -198,7 +193,7 @@
     calculateBaseline,
     calculateHealthScore,
     compareToBaseline,
-    detectRisks,
+    detectPatterns,
     generateSampleData,
     normalizeRecords
   };

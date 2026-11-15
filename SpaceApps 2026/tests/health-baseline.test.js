@@ -62,16 +62,21 @@ test('rolling windows classify improving and declining patterns', () => {
 
 test('stable baseline score is excellent and score degrades for adverse deviations', () => {
   const baseline = engine.calculateBaseline(recordsWithValues(30));
-  assert.deepEqual(engine.calculateHealthScore(recordsWithValues(30).at(-1), baseline), {
-    score: 100,
-    status: 'excellent',
-    categories: { sleep: 100, cardiovascular: 100, activity: 100, cognition: 100, mood: 100 }
+  const stable = engine.calculateHealthScore(recordsWithValues(30).at(-1), baseline);
+  assert.equal(stable.score, 100);
+  assert.equal(stable.status, 'experimental');
+  assert.deepEqual(stable.categories, {
+    sleep: 100,
+    cardiovascular: 100,
+    activity: 100,
+    cognition: 100,
+    mood: 100
   });
   const score = engine.calculateHealthScore({ ...recordsWithValues(30).at(-1), sleepHours: 6 }, baseline);
   assert.ok(score.score < 100);
 });
 
-test('rule-based risk checks trigger for fatigue, mood, and cardiovascular patterns', () => {
+test('experimental pattern checks report changes without risk scores or severity claims', () => {
   const baseline = engine.calculateBaseline(recordsWithValues(30));
   const current = {
     sleepHours: 6.1,
@@ -82,11 +87,13 @@ test('rule-based risk checks trigger for fatigue, mood, and cardiovascular patte
     reactionTime: 300,
     moodScore: 3.4
   };
-  assert.deepEqual(engine.detectRisks(current, baseline).map((risk) => risk.risk), [
-    'Fatigue',
-    'Behavioral health',
-    'Cardiovascular watch'
+  const patterns = engine.detectPatterns(current, baseline);
+  assert.deepEqual(patterns.map((pattern) => pattern.pattern), [
+    'Sleep and reaction-time changes',
+    'Mood and sleep changes',
+    'Heart-rate or HRV changes'
   ]);
+  assert.equal(patterns.every((pattern) => !('severity' in pattern) && !('ruleStrength' in pattern)), true);
 });
 
 test('risk thresholds do not trigger exactly at the specified boundaries', () => {
@@ -108,7 +115,19 @@ test('risk thresholds do not trigger exactly at the specified boundaries', () =>
     reactionTime: 105,
     moodScore: 85
   };
-  assert.deepEqual(engine.detectRisks(current, baseline), []);
+  assert.deepEqual(engine.detectPatterns(current, baseline), []);
+});
+
+test('blank and missing measurements remain unavailable rather than becoming zero', () => {
+  const records = recordsWithValues(30);
+  records[0].sleepHours = ' ';
+  records[1].sleepHours = null;
+  records[2].sleepHours = '';
+  const baseline = engine.calculateBaseline(records);
+
+  assert.equal(baseline.ready, true);
+  assert.equal(baseline.values.sleepHours, 7.4);
+  assert.equal(engine.compareToBaseline({ sleepHours: ' ' }, baseline).sleepHours.current, null);
 });
 
 test('synthetic sample stays illustrative and contains a full personal baseline window', () => {

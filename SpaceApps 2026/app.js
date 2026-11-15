@@ -50,14 +50,15 @@
   const millilitersPerUnit = { mL: 1, L: 1000, 'fl oz': 29.5735295625 };
   const seed = {
     version: 1,
-    profile: { name: 'Astronaut', personnelId: '', role: 'Crew Member', missionId: '', language: 'en', timezone: DEFAULT_TIME_ZONE, notifications: false, hydrationGoal: '', hydrationUnit: 'mL', reminderStart: '', reminderEnd: '', reminderCount: '', hydrationScheduleConfirmed: false, interests: [], onboarded: false, heartMin: 58, heartMax: 72, sleepMin: 7.5, sleepMax: 9, radiationReviewAt: 50 },
+    profile: { name: 'Astronaut', personnelId: '', role: 'Crew Member', missionId: '', language: 'en', timezone: DEFAULT_TIME_ZONE, notifications: false, hydrationGoal: '', hydrationUnit: 'mL', reminderStart: '', reminderEnd: '', reminderCount: '', hydrationScheduleConfirmed: false, interests: [], onboarded: false, heartMin: null, heartMax: null, sleepMin: null, sleepMax: null, radiationReviewAt: 50 },
     rufus: { pose: 'wave', inventory: ['orbit-satellite'], accessories: ['orbit-satellite'], stardust: 0, bondXp: 0, petDate: today, petCount: 0, petStreak: 0, lastPetDate: '' },
-    metrics: { heart: 64, sleep: 7.4, sleepEfficiency: null, hrv: null, activityScore: null, reactionTime: null, exercise: 42, resistanceExercise: 24, fatigue: 3, stress: 3, mood: 'Good', connection: 'Connected', immuneSymptoms: 'None', cognition: 92, radiation: 38 },
-    companion: { state: 'hello' }, hydrationLogs: [], medicationLog: [], xp: 2480, streak: 6, lastCheckin: 'TODAY, 07:42', checkinDate: today, lastCheckinDate: today,
+    metrics: { heart: null, sleep: null, sleepEfficiency: null, hrv: null, activityScore: null, reactionTime: null, exercise: null, resistanceExercise: null, fatigue: null, stress: null, mood: '', connection: '', immuneSymptoms: '', cognition: null, radiation: null },
+    companion: { state: 'hello' }, hydrationLogs: [], medicationLog: [], xp: 2480, streak: 6, lastCheckin: '', checkinDate: '', lastCheckinDate: '',
     checkinHistory: [], activityEntries: [], sleepSchedule: [], sleepLogs: [], mealEntries: [],
     healthBaseline: { records: [], baseline: null, isSynthetic: false, personalRecordsBackup: [], personalBaselineBackup: null },
-    completed: [], completedDate: today, achievements: [], cognitiveSessions: 3, bestReaction: 284,
-    heartHistory: [68, 66, 67, 65, 66, 64, 64], sleepHistory: [6.8, 7.1, 7.6, 6.9, 7.8, 7.2, 7.4]
+    completed: [], completedDate: today, achievements: [], cognitiveSessions: 0, bestReaction: null,
+    userCognitiveSessions: 0, userBestReaction: null, hasUserCognitiveResult: false,
+    heartHistory: [], sleepHistory: []
   };  const clone = (value) => JSON.parse(JSON.stringify(value));
   const DEMO_PERSONNEL_ID = '1234';
   const normalizePersonnelId = (value) => String(value || '').trim().toUpperCase();
@@ -180,6 +181,13 @@
         sleepLogs: window.AstroVitalFeatureData.normalizeSleepLogs(parsed.sleepLogs),
         mealEntries: window.AstroVitalFeatureData.normalizeMealEntries(parsed.mealEntries),
         healthBaseline: normalizeBaselineData(parsed.healthBaseline),
+        userCognitiveSessions: Number.isSafeInteger(parsed.userCognitiveSessions) && parsed.userCognitiveSessions >= 0
+          ? parsed.userCognitiveSessions
+          : 0,
+        userBestReaction: Number.isFinite(parsed.userBestReaction) && parsed.userBestReaction >= 100
+          ? parsed.userBestReaction
+          : null,
+        hasUserCognitiveResult: parsed.hasUserCognitiveResult === true,
         heartHistory: Array.isArray(parsed.heartHistory) ? parsed.heartHistory : clone(seed.heartHistory),
         sleepHistory: Array.isArray(parsed.sleepHistory) ? parsed.sleepHistory : clone(seed.sleepHistory)
       };
@@ -297,39 +305,83 @@
     if (profileInput) profileInput.setAttribute('aria-label', copy.field);
   }
 
-  function currentAlerts() {
-    const alerts = [];
-    const { metrics, profile } = state;
-    if (metrics.heart < Number(profile.heartMin) || metrics.heart > Number(profile.heartMax)) {
-      alerts.push({ title: 'Resting heart rate outside your reference range', detail: `Your sample reading is ${metrics.heart} bpm; your saved personal reference is ${profile.heartMin}–${profile.heartMax} bpm. Consider repeating the check-in and discussing persistent concerns with your flight surgeon.` });
-    }
-    if (metrics.sleep < 5) {
-      alerts.push({ title: 'Sleep duration notably below target', detail: `Your sample sleep entry is ${metrics.sleep} hours. If this reflects how you are feeling, prioritize recovery and follow your crew medical officer’s guidance.` });
-    } else if (metrics.sleep < Number(profile.sleepMin) - 1) {
-      alerts.push({ title: 'Sleep duration below your personal target', detail: `Your sample sleep entry is ${metrics.sleep} hours; your profile target starts at ${profile.sleepMin} hours. Consider protecting your next sleep opportunity.` });
-    }
-    if (metrics.fatigue >= 8) {
-      alerts.push({ title: 'High fatigue check-in', detail: `You reported fatigue at ${metrics.fatigue}/10. Consider pausing non-essential activity and checking in with your crew medical officer, especially if this persists.` });
-    }
-    if (['Moderate', 'Severe'].includes(metrics.immuneSymptoms)) {
-      alerts.push({ title: 'Review self-reported symptoms', detail: `You marked your symptoms as ${metrics.immuneSymptoms.toLowerCase()}. This check-in cannot identify a cause. Follow mission medical protocols and contact your crew medical officer for guidance.` });
-    }
-    if (metrics.connection === 'Isolated') {
-      alerts.push({ title: 'Crew connection check-in', detail: 'You marked feeling isolated. If it feels helpful, reach out to a crewmate or use your private wellbeing log; contact behavioral health support if this persists or concerns you.' });
-    }
-    if (metrics.radiation >= Number(profile.radiationReviewAt)) {
-      alerts.push({ title: 'Review cumulative radiation exposure', detail: `The illustrative exposure value is ${metrics.radiation} mSv, at or above the simulated mission review marker of ${profile.radiationReviewAt} mSv. Follow mission radiation-monitoring protocols and contact mission medical support for interpretation.` });
-    }
-    return alerts;
+  function personalBaselineRecords() {
+    const records = state.healthBaseline.isSynthetic
+      ? state.healthBaseline.personalRecordsBackup
+      : state.healthBaseline.records;
+    return window.AstroVitalBaseline.normalizeRecords(records);
   }
 
-  function metricStatus(metric) {
-    if (metric === 'heart') return state.metrics.heart < Number(state.profile.heartMin) || state.metrics.heart > Number(state.profile.heartMax);
-    if (metric === 'sleep') return state.metrics.sleep < Number(state.profile.sleepMin) - 1;
-    if (metric === 'fatigue') return state.metrics.fatigue >= 8;
-    if (metric === 'immuneSymptoms') return ['Moderate', 'Severe'].includes(state.metrics.immuneSymptoms);
-    if (metric === 'connection') return state.metrics.connection === 'Isolated';
-    if (metric === 'radiation') return state.metrics.radiation >= Number(state.profile.radiationReviewAt);
+  function latestPersonalBaselineRecord() {
+    return personalBaselineRecords().at(-1) || null;
+  }
+
+  function currentPersonalCheckin() {
+    const record = personalBaselineRecords().find((entry) => entry.date === state.checkinDate
+      && Number.isFinite(entry.restingHeartRate)
+      && Number.isFinite(entry.sleepHours));
+    return record ? state.metrics : null;
+  }
+
+  function personalHealthSnapshot() {
+    const records = personalBaselineRecords();
+    const latestRecord = records.at(-1) || null;
+    const latestHeartRecord = records.slice().reverse().find((entry) => Number.isFinite(entry.restingHeartRate));
+    const latestSleepRecord = records.slice().reverse().find((entry) => Number.isFinite(entry.sleepHours));
+    const checkin = currentPersonalCheckin();
+    const latestWellbeing = state.checkinHistory[0] || null;
+    const activityToday = state.activityEntries.filter((entry) => entry.date === today && entry.status === 'completed');
+    const resistanceToday = activityToday.filter((entry) => entry.category === 'Resistance');
+    const loggedMinutes = (entries) => entries.reduce((total, entry) => total + (Number.isFinite(entry.actualMinutes) ? entry.actualMinutes : 0), 0);
+    const latestSleepLogDate = state.sleepLogs.map((entry) => entry.date).filter(Boolean).sort().at(-1);
+    const latestSleepLog = latestSleepLogDate
+      ? window.AstroVitalFeatureData.sleepTotalForDate(state.sleepLogs, latestSleepLogDate)
+      : null;
+    const useSleepLog = Number.isFinite(latestSleepLog)
+      && (!latestSleepRecord || latestSleepLogDate >= latestSleepRecord.date);
+    const entered = (key) => checkin && Number.isFinite(checkin[key]) ? checkin[key] : null;
+    return {
+      heart: latestHeartRecord?.restingHeartRate ?? null,
+      sleep: useSleepLog ? latestSleepLog : latestSleepRecord?.sleepHours ?? null,
+      heartDate: latestHeartRecord?.date || null,
+      sleepDate: useSleepLog ? latestSleepLogDate : latestSleepRecord?.date || null,
+      exercise: activityToday.length ? loggedMinutes(activityToday) : entered('exercise'),
+      resistanceExercise: resistanceToday.length ? loggedMinutes(resistanceToday) : entered('resistanceExercise'),
+      fatigue: Number.isFinite(latestWellbeing?.fatigue) ? latestWellbeing.fatigue : null,
+      mood: latestWellbeing?.mood || null,
+      connection: latestWellbeing?.connection || null,
+      immuneSymptoms: checkin?.immuneSymptoms || null,
+      cognition: state.hasUserCognitiveResult === true && Number.isFinite(state.metrics.cognition) ? state.metrics.cognition : null,
+      radiation: null,
+      latestRecord,
+      latestWellbeing
+    };
+  }
+
+  function currentAlerts() {
+    const alerts = [];
+    const snapshot = personalHealthSnapshot();
+    const checkin = currentPersonalCheckin();
+    const t = window.RufusI18n.translate;
+    if (!snapshot.latestRecord) return alerts;
+    if (['Moderate', 'Severe'].includes(checkin?.immuneSymptoms)) {
+      alerts.push({
+        title: 'Review your self-reported check-in',
+        detail: 'This symptom entry cannot identify a cause. Follow mission medical guidance if you have concerns.'
+      });
+    }
+    if (snapshot.connection === 'Isolated') {
+      alerts.push({
+        title: 'Review your self-reported check-in',
+        detail: 'You recorded feeling isolated. This is a personal check-in, not a behavioral-health assessment.'
+      });
+    }
+    return alerts.map((alert) => ({ title: t(alert.title), detail: t(alert.detail) }));
+  }
+
+  function metricStatus(metric, snapshot) {
+    if (metric === 'immuneSymptoms') return ['Moderate', 'Severe'].includes(snapshot.immuneSymptoms);
+    if (metric === 'connection') return snapshot.connection === 'Isolated';
     return false;
   }
 
@@ -469,7 +521,7 @@
     const alerts = currentAlerts();
     $('#alerts-page-content').innerHTML = alerts.length
       ? alerts.map((alert) => `<div class="alert-card"><span class="alert-mark">ⓘ</span><div><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.detail)}</p></div></div>`).join('')
-      : '<div class="alert-empty">No sample readings currently flag for review. This is not continuous or emergency monitoring.</div>';
+      : '<div class="alert-empty">No personal review prompts are available. This app is not continuous or emergency monitoring.</div>';
   }
 
   function volumeToMl(amount, unit) {
@@ -909,7 +961,7 @@
   function renderRufus() {
     const reactions = {
       hello: { state: 'READY TO EXPLORE', title: 'Hi, {name}!', message: 'I’m here to help you keep track of your wellbeing. Want to start with a quick check-in?', button: 'LOG A CHECK-IN', expression: 'state-happy' },
-      checkin: { state: 'CHECK-IN COMPLETE', title: 'Thanks for checking in.', message: 'Noticing how you feel is a good place to start. Your latest sample indicators are ready to review.', button: 'VIEW HEALTH INDICATORS', action: 'health', expression: 'state-happy' },
+      checkin: { state: 'CHECK-IN COMPLETE', title: 'Thanks for checking in.', message: 'Noticing how you feel is a good place to start. Your latest self-reported records are ready to review.', button: 'VIEW HEALTH INDICATORS', action: 'health', expression: 'state-happy' },
       activity: { state: 'ACTIVITY LOGGED', title: 'Nice work, {name}.', message: 'Your activity was recorded. Follow the exercise plan approved for your mission.', button: 'VIEW DAILY MISSIONS', action: 'missions', expression: 'state-celebrating' },
       pause: { state: 'PAUSE COMPLETE', title: 'A moment to reset.', message: 'Thanks for taking a comfortable pause. Take your time and follow your own mission guidance.', button: 'OPEN WELLBEING LOG', action: 'journal', expression: 'state-resting' },
       journal: { state: 'WELLBEING LOG SAVED', title: 'Thanks for checking in, {name}.', message: 'Your reflection is saved privately on this device. Take things at your own pace; support is available if you want it.', button: 'VIEW HEALTH INDICATORS', action: 'health', expression: 'state-resting' },
@@ -952,10 +1004,40 @@
     resetDailyProgressIfNeeded();
     updateProfileLabels();
     renderXp();
-    $('#metric-heart').textContent = formatNumber(state.metrics.heart);
-    $('#metric-sleep').textContent = formatDecimal(state.metrics.sleep);
-    $('#metric-exercise').textContent = formatNumber(state.metrics.exercise);
-    $('#metric-fatigue').textContent = formatNumber(state.metrics.fatigue);
+    const snapshot = personalHealthSnapshot();
+    const t = window.RufusI18n.translate;
+    const displayValue = (value, decimal = false) => Number.isFinite(value)
+      ? decimal ? formatDecimal(value) : formatNumber(value)
+      : '—';
+    const sourceText = (value, date, detail = 'Self-reported') => Number.isFinite(value)
+      ? `${t(detail)}${date ? ` · ${date}` : ''}`
+      : t('Awaiting personal records');
+    $('#metric-heart').textContent = displayValue(snapshot.heart);
+    $('#metric-sleep').textContent = displayValue(snapshot.sleep, true);
+    $('#metric-exercise').textContent = displayValue(snapshot.exercise);
+    $('#metric-fatigue').textContent = displayValue(snapshot.fatigue);
+    $('#metric-heart-source').textContent = sourceText(snapshot.heart, snapshot.heartDate);
+    $('#metric-sleep-source').textContent = sourceText(snapshot.sleep, snapshot.sleepDate);
+    const activitySourceDate = snapshot.exercise === null
+      ? null
+      : state.activityEntries.some((entry) => entry.date === today && entry.status === 'completed') ? today : snapshot.latestRecord?.date;
+    $('#metric-exercise-source').textContent = sourceText(
+      snapshot.exercise,
+      activitySourceDate,
+      activitySourceDate === today && state.activityEntries.some((entry) => entry.date === today && entry.status === 'completed')
+        ? 'User logged'
+        : 'Self-reported'
+    );
+    $('#metric-fatigue-source').textContent = sourceText(snapshot.fatigue, snapshot.latestWellbeing?.date);
+    $('#metric-heart-trend').textContent = Number.isFinite(snapshot.heart) ? t('SELF-REPORTED') : t('AWAITING RECORD');
+    $('#metric-sleep-trend').textContent = Number.isFinite(snapshot.sleep) ? t('SELF-REPORTED') : t('AWAITING RECORD');
+    const hasLoggedActivity = state.activityEntries.some((entry) => entry.date === today && entry.status === 'completed');
+    $('#metric-exercise-trend').textContent = Number.isFinite(snapshot.exercise)
+      ? t(hasLoggedActivity ? 'USER LOGGED' : 'SELF-REPORTED')
+      : t('AWAITING RECORD');
+    $('#metric-fatigue-trend').textContent = Number.isFinite(snapshot.fatigue) ? t('SELF-REPORTED') : t('AWAITING RECORD');
+    $('.heart-spark').hidden = !Number.isFinite(snapshot.heart);
+    $('.sleep-spark').hidden = !Number.isFinite(snapshot.sleep);
     const hydration = hydrationSummary();
     const hydrationUnit = state.profile.hydrationUnit || 'mL';
     $('#metric-hydration').textContent = formatVolume(hydration.consumedMl, hydrationUnit);
@@ -966,19 +1048,17 @@
       ? (hydration.consumedMl > 0 ? 'LOGGED' : 'NO TARGET')
       : `${formatNumber(Math.round(hydration.percent))}%`;
     $('.checkin-panel h2').textContent = `How are you feeling, ${state.profile.name.split(/\s+/)[0]}?`;
-    $$('.fatigue-bars i').forEach((bar, index) => bar.classList.toggle('filled', index < Number(state.metrics.fatigue)));
-    $('#exercise-progress').style.width = `${Math.min(100, Number(state.metrics.exercise) / 60 * 100)}%`;
-    const completedToday = missions.filter((mission) => state.completed.includes(mission.id)).length;
-    const score = Math.max(0, Math.min(100, 92 - currentAlerts().length * 9 - (state.metrics.fatigue > 5 ? (state.metrics.fatigue - 5) * 2 : 0)));
-    $('#readiness-score').textContent = formatNumber(score);
-    const ring = $('.ring-value');
-    ring.style.strokeDashoffset = String(320 * (1 - score / 100));
-    $('.status-pill').innerHTML = `<span></span>${currentAlerts().length ? 'REVIEW INDICATORS' : 'MISSION READY'}`;
-    $('.readiness-copy h2').innerHTML = currentAlerts().length ? 'Take a moment to<br>review your readings.' : 'Looking good,<br>crew member.';
-    $('.readiness-copy p').textContent = currentAlerts().length
-      ? 'One or more sample readings differ from your personal reference. Review the context and contact your flight surgeon if concerned.'
-      : 'Your overall indicators are tracking close to your personal baseline. Keep your recovery routine on course.';
-    $('#last-checkin').textContent = state.checkinDate === today ? state.lastCheckin : 'NOT LOGGED TODAY';
+    $$('.fatigue-bars i').forEach((bar, index) => bar.classList.toggle('filled', Number.isFinite(snapshot.fatigue) && index < snapshot.fatigue));
+    const hasPersonalRecords = Boolean(snapshot.latestRecord || snapshot.latestWellbeing || state.activityEntries.length || state.sleepLogs.length);
+    $('#readiness-score').textContent = '—';
+    $('.score-text small').textContent = t('NOT RATED');
+    $('.ring-value').style.strokeDashoffset = '320';
+    $('.status-pill').innerHTML = `<span></span>${escapeHtml(t(hasPersonalRecords ? 'PERSONAL RECORDS SAVED' : 'AWAITING PERSONAL RECORDS'))}`;
+    $('.readiness-copy h2').textContent = t(hasPersonalRecords ? 'Personal records are available for review.' : 'Awaiting personal records.');
+    $('.readiness-copy p').textContent = t('Check-ins are self-reported. AstroVital does not assess medical or mission readiness.');
+    const lastRecordDate = snapshot.latestRecord?.date || snapshot.latestWellbeing?.date
+      || state.activityEntries[0]?.date || state.sleepLogs[0]?.date;
+    $('#last-checkin').textContent = lastRecordDate || t('NOT RECORDED');
     $('#alert-count').textContent = formatNumber(currentAlerts().length);
     renderRufus();
     renderMedicationOverview();
@@ -998,28 +1078,58 @@
   }
 
   const metricCards = [
-    { key: 'heart', icon: '♡', name: 'RESTING HEART RATE', unit: 'bpm', baseline: () => `${formatNumber(state.profile.heartMin)}–${formatNumber(state.profile.heartMax)} bpm personal range` },
-    { key: 'sleep', icon: '☾', name: 'SLEEP DURATION', unit: 'hrs', baseline: () => `${formatNumber(state.profile.sleepMin)}–${formatNumber(state.profile.sleepMax)} hrs personal target` },
-    { key: 'exercise', icon: '↗', name: 'EXERCISE', unit: 'min', baseline: () => '60 min daily activity goal' },
-    { key: 'resistanceExercise', icon: '↗', name: 'RESISTANCE EXERCISE', unit: 'min', baseline: () => 'Self-reported bone-loading activity' },
-    { key: 'fatigue', icon: '◌', name: 'FATIGUE', unit: '/ 10', baseline: () => 'Self-reported; personal tracking' },
-    { key: 'mood', icon: '☀', name: 'MOOD', unit: '', baseline: () => 'Self-reported check-in' },
-    { key: 'connection', icon: '◎', name: 'CREW CONNECTION', unit: '', baseline: () => 'Self-reported; not a behavioral assessment' },
-    { key: 'immuneSymptoms', icon: '＋', name: 'SYMPTOM CHECK-IN', unit: '', baseline: () => 'Self-reported; not an immune-system test' },
-    { key: 'cognition', icon: '⌘', name: 'COGNITIVE GAME', unit: '/ 100', baseline: () => 'Illustrative game score · not an assessment' },
-    { key: 'radiation', icon: '◉', name: 'RADIATION EXPOSURE', unit: 'mSv', baseline: () => `Simulated mission review marker · ${state.profile.radiationReviewAt} mSv` }
+    { key: 'heart', icon: '♡', name: 'RESTING HEART RATE', unit: 'bpm' },
+    { key: 'sleep', icon: '☾', name: 'SLEEP DURATION', unit: 'hrs' },
+    { key: 'exercise', icon: '↗', name: 'EXERCISE', unit: 'min' },
+    { key: 'resistanceExercise', icon: '↗', name: 'RESISTANCE EXERCISE', unit: 'min' },
+    { key: 'fatigue', icon: '◌', name: 'FATIGUE', unit: '/ 10' },
+    { key: 'mood', icon: '☀', name: 'MOOD', unit: '' },
+    { key: 'connection', icon: '◎', name: 'CREW CONNECTION', unit: '' },
+    { key: 'immuneSymptoms', icon: '＋', name: 'SYMPTOM CHECK-IN', unit: '' },
+    { key: 'cognition', icon: '⌘', name: 'COGNITIVE GAME', unit: '/ 100' },
+    { key: 'radiation', icon: '◉', name: 'RADIATION SCENARIO', unit: '' }
   ];
 
   function renderHealth() {
     const alerts = currentAlerts();
+    const snapshot = personalHealthSnapshot();
+    const t = window.RufusI18n.translate;
     const alertRoot = $('#health-alerts');
     alertRoot.innerHTML = alerts.map((alert) => `<div class="alert-card"><span class="alert-mark">⚠</span><div><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.detail)}</p></div></div>`).join('');
     $('#health-metrics').innerHTML = metricCards.map((metric) => {
-      const value = state.metrics[metric.key];
-      const displayValue = metric.key === 'sleep' ? formatDecimal(Number(value))
-        : Number.isFinite(Number(value)) ? formatNumber(Number(value)) : escapeHtml(value);
-      const status = metricStatus(metric.key);
-      return `<article class="health-metric ${status ? 'health-metric-alert' : ''}"><div class="health-metric-head"><span class="metric-icon ${metric.key}-icon">${metric.icon}</span><span class="health-status ${status ? 'watch' : ''}">${status ? 'REVIEW' : 'TRACKING'}</span></div><h3>${metric.name}</h3><div class="health-metric-value">${displayValue}<small>${metric.unit}</small></div><div class="health-metric-baseline">${escapeHtml(metric.baseline())}</div></article>`;
+      const value = snapshot[metric.key];
+      const displayValue = value === null || value === undefined ? '—'
+        : metric.key === 'sleep' ? formatDecimal(value)
+          : typeof value === 'string' ? escapeHtml(value) : Number.isFinite(value) ? formatNumber(value) : '—';
+      const status = metricStatus(metric.key, snapshot);
+      const sourceDate = metric.key === 'heart'
+        ? snapshot.heartDate
+        : metric.key === 'sleep'
+          ? snapshot.sleepDate
+        : metric.key === 'fatigue' || metric.key === 'mood' || metric.key === 'connection'
+          ? snapshot.latestWellbeing?.date
+          : ['exercise', 'resistanceExercise'].includes(metric.key)
+            ? state.activityEntries.some((entry) => entry.date === today
+              && entry.status === 'completed'
+              && (metric.key === 'exercise' || entry.category === 'Resistance'))
+              ? today
+              : snapshot.latestRecord?.date
+            : null;
+      const loggedActivity = ['exercise', 'resistanceExercise'].includes(metric.key)
+        && state.activityEntries.some((entry) => entry.date === today
+          && entry.status === 'completed'
+          && (metric.key === 'exercise' || entry.category === 'Resistance'));
+      const source = metric.key === 'radiation'
+        ? t('Simulation only; not a personal exposure reading')
+        : metric.key === 'cognition' && value !== null
+          ? t('Game result only; not an assessment')
+        : value === null || value === undefined
+          ? t('Awaiting personal records')
+          : `${t(loggedActivity ? 'User logged' : 'Self-reported')}${sourceDate ? ` · ${sourceDate}` : ''}`;
+      const label = metric.key === 'radiation'
+        ? t('SIMULATION ONLY')
+        : value === null || value === undefined ? t('NO RECORD') : t(status ? 'REVIEW' : 'RECORDED');
+      return `<article class="health-metric ${status ? 'health-metric-alert' : ''}"><div class="health-metric-head"><span class="metric-icon ${metric.key}-icon">${metric.icon}</span><span class="health-status ${status ? 'watch' : ''}">${escapeHtml(label)}</span></div><h3>${escapeHtml(metric.name)}</h3><div class="health-metric-value">${displayValue}<small>${escapeHtml(metric.unit)}</small></div><div class="health-metric-baseline">${escapeHtml(source)}</div></article>`;
     }).join('');
     renderHeartChart($('#health-chart'), activeRange, true);
   }
@@ -1092,6 +1202,7 @@
     const engine = window.AstroVitalBaseline;
     const insightData = getInsightData();
     const data = insightData.healthBaseline;
+    const t = window.RufusI18n.translate;
     const records = data.records.slice().sort((first, second) => first.date.localeCompare(second.date));
     const baseline = data.baseline || engine.calculateBaseline(records);
     if (baseline.ready && !data.baseline && !insightDemoMode && !state.healthBaseline.isSynthetic) {
@@ -1104,10 +1215,14 @@
     $('#baseline-record-count').textContent = `${formatNumber(count)} / ${engine.BASELINE_DAYS} records`;
     $('#baseline-progress-percent').textContent = `${Math.round(count / engine.BASELINE_DAYS * 100)}%`;
     $('#baseline-progress-fill').style.width = `${count / engine.BASELINE_DAYS * 100}%`;
-    $('#baseline-state').textContent = baseline.ready ? 'Your personal baseline is ready' : 'Collecting personal records';
-    $('#baseline-description').textContent = baseline.ready
-      ? `Calculated from your first ${baseline.sample_days} dated records (${formatAppDate(baseline.start_date)}–${formatAppDate(baseline.end_date)}). Later entries do not change this reference.`
-      : `Log ${Math.max(0, engine.BASELINE_DAYS - count)} more daily records. Your first 30 records, covering at least 30 calendar dates, establish your personal reference.`;
+    $('#baseline-state').textContent = insightDemoMode
+      ? t('Synthetic demo baseline available')
+      : t(baseline.ready ? 'Your personal baseline is ready' : 'Collecting personal records');
+    $('#baseline-description').textContent = insightDemoMode
+      ? t('Illustrative synthetic records; not personal or NASA measurements.')
+      : baseline.ready
+        ? `Calculated from your first ${baseline.sample_days} dated records (${formatAppDate(baseline.start_date)}–${formatAppDate(baseline.end_date)}). Later entries do not change this reference.`
+        : `Log ${Math.max(0, engine.BASELINE_DAYS - count)} more daily records. Your first 30 records, covering at least 30 calendar dates, establish your personal reference.`;
     $('#baseline-data-mode').textContent = insightDemoMode
       ? window.RufusI18n.translate('SYNTHETIC DEMO · ISOLATED')
       : window.RufusI18n.translate('PERSONAL RECORDS · LOCAL ONLY');
@@ -1116,18 +1231,22 @@
     const comparisons = baseline.ready && latest ? engine.compareToBaseline(latest, baseline) : null;
     const score = comparisons ? engine.calculateHealthScore(latest, baseline) : { score: null, status: 'unavailable' };
     $('#baseline-score').textContent = score.score === null ? '—' : formatNumber(score.score);
-    $('#baseline-score-status').textContent = score.status === 'unavailable' ? 'Collecting baseline' : score.status;
+    $('#baseline-score-status').textContent = score.status === 'unavailable'
+      ? window.RufusI18n.translate('Collecting baseline')
+      : window.RufusI18n.translate('Experimental · non-clinical');
     if (!baseline.ready || !latest || !comparisons) {
       $('#baseline-summary-title').textContent = 'Your trends will appear here.';
       $('#baseline-summary').textContent = `You have ${count} of ${engine.BASELINE_DAYS} records needed to establish a personal baseline.`;
     } else {
       const declining = engine.METRICS.filter(({ key }) => comparisons[key].status === 'declining')
         .map((metric) => metric.label.toLowerCase());
-      const risks = engine.detectRisks(latest, baseline);
+      const patterns = engine.detectPatterns(latest, baseline);
       const changes = declining.length ? ` Changes to review: ${declining.join(', ')}.` : ' Your latest measurements are stable or improving against your baseline.';
-      const flags = risks.length ? ` Rule-based flags to review: ${risks.map((risk) => risk.risk.toLowerCase()).join(', ')}.` : '';
-      $('#baseline-summary-title').textContent = `Personal health score: ${score.score ?? '—'} · ${score.status}.`;
-      $('#baseline-summary').textContent = `${changes}${flags} This is not a diagnosis.`;
+      const flags = patterns.length
+        ? ` ${window.RufusI18n.translate('Experimental patterns for review')}: ${patterns.map((pattern) => window.RufusI18n.translate(pattern.pattern)).join(', ')}.`
+        : '';
+      $('#baseline-summary-title').textContent = `${window.RufusI18n.translate('Experimental comparison index')}: ${score.score ?? '—'} / 100.`;
+      $('#baseline-summary').textContent = `${changes}${flags} ${window.RufusI18n.translate('This is non-clinical and does not assess or predict readiness.')}`;
     }
 
     $('#baseline-metrics').innerHTML = engine.METRICS.map((metric) => {
@@ -1145,18 +1264,13 @@
     }).join('');
 
     if (!baseline.ready || !latest || !comparisons) {
-      $('#baseline-risks').innerHTML = '<p class="baseline-empty">Rule-based review flags are available after your personal baseline is established.</p>';
+      $('#baseline-risks').innerHTML = `<p class="baseline-empty">${escapeHtml(window.RufusI18n.translate('Experimental patterns are available after your personal baseline is established.'))}</p>`;
       $('#baseline-trends').innerHTML = '<p class="baseline-empty">Trend windows become available after a personal baseline is established.</p>';
     } else {
-      const risks = engine.detectRisks(latest, baseline);
-      const review = {
-        Fatigue: 'Review recent sleep and reaction-time entries. Protect recovery opportunities and follow crew medical guidance.',
-        'Behavioral health': 'Consider checking in with a trusted crewmate or behavioral-health support. Contact your crew medical officer if changes persist or concern you.',
-        'Cardiovascular watch': 'If practical, verify the measurement and follow mission guidance. Contact your flight surgeon about persistent or concerning changes.'
-      };
-      $('#baseline-risks').innerHTML = risks.length
-        ? `<div class="baseline-risk-list">${risks.map((risk) => `<article class="baseline-risk-item"><strong>${escapeHtml(`${risk.risk.toLowerCase()} · ${risk.severity.toLowerCase()}`)}</strong><p>${risk.reasons.map(escapeHtml).join(' ')}</p><p>Rule strength ${Math.round(risk.ruleStrength * 100)}% · heuristic, not a medical probability.</p><p>Suggested review: ${escapeHtml(review[risk.risk])}</p></article>`).join('')}</div>`
-        : '<p class="baseline-empty">No current review flags are triggered by the illustrative rules. Continue following mission medical guidance.</p>';
+      const patterns = engine.detectPatterns(latest, baseline);
+      $('#baseline-risks').innerHTML = patterns.length
+        ? `<div class="baseline-risk-list">${patterns.map((pattern) => `<article class="baseline-risk-item"><strong>${escapeHtml(window.RufusI18n.translate(pattern.pattern))}</strong><p>${pattern.reasons.map(escapeHtml).join(' ')}</p></article>`).join('')}</div><p class="baseline-empty">${escapeHtml(window.RufusI18n.translate('These experimental patterns are for review only, not diagnoses or medical risk predictions.'))}</p>`
+        : `<p class="baseline-empty">${escapeHtml(window.RufusI18n.translate('No experimental patterns were triggered by these descriptive rules. This is not a medical assessment.'))}</p>`;
       const trends = engine.analyzeTrends(records);
       $('#baseline-trends').innerHTML = `<table class="baseline-trend-table"><thead><tr><th>INDICATOR</th><th>7 DAYS</th><th>14 DAYS</th><th>30 DAYS</th></tr></thead><tbody>${engine.METRICS.map(({ key, label }) => `<tr><th>${escapeHtml(label.toUpperCase())}</th>${[7, 14, 30].map((days) => `<td class="${trends[days][key]}">${trends[days][key]}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
     }
@@ -1318,7 +1432,7 @@
       { key: 'sleepHours', title: 'SLEEP DURATION', unit: 'hrs' },
       { key: 'reactionTime', title: 'REACTION TIME', unit: 'ms' },
       { key: 'moodScore', title: 'MOOD CHECK-IN', unit: '/5' },
-      { key: 'score', title: 'PERSONAL HEALTH SCORE', unit: '/100' }
+      { key: 'score', title: 'EXPERIMENTAL COMPARISON INDEX', unit: '/100' }
     ];
     $('#baseline-charts').innerHTML = definitions.map((definition) => {
       const series = points.map((record) => ({
@@ -1348,44 +1462,58 @@
     const width = 640;
     const height = withSleep ? 190 : 126;
     const left = 34, right = 12, top = 14, bottom = 23;
-    let values = state.heartHistory.slice(-days);
-    if (days === 30 && values.length < 30) {
-      const history = [];
-      for (let i = 0; i < 30 - values.length; i++) history.push(64 + Math.round(Math.sin(i * 1.7) * 3 + Math.cos(i * .49) * 2));
-      values = history.concat(values);
+    const records = personalBaselineRecords();
+    const latestDay = records.length ? Date.parse(`${records.at(-1).date}T00:00:00Z`) / 86400000 : null;
+    const startDay = latestDay === null ? null : latestDay - days + 1;
+    const rangeRecords = records.filter((record) => startDay !== null
+      && Date.parse(`${record.date}T00:00:00Z`) / 86400000 >= startDay);
+    const heartRecords = rangeRecords.filter((record) => Number.isFinite(record.restingHeartRate));
+    if (!heartRecords.length) {
+      container.innerHTML = `<p class="baseline-empty">${escapeHtml(window.RufusI18n.translate('Awaiting personal records'))}</p>`;
+      if (container.id === 'heart-chart') {
+        $('#chart-latest').textContent = '—';
+        $('.chart-change').textContent = window.RufusI18n.translate('No personal trend yet');
+        $('.chart-footer span:last-child').hidden = true;
+      }
+      if (container.id === 'health-chart') $('.timeline-legend span:last-child').hidden = true;
+      return;
     }
-    const min = Math.min(50, ...values, Number(state.profile.heartMin) - 6);
-    const max = Math.max(82, ...values, Number(state.profile.heartMax) + 6);
+    const values = heartRecords.map((record) => record.restingHeartRate);
+    const min = Math.min(50, ...values);
+    const max = Math.max(82, ...values);
     const plotH = height - top - bottom;
     const plotW = width - left - right;
     const x = (index) => left + index / Math.max(1, values.length - 1) * plotW;
     const y = (value) => top + (max - value) / (max - min) * plotH;
     const points = values.map((value, index) => `${x(index)},${y(value)}`);
-    const baselineY = y((Number(state.profile.heartMin) + Number(state.profile.heartMax)) / 2);
+    const savedBaseline = state.healthBaseline.isSynthetic
+      ? state.healthBaseline.personalBaselineBackup
+      : state.healthBaseline.baseline;
+    const baseline = savedBaseline || window.AstroVitalBaseline.calculateBaseline(records);
+    const baselineValue = baseline.ready ? baseline.values.restingHeartRate : null;
+    const baselineY = Number.isFinite(baselineValue) ? y(baselineValue) : null;
+    if (container.id === 'heart-chart') $('.chart-footer span:last-child').hidden = baselineY === null;
+    if (container.id === 'health-chart') $('.timeline-legend span:last-child').hidden = baselineY === null;
     const area = `${left},${height - bottom} ${points.join(' ')} ${x(values.length - 1)},${height - bottom}`;
     const grid = [0, 1, 2, 3].map((step) => {
       const value = max - (max - min) * step / 3;
       const gy = y(value);
       return `<line class="chart-grid-line" x1="${left}" y1="${gy}" x2="${width - right}" y2="${gy}"/><text class="chart-label" x="0" y="${gy + 3}">${formatNumber(Math.round(value))}</text>`;
     }).join('');
-    const weekLabels = Array.from({ length: 7 }, (_, index) => {
-      if (index === 6) return 'TODAY';
-      const date = new Date();
-      date.setUTCDate(date.getUTCDate() - (6 - index));
-      return new Intl.DateTimeFormat(localeTag(), { weekday: 'short', timeZone: 'UTC' }).format(date);
-    });
-    const labels = (values.length === 7 ? weekLabels : ['30D AGO', '', '20D AGO', '', '10D AGO', '', 'TODAY']).map((label, index, array) => {
-      if (!label) return '';
-      const lx = left + index / (array.length - 1) * plotW;
-      return `<text class="chart-label" x="${lx}" y="${height - 4}" text-anchor="${index === 0 ? 'start' : index === array.length - 1 ? 'end' : 'middle'}">${label}</text>`;
+    const labels = `<text class="chart-label" x="${left}" y="${height - 4}">${heartRecords[0].date}</text><text class="chart-label" x="${width - right}" y="${height - 4}" text-anchor="end">${heartRecords.at(-1).date}</text>`;
+    const pointsMarkup = values.map((value, index) => {
+      const date = heartRecords[index].date;
+      return `<circle class="chart-point" cx="${x(index)}" cy="${y(value)}" r="${index === values.length - 1 ? 4 : 2.5}" tabindex="0" role="button" aria-label="${value} beats per minute, self-reported ${date}"><title>${value} bpm · ${date} · self-reported</title></circle>`;
     }).join('');
-    const pointsMarkup = values.map((value, index) => `<circle class="chart-point" cx="${x(index)}" cy="${y(value)}" r="${index === values.length - 1 ? 4 : 2.5}" tabindex="0" role="button" aria-label="${value} beats per minute, day ${index + 1}"><title>${value} bpm · ${index === values.length - 1 ? 'latest sample' : `day ${index + 1}`}</title></circle>`).join('');
-    const sleepBars = withSleep ? state.sleepHistory.slice(-7).map((value, index) => {
-      const barX = left + index / 6 * plotW - 8;
-      const barH = Math.max(2, Number(value) / 10 * plotH);
-      return `<rect class="chart-bar" x="${barX}" y="${top + plotH - barH}" width="16" height="${barH}" rx="2"><title>${formatDecimal(Number(value))} hours sleep · day ${index + 1}</title></rect>`;
-    }).join('') : '';
-    container.innerHTML = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-label="${days} day personal health trend">${grid}<line class="chart-baseline" x1="${left}" y1="${baselineY}" x2="${width - right}" y2="${baselineY}"/><polygon class="chart-area" points="${area}" />${sleepBars}<polyline class="chart-line" points="${points.join(' ')}"/>${pointsMarkup}${labels}</svg>`;
+    const sleepRecords = withSleep
+      ? rangeRecords.filter((record) => Number.isFinite(record.sleepHours)).slice(-7)
+      : [];
+    const sleepBars = sleepRecords.map((record, index) => {
+      const barX = left + index / Math.max(1, sleepRecords.length - 1) * plotW - 8;
+      const barH = Math.max(2, record.sleepHours / 10 * plotH);
+      return `<rect class="chart-bar" x="${barX}" y="${top + plotH - barH}" width="16" height="${barH}" rx="2"><title>${formatDecimal(record.sleepHours)} hours sleep · ${record.date} · self-reported</title></rect>`;
+    }).join('');
+    container.innerHTML = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-label="${days} day self-reported health record trend">${grid}${baselineY === null ? '' : `<line class="chart-baseline" x1="${left}" y1="${baselineY}" x2="${width - right}" y2="${baselineY}"/>`}<polygon class="chart-area" points="${area}" />${sleepBars}<polyline class="chart-line" points="${points.join(' ')}"/>${pointsMarkup}${labels}</svg>`;
     $$('.chart-point', container).forEach((point) => {
       const description = $('title', point).textContent;
       point.addEventListener('click', () => showToast(description));
@@ -1396,7 +1524,10 @@
         }
       });
     });
-    if (container.id === 'heart-chart') $('#chart-latest').textContent = String(state.metrics.heart);
+    if (container.id === 'heart-chart') {
+      $('#chart-latest').textContent = formatNumber(heartRecords.at(-1).restingHeartRate);
+      $('.chart-change').textContent = window.RufusI18n.translate('Self-reported records only');
+    }
   }
 
   function renderMissions() {
@@ -1481,9 +1612,11 @@
 
   function openProfile() {
     const checkedInterests = (interest) => state.profile.interests.includes(interest) ? 'checked' : '';
+    const profileValue = (value) => Number.isFinite(value) ? value : '';
     openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> LOCAL PROFILE</div>
       <h2 id="modal-title">Profile and preferences</h2>
       <p>Your crew profile and preferences stay in this browser. Set or edit hydration goals on the Hydration Tracker, where you can preview the schedule before saving it.</p>
+      <p>Optional health references are examples for personal comparison only. They are not medical targets and do not determine health status.</p>
       <form id="profile-form">
         <div class="modal-form">
           <label>PERSONNEL ID · LOCAL PROFILE<input value="${escapeHtml(state.profile.personnelId)}" readonly></label>
@@ -1491,11 +1624,11 @@
           <label>MISSION IDENTIFIER<input name="missionId" maxlength="40" value="${escapeHtml(state.profile.missionId)}"></label>
           <label>LANGUAGE<select name="language"><option value="en" ${state.profile.language === 'en' ? 'selected' : ''}>English</option><option value="es" ${state.profile.language === 'es' ? 'selected' : ''}>Español</option><option value="fr" ${state.profile.language === 'fr' ? 'selected' : ''}>Français</option><option value="de" ${state.profile.language === 'de' ? 'selected' : ''}>Deutsch</option><option value="zh" ${state.profile.language === 'zh' ? 'selected' : ''}>简体中文</option><option value="ja" ${state.profile.language === 'ja' ? 'selected' : ''}>日本語</option><option value="ar" ${state.profile.language === 'ar' ? 'selected' : ''}>العربية</option></select></label>
           <div class="timezone-field"><label for="profile-timezone" id="timezone-profile-label">TIME ZONE</label><input id="timezone-filter" class="entry-control timezone-filter" type="search" autocomplete="off" placeholder="Filter IANA time zones"><select id="profile-timezone" name="timezone" class="entry-control" required></select><small id="timezone-profile-help">Choose the zone used for local time, dates, and in-app schedules.</small><small class="timezone-detected"><span id="timezone-detected-label">Browser detected:</span> <code id="browser-timezone">${escapeHtml(localTimeZone)}</code></small></div>
-          <label>RESTING HEART RATE MIN · BPM<input name="heartMin" type="number" min="35" max="110" value="${state.profile.heartMin}" required></label>
-          <label>RESTING HEART RATE MAX · BPM<input name="heartMax" type="number" min="40" max="160" value="${state.profile.heartMax}" required></label>
-          <label>SLEEP TARGET MIN · HOURS<input name="sleepMin" type="number" min="3" max="12" step=".1" value="${state.profile.sleepMin}" required></label>
-          <label>SLEEP TARGET MAX · HOURS<input name="sleepMax" type="number" min="4" max="14" step=".1" value="${state.profile.sleepMax}" required></label>
-          <label>SIMULATED RADIATION REVIEW · mSv<input name="radiationReviewAt" type="number" min="1" max="1000" step=".1" value="${state.profile.radiationReviewAt}" required></label>
+          <label>OPTIONAL HEART-RATE REFERENCE MIN · BPM<input name="heartMin" type="number" min="35" max="110" value="${profileValue(state.profile.heartMin)}"></label>
+          <label>OPTIONAL HEART-RATE REFERENCE MAX · BPM<input name="heartMax" type="number" min="40" max="160" value="${profileValue(state.profile.heartMax)}"></label>
+          <label>OPTIONAL SLEEP REFERENCE MIN · HOURS<input name="sleepMin" type="number" min="3" max="12" step=".1" value="${profileValue(state.profile.sleepMin)}"></label>
+          <label>OPTIONAL SLEEP REFERENCE MAX · HOURS<input name="sleepMax" type="number" min="4" max="14" step=".1" value="${profileValue(state.profile.sleepMax)}"></label>
+          <label>SIMULATED SCENARIO MARKER · NOT PERSONAL EXPOSURE · mSv<input name="radiationReviewAt" type="number" min="1" max="1000" step=".1" value="${state.profile.radiationReviewAt}" required></label>
         </div>
         <div class="profile-preferences">
           <label><input type="checkbox" name="notifications" ${state.profile.notifications ? 'checked' : ''}> Save in-app reminder preference <small>Delivery is not implemented in Phase 1.</small></label>
@@ -1511,21 +1644,21 @@
 
   function openCheckin() {
     const recordedSleep = window.AstroVitalFeatureData.sleepTotalForDate(state.sleepLogs, today);
-    const sleepValue = recordedSleep === null ? state.metrics.sleep : recordedSleep;
+    const savedCheckin = currentPersonalCheckin();
+    const sleepValue = recordedSleep === null ? savedCheckin?.sleep ?? '' : recordedSleep;
     const hasSleepPeriods = state.sleepLogs.some((entry) => entry.date === today && entry.kind === 'period');
     const optionalValue = (value) => Number.isFinite(value) ? value : '';
-    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> DAILY HEALTH · SIMULATED DATA</div><h2 id="modal-title">Health check-in</h2><p>Enter illustrative self-reported values. Optional measurements extend your private personal baseline; this prototype does not connect to sensors or provide medical advice.</p><form id="checkin-form"><div class="modal-form">
-      <label>RESTING HEART RATE · BPM<input name="heart" type="number" min="30" max="220" value="${state.metrics.heart}" required></label>
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> DAILY HEALTH · SELF-REPORTED</div><h2 id="modal-title">Health check-in</h2><p>Enter values you choose to record. Empty fields stay unavailable; this prototype does not connect to medical sensors or assess health status.</p><form id="checkin-form"><div class="modal-form">
+      <label>RESTING HEART RATE · BPM<input name="heart" type="number" min="30" max="220" value="${optionalValue(savedCheckin?.heart)}" required></label>
       <label>SLEEP DURATION · HOURS<input name="sleep" type="number" min="0" max="24" step=".1" value="${sleepValue}" ${hasSleepPeriods ? 'readonly' : ''} required></label>
-      <label>EXERCISE · MINUTES TODAY<input name="exercise" type="number" min="0" max="600" value="${state.metrics.exercise}" required></label>
-      <label>RESISTANCE EXERCISE · MINUTES<input name="resistanceExercise" type="number" min="0" max="300" value="${state.metrics.resistanceExercise}" required></label>
-      <label>SYMPTOMS TODAY<select name="immuneSymptoms"><option ${state.metrics.immuneSymptoms === 'None' ? 'selected' : ''}>None</option><option ${state.metrics.immuneSymptoms === 'Mild' ? 'selected' : ''}>Mild</option><option ${state.metrics.immuneSymptoms === 'Moderate' ? 'selected' : ''}>Moderate</option><option ${state.metrics.immuneSymptoms === 'Severe' ? 'selected' : ''}>Severe</option></select></label>
-      <label>RADIATION · SIMULATED mSv<input name="radiation" type="number" min="0" max="1000" step=".1" value="${state.metrics.radiation}" required></label>
-      <label>SLEEP EFFICIENCY · % · OPTIONAL<input name="sleepEfficiency" type="number" min="0" max="100" step=".1" value="${optionalValue(state.metrics.sleepEfficiency)}"></label>
-      <label>HRV · ms · OPTIONAL<input name="hrv" type="number" min="0" max="300" step=".1" value="${optionalValue(state.metrics.hrv)}"></label>
-      <label>DAILY ACTIVITY SCORE · 0–100 · OPTIONAL<input name="activityScore" type="number" min="0" max="100" step=".1" value="${optionalValue(state.metrics.activityScore)}"></label>
-      <label>REACTION TIME · ms · OPTIONAL<input name="reactionTime" type="number" min="50" max="5000" step="1" value="${optionalValue(state.metrics.reactionTime)}"></label>
-    </div><div class="health-note"><span>ⓘ</span><div><strong>Optional metrics</strong><p>Leave unavailable measurements blank. Self-reported values and sample data are not sensor readings or clinical assessments.</p></div></div><div class="wellbeing-link-note">Mood, fatigue, stress, and crew-connection check-ins are in <button type="button" class="text-button" data-nav="wellbeing">Wellbeing</button>. ${hasSleepPeriods ? 'Sleep duration is the total of today’s logged sleep periods.' : ''}</div><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE CHECK-IN</button></div></form>`);
+      <label>EXERCISE · MINUTES TODAY<input name="exercise" type="number" min="0" max="600" value="${optionalValue(savedCheckin?.exercise)}" required></label>
+      <label>RESISTANCE EXERCISE · MINUTES<input name="resistanceExercise" type="number" min="0" max="300" value="${optionalValue(savedCheckin?.resistanceExercise)}" required></label>
+      <label>SYMPTOMS TODAY<select name="immuneSymptoms" required><option value="" ${savedCheckin?.immuneSymptoms ? '' : 'selected'}>Not recorded</option><option ${savedCheckin?.immuneSymptoms === 'None' ? 'selected' : ''}>None</option><option ${savedCheckin?.immuneSymptoms === 'Mild' ? 'selected' : ''}>Mild</option><option ${savedCheckin?.immuneSymptoms === 'Moderate' ? 'selected' : ''}>Moderate</option><option ${savedCheckin?.immuneSymptoms === 'Severe' ? 'selected' : ''}>Severe</option></select></label>
+      <label>SLEEP EFFICIENCY · % · OPTIONAL<input name="sleepEfficiency" type="number" min="0" max="100" step=".1" value="${optionalValue(savedCheckin?.sleepEfficiency)}"></label>
+      <label>HRV · ms · OPTIONAL<input name="hrv" type="number" min="0" max="300" step=".1" value="${optionalValue(savedCheckin?.hrv)}"></label>
+      <label>DAILY ACTIVITY SCORE · 0–100 · OPTIONAL<input name="activityScore" type="number" min="0" max="100" step=".1" value="${optionalValue(savedCheckin?.activityScore)}"></label>
+      <label>REACTION TIME · ms · OPTIONAL<input name="reactionTime" type="number" min="50" max="5000" step="1" value="${optionalValue(savedCheckin?.reactionTime)}"></label>
+    </div><div class="health-note"><span>ⓘ</span><div><strong>Optional measurements</strong><p>Leave unavailable measurements blank. Check-in values are self-reported, not sensor readings or clinical assessments.</p></div></div><div class="wellbeing-link-note">Mood, fatigue, stress, and crew-connection check-ins are in <button type="button" class="text-button" data-nav="wellbeing">Wellbeing</button>. ${hasSleepPeriods ? 'Sleep duration is the total of today’s logged sleep periods.' : ''}</div><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE CHECK-IN</button></div></form>`);
   }
 
   function renderRufusArtwork() {
@@ -1704,16 +1837,14 @@
     const allDone = missions.every((item) => state.completed.includes(item.id));
     const message = allDone
       ? 'LOOK AT YOU! Your whole flight plan is complete. Rufus is doing a tiny victory dance!'
-      : id === 'checkin' && Number(state.metrics.sleep) >= Number(state.profile.sleepMin)
-        ? 'Mission accomplished, crew member! You checked in and made room for rest. Rufus is proud of you.'
-        : id === 'checkin'
-          ? 'Mission accomplished, crew member! Thanks for checking in with yourself. That counts.'
-          : id === 'move'
-            ? 'Nice work getting your movement mission logged. One small win, right on course.'
-            : id === 'mind'
-              ? 'Curiosity beacon: activated! Rufus loved exploring that Mind Lab puzzle with you.'
-              : 'A mindful pause logged. Rufus says a little reset can be a lovely mission moment.';
-    const reactionPose = allDone ? 'wave' : id === 'mind' ? 'confident' : id === 'breathe' || (id === 'checkin' && Number(state.metrics.sleep) >= Number(state.profile.sleepMin)) ? 'rest' : 'confident';
+      : id === 'checkin'
+        ? 'Mission accomplished, crew member! Thanks for checking in with yourself. That counts.'
+        : id === 'move'
+          ? 'Nice work getting your movement mission logged. One small win, right on course.'
+          : id === 'mind'
+            ? 'Curiosity beacon: activated! Rufus loved exploring that Mind Lab puzzle with you.'
+            : 'A mindful pause logged. Rufus says a little reset can be a lovely mission moment.';
+    const reactionPose = allDone ? 'wave' : id === 'mind' ? 'confident' : id === 'breathe' ? 'rest' : 'confident';
     speakRufus(message, allDone ? 'FLIGHT PLAN COMPLETE · CELEBRATION TIME' : 'MISSION MILESTONE · +10 STARDUST', reactionPose);
     if (allDone) {
       const avatar = $('#rufus-avatar') || $('#rufus-portrait') || $('#rufus-home-avatar');
@@ -1965,7 +2096,7 @@
 
   function openAlerts() {
     const alerts = currentAlerts();
-    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> HEALTH MONITOR · SAMPLE DATA</div><h2 id="modal-title">Health alerts</h2><p>Changes are compared with personal reference values and are prompts for review, not diagnoses.</p><div class="alert-list">${alerts.length ? alerts.map((alert) => `<div class="alert-card"><span class="alert-mark">⚠</span><div><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.detail)}</p></div></div>`).join('') : '<div class="alert-empty">✓ &nbsp; No sample readings currently flag for review. Keep monitoring and contact your flight surgeon with health concerns.</div>'}</div><div class="modal-actions"><button class="secondary-button" data-action="close-modal">CLOSE</button><button class="primary-button" data-nav="health">VIEW HEALTH REPORT</button></div>`);
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL RECORD REVIEW</div><h2 id="modal-title">Health review prompts</h2><p>Prompts use self-reported records only. They are descriptive and are not diagnoses or continuous monitoring.</p><div class="alert-list">${alerts.length ? alerts.map((alert) => `<div class="alert-card"><span class="alert-mark">ⓘ</span><div><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.detail)}</p></div></div>`).join('') : '<div class="alert-empty">No personal review prompts are available. This app is not continuous or emergency monitoring.</div>'}</div><div class="modal-actions"><button class="secondary-button" data-action="close-modal">CLOSE</button><button class="primary-button" data-nav="health">VIEW HEALTH LOG</button></div>`);
   }
 
   function setGame(game) {
@@ -2050,8 +2181,10 @@
         }
         $('#reaction-result').textContent = `${time} ms · ${time < 300 ? 'Quick response!' : 'Signal received.'}`;
         target.disabled = true;
-        if (time < state.bestReaction) state.bestReaction = time;
-        $('#cog-best').innerHTML = `${state.bestReaction} <small>ms</small>`;
+        if (state.bestReaction === null || time < state.bestReaction) state.bestReaction = time;
+        if (state.userBestReaction === null || time < state.userBestReaction) state.userBestReaction = time;
+        state.hasUserCognitiveResult = true;
+        $('#cog-best').innerHTML = `${state.userBestReaction} <small>ms</small>`;
         const score = Math.max(0, Math.min(100, Math.round(100 - Math.max(0, time - 200) / 6)));
         finishGame(`Reaction recorded: ${time} ms · +25 mission XP`, score);
       }
@@ -2095,7 +2228,9 @@
     gameLocked = true;
     $$('.memory-cell,.attention-cell').forEach((button) => { button.disabled = true; });
     state.cognitiveSessions += 1;
+    state.userCognitiveSessions += 1;
     state.metrics.cognition = score;
+    state.hasUserCognitiveResult = true;
     state.xp += 25;
     if (!state.completed.includes('mind')) {
       const mission = missions.find((item) => item.id === 'mind');
@@ -2115,7 +2250,7 @@
     renderMissions();
     renderOverview();
     if ($('#view-companion').classList.contains('active')) renderCompanion();
-    $('#cog-sessions').innerHTML = `${state.cognitiveSessions} <small>sessions</small>`;
+    $('#cog-sessions').innerHTML = `${state.userCognitiveSessions} <small>sessions</small>`;
     $('#game-start').disabled = false;
     showToast(message);
   }
@@ -2170,12 +2305,12 @@
     if (!$('#view-wellbeing')) return;
     const todayEntry = state.checkinHistory.find((entry) => entry.date === today);
     $('#wellbeing-greeting').textContent = `How are you feeling, ${state.profile.name || 'crew member'}?`;
-    $$('input[name="mood"]').forEach((input) => { input.checked = input.value === state.metrics.mood; });
-    $('#energy-slider').value = String(state.metrics.fatigue);
-    $('#fatigue-value').textContent = String(state.metrics.fatigue);
-    $('#stress-slider').value = String(state.metrics.stress || 3);
-    $('#stress-value').textContent = String(state.metrics.stress || 3);
-    $('#wellbeing-connection').value = state.metrics.connection;
+    $$('input[name="mood"]').forEach((input) => { input.checked = input.value === todayEntry?.mood; });
+    $('#energy-slider').value = String(todayEntry?.fatigue ?? 5);
+    $('#fatigue-value').textContent = todayEntry ? String(todayEntry.fatigue) : '—';
+    $('#stress-slider').value = String(todayEntry?.stress ?? 5);
+    $('#stress-value').textContent = Number.isFinite(todayEntry?.stress) ? String(todayEntry.stress) : '—';
+    $('#wellbeing-connection').value = todayEntry?.connection || '';
     if (todayEntry) $('#journal-note').value = todayEntry.note;
     const startDate = dateRangeStart(wellbeingRange);
     const entries = state.checkinHistory.filter((entry) => entry.date >= startDate);
@@ -2388,10 +2523,10 @@
     state.checkinHistory = state.checkinHistory.filter((item) => item.id !== id);
     if (entry.date === today) {
       const replacement = state.checkinHistory.find((item) => item.date === today);
-      state.metrics.mood = replacement?.mood || seed.metrics.mood;
-      state.metrics.fatigue = replacement?.fatigue || seed.metrics.fatigue;
-      state.metrics.stress = replacement?.stress || seed.metrics.stress;
-      state.metrics.connection = replacement?.connection || seed.metrics.connection;
+      state.metrics.mood = replacement?.mood || '';
+      state.metrics.fatigue = replacement?.fatigue ?? null;
+      state.metrics.stress = replacement?.stress ?? null;
+      state.metrics.connection = replacement?.connection || '';
     }
     persist();
     renderOverview();
@@ -2838,6 +2973,10 @@
       event.preventDefault();
       const form = new FormData(event.target);
       const timezone = String(form.get('timezone') || '').trim();
+      const optionalReference = (name) => {
+        const value = String(form.get(name) || '').trim();
+        return value ? Number(value) : null;
+      };
       const next = {
         ...state.profile,
         name: String(form.get('name')).trim(),
@@ -2846,10 +2985,10 @@
         timezone,
         notifications: form.get('notifications') === 'on',
         interests: form.getAll('interests').map(String),
-        heartMin: Number(form.get('heartMin')),
-        heartMax: Number(form.get('heartMax')),
-        sleepMin: Number(form.get('sleepMin')),
-        sleepMax: Number(form.get('sleepMax')),
+        heartMin: optionalReference('heartMin'),
+        heartMax: optionalReference('heartMax'),
+        sleepMin: optionalReference('sleepMin'),
+        sleepMax: optionalReference('sleepMax'),
         radiationReviewAt: Number(form.get('radiationReviewAt'))
       };
       if (!isValidTimeZone(next.timezone)) {
@@ -2857,7 +2996,10 @@
         $('#profile-timezone').focus();
         return;
       }
-      if (!next.name || next.heartMin >= next.heartMax || next.sleepMin >= next.sleepMax) {
+      const validReference = (min, max) => (min === null && max === null)
+        || (Number.isFinite(min) && Number.isFinite(max) && min < max);
+      if (!next.name || !validReference(next.heartMin, next.heartMax)
+        || !validReference(next.sleepMin, next.sleepMax)) {
         showToast('Enter a name, valid time zone, and valid ranges.');
         return;
       }
@@ -3075,7 +3217,6 @@
         state.sleepLogs.push(checkinSleep);
       }
       state.metrics.immuneSymptoms = String(form.get('immuneSymptoms'));
-      state.metrics.radiation = Number(form.get('radiation'));
       state.metrics.sleepEfficiency = optionalMetric('sleepEfficiency');
       state.metrics.hrv = optionalMetric('hrv');
       state.metrics.activityScore = optionalMetric('activityScore');
@@ -3103,7 +3244,7 @@
       renderHealth();
       renderSleep();
       renderBaseline();
-      showToast('Health check-in saved · simulated data only');
+      showToast('Health check-in saved · self-reported data only');
     }
     if (event.target.id === 'activity-form') {
       event.preventDefault();
@@ -3236,11 +3377,8 @@
   renderWellbeing();
   initializeInspirationCarousel();
   renderSettings();
-  $('#cog-sessions').innerHTML = `${state.cognitiveSessions} <small>sessions</small>`;
-  $('#cog-best').innerHTML = `${state.bestReaction} <small>ms</small>`;
-  $('#energy-slider').value = state.metrics.fatigue;
-  $('#fatigue-value').textContent = state.metrics.fatigue;
-
+  $('#cog-sessions').innerHTML = `${state.userCognitiveSessions} <small>sessions</small>`;
+  $('#cog-best').innerHTML = `${state.userBestReaction === null ? '—' : formatNumber(state.userBestReaction)} <small>ms</small>`;
   let installPrompt = null;
   const shareButton = $('#share-button');
   shareButton.addEventListener('click', async () => {
