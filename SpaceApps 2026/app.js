@@ -1,7 +1,8 @@
 (() => {
   const STORAGE_KEY = 'astrovital-mission-health-v1';
   const LEGACY_PROFILE_CLAIMED_KEY = `${STORAGE_KEY}:legacy-claimed`;
-  const today = new Date().toISOString().slice(0, 10);
+  const DEFAULT_TIME_ZONE = 'America/Los_Angeles';
+  let today = new Date().toISOString().slice(0, 10);
   const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
   const demoMedication = {
     name: 'Fictional sample A',
@@ -38,10 +39,19 @@
     reports: { title: 'Health reports', phase: 'PHASE 5', detail: 'Daily and weekly summaries and exportable health reports are planned for Phase 5.' }
   };
   const languageNames = { en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch', zh: '简体中文', ja: '日本語', ar: 'العربية' };
+  const timeZoneCopy = {
+    en: { field: 'TIME ZONE', filter: 'Filter IANA time zones', detected: 'Browser detected:', settings: 'Choose the zone used for local time, dates, and in-app schedules.', invalid: 'Choose a valid IANA time zone.' },
+    es: { field: 'ZONA HORARIA', filter: 'Filtrar zonas horarias IANA', detected: 'Detectada en el navegador:', settings: 'Elige la zona para la hora local, las fechas y los horarios de la aplicación.', invalid: 'Elige una zona horaria IANA válida.' },
+    fr: { field: 'FUSEAU HORAIRE', filter: 'Filtrer les fuseaux IANA', detected: 'Détecté par le navigateur :', settings: 'Choisissez le fuseau utilisé pour l’heure locale, les dates et les horaires de l’application.', invalid: 'Choisissez un fuseau horaire IANA valide.' },
+    de: { field: 'ZEITZONE', filter: 'IANA-Zeitzonen filtern', detected: 'Vom Browser erkannt:', settings: 'Zeitzone für Ortszeit, Datumsangaben und App-Zeitpläne auswählen.', invalid: 'Wähle eine gültige IANA-Zeitzone.' },
+    zh: { field: '时区', filter: '筛选 IANA 时区', detected: '浏览器检测到：', settings: '选择用于本地时间、日期和应用内日程的时区。', invalid: '请选择有效的 IANA 时区。' },
+    ja: { field: 'タイムゾーン', filter: 'IANA タイムゾーンを絞り込む', detected: 'ブラウザーの検出結果：', settings: '現地時刻、日付、アプリ内予定に使うタイムゾーンを選択します。', invalid: '有効な IANA タイムゾーンを選択してください。' },
+    ar: { field: 'المنطقة الزمنية', filter: 'تصفية مناطق IANA الزمنية', detected: 'اكتشف المتصفح:', settings: 'اختر المنطقة المستخدمة للوقت المحلي والتواريخ والجداول داخل التطبيق.', invalid: 'اختر منطقة زمنية صالحة من IANA.' }
+  };
   const millilitersPerUnit = { mL: 1, L: 1000, 'fl oz': 29.5735295625 };
   const seed = {
     version: 1,
-    profile: { name: 'Astronaut', personnelId: '', role: 'Crew Member', missionId: '', language: 'en', timezone: localTimeZone, notifications: false, hydrationGoal: '', hydrationUnit: 'mL', reminderStart: '', reminderEnd: '', reminderCount: '', hydrationScheduleConfirmed: false, interests: [], onboarded: false, heartMin: 58, heartMax: 72, sleepMin: 7.5, sleepMax: 9, radiationReviewAt: 50 },
+    profile: { name: 'Astronaut', personnelId: '', role: 'Crew Member', missionId: '', language: 'en', timezone: DEFAULT_TIME_ZONE, notifications: false, hydrationGoal: '', hydrationUnit: 'mL', reminderStart: '', reminderEnd: '', reminderCount: '', hydrationScheduleConfirmed: false, interests: [], onboarded: false, heartMin: 58, heartMax: 72, sleepMin: 7.5, sleepMax: 9, radiationReviewAt: 50 },
     rufus: { pose: 'wave', inventory: ['orbit-satellite'], accessories: ['orbit-satellite'], stardust: 0, bondXp: 0, petDate: today, petCount: 0, petStreak: 0, lastPetDate: '' },
     metrics: { heart: 64, sleep: 7.4, sleepEfficiency: null, hrv: null, activityScore: null, reactionTime: null, exercise: 42, resistanceExercise: 24, fatigue: 3, stress: 3, mood: 'Good', connection: 'Connected', immuneSymptoms: 'None', cognition: 92, radiation: 38 },
     companion: { state: 'hello' }, hydrationLogs: [], medicationLog: [], xp: 2480, streak: 6, lastCheckin: 'TODAY, 07:42', checkinDate: today, lastCheckinDate: today,
@@ -127,7 +137,11 @@
       const inventory = Array.isArray(savedRufus.inventory) ? [...new Set(savedRufus.inventory.filter((item) => Object.hasOwn(rufusAccessories, item)))] : clone(seed.rufus.inventory);
       const accessories = Array.isArray(savedRufus.accessories) ? [...new Set(savedRufus.accessories.filter((item) => inventory.includes(item) && Object.hasOwn(rufusAccessories, item)))] : clone(seed.rufus.accessories);
       const normalized = {
-        ...clone(seed), ...parsed, profile: { ...seed.profile, ...parsed.profile },
+        ...clone(seed), ...parsed, profile: {
+          ...seed.profile,
+          ...parsed.profile,
+          timezone: isValidTimeZone(parsed.profile?.timezone) ? parsed.profile.timezone.trim() : DEFAULT_TIME_ZONE
+        },
         rufus: {
           pose: Object.hasOwn(rufusArtwork, savedPose) ? savedPose : seed.rufus.pose, inventory, accessories,
           stardust: Number.isFinite(savedRufus.stardust) ? Math.max(0, savedRufus.stardust) : seed.rufus.stardust,
@@ -221,11 +235,63 @@
 
   function isValidTimeZone(value) {
     try {
-      new Intl.DateTimeFormat('en', { timeZone: value });
+      new Intl.DateTimeFormat('en', { timeZone: String(value || '').trim() });
       return true;
     } catch {
       return false;
     }
+  }
+
+  function getSupportedTimeZones() {
+    const zones = [DEFAULT_TIME_ZONE, 'UTC', localTimeZone];
+    if (typeof Intl.supportedValuesOf === 'function') {
+      try {
+        zones.push(...Intl.supportedValuesOf('timeZone'));
+      } catch {
+        // Keep the valid detected, UTC, and demo zones as a fallback.
+      }
+    } else {
+      zones.push('America/New_York', 'America/Chicago', 'Europe/London', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney');
+    }
+    return [...new Set(zones.filter(isValidTimeZone))].sort((first, second) => first.localeCompare(second));
+  }
+
+  function populateTimeZoneOptions(select, selectedTimeZone = DEFAULT_TIME_ZONE) {
+    if (!select) return;
+    const fragment = document.createDocumentFragment();
+    getSupportedTimeZones().forEach((timeZone) => {
+      const option = document.createElement('option');
+      option.value = timeZone;
+      option.textContent = timeZone;
+      fragment.append(option);
+    });
+    select.replaceChildren(fragment);
+    select.value = isValidTimeZone(selectedTimeZone) ? selectedTimeZone : DEFAULT_TIME_ZONE;
+  }
+
+  function filterTimeZoneOptions(query, select) {
+    if (!select) return;
+    const filter = String(query || '').trim().toLocaleLowerCase('en');
+    for (const option of select.options) {
+      option.hidden = Boolean(filter) && !option.value.toLocaleLowerCase('en').includes(filter) && !option.selected;
+    }
+  }
+
+  function updateTimeZoneLanguage(language = state.profile.language) {
+    const copy = timeZoneCopy[language] || timeZoneCopy.en;
+    const setText = (selector, value) => {
+      const node = $(selector);
+      if (node) node.textContent = value;
+    };
+    setText('#timezone-profile-label', copy.field);
+    setText('#timezone-detected-label', copy.detected);
+    setText('#browser-timezone', localTimeZone);
+    setText('#timezone-profile-help', copy.settings);
+    const filterInput = $('#timezone-filter');
+    if (filterInput) filterInput.setAttribute('placeholder', copy.filter);
+    if (filterInput) filterInput.setAttribute('aria-label', copy.filter);
+    const profileInput = $('#profile-timezone');
+    if (profileInput) profileInput.setAttribute('aria-label', copy.field);
   }
 
   function currentAlerts() {
@@ -302,10 +368,27 @@
   }
 
   function updateClock() {
-    const timeZone = state.profile.timezone || localTimeZone;
+    const timeZone = isValidTimeZone(state.profile.timezone) ? state.profile.timezone : DEFAULT_TIME_ZONE;
     const now = new Date();
-    $('#clock').textContent = new Intl.DateTimeFormat(localeTag(), { timeZone, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(now);
+    const profileDate = localDateKey(now, timeZone);
+    const dateChanged = profileDate !== today;
+    if (dateChanged) {
+      today = profileDate;
+      resetDailyProgressIfNeeded();
+    }
+    $('#clock').textContent = new Intl.DateTimeFormat(localeTag(), { timeZone: 'UTC', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(now);
+    $('#profile-clock').textContent = new Intl.DateTimeFormat(localeTag(), { timeZone, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(now);
+    $('#profile-clock-zone').textContent = timeZone;
     $('#local-date').textContent = new Intl.DateTimeFormat(localeTag(), { timeZone, dateStyle: 'full' }).format(now);
+    if (dateChanged && !document.body.classList.contains('show-entry')) {
+      renderOverview();
+      renderWellbeing();
+      renderHydration();
+      renderMedicationManager();
+      renderActivity();
+      renderSleep();
+      renderMeals();
+    }
   }
 
   function updateProfileLabels() {
@@ -372,6 +455,12 @@
     }).formatToParts(date);
     const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
     return `${values.year}-${values.month}-${values.day}`;
+  }
+
+  function previousDateKey(dateKey) {
+    const date = new Date(`${dateKey}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() - 1);
+    return date.toISOString().slice(0, 10);
   }
 
   function currentLocalMinute(timeZone) {
@@ -1221,7 +1310,7 @@
           <label>DISPLAY NAME<input name="name" maxlength="50" value="${escapeHtml(state.profile.name)}" required></label>
           <label>MISSION IDENTIFIER<input name="missionId" maxlength="40" value="${escapeHtml(state.profile.missionId)}"></label>
           <label>LANGUAGE<select name="language"><option value="en" ${state.profile.language === 'en' ? 'selected' : ''}>English</option><option value="es" ${state.profile.language === 'es' ? 'selected' : ''}>Español</option><option value="fr" ${state.profile.language === 'fr' ? 'selected' : ''}>Français</option><option value="de" ${state.profile.language === 'de' ? 'selected' : ''}>Deutsch</option><option value="zh" ${state.profile.language === 'zh' ? 'selected' : ''}>简体中文</option><option value="ja" ${state.profile.language === 'ja' ? 'selected' : ''}>日本語</option><option value="ar" ${state.profile.language === 'ar' ? 'selected' : ''}>العربية</option></select></label>
-          <label>TIME ZONE<input name="timezone" maxlength="80" value="${escapeHtml(state.profile.timezone)}" required></label>
+          <div class="timezone-field"><label for="profile-timezone" id="timezone-profile-label">TIME ZONE</label><input id="timezone-filter" class="entry-control timezone-filter" type="search" autocomplete="off" placeholder="Filter IANA time zones"><select id="profile-timezone" name="timezone" class="entry-control" required></select><small id="timezone-profile-help">Choose the zone used for local time, dates, and in-app schedules.</small><small class="timezone-detected"><span id="timezone-detected-label">Browser detected:</span> <code id="browser-timezone">${escapeHtml(localTimeZone)}</code></small></div>
           <label>RESTING HEART RATE MIN · BPM<input name="heartMin" type="number" min="35" max="110" value="${state.profile.heartMin}" required></label>
           <label>RESTING HEART RATE MAX · BPM<input name="heartMax" type="number" min="40" max="160" value="${state.profile.heartMax}" required></label>
           <label>SLEEP TARGET MIN · HOURS<input name="sleepMin" type="number" min="3" max="12" step=".1" value="${state.profile.sleepMin}" required></label>
@@ -1236,6 +1325,8 @@
         </div>
         <div class="modal-actions"><button type="button" class="secondary-button" data-action="sign-out">SIGN OUT</button><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE PROFILE</button></div>
       </form>`);
+    populateTimeZoneOptions($('#profile-timezone'), state.profile.timezone);
+    updateTimeZoneLanguage();
   }
 
   function openCheckin() {
@@ -1399,9 +1490,7 @@
   function petRufus() {
     resetDailyProgressIfNeeded();
     if (state.rufus.lastPetDate !== today) {
-      const yesterday = new Date();
-      yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-      const previousDate = yesterday.toISOString().slice(0, 10);
+      const previousDate = previousDateKey(today);
       state.rufus.petStreak = state.rufus.lastPetDate === previousDate ? state.rufus.petStreak + 1 : 1;
       state.rufus.lastPetDate = today;
     }
@@ -1858,7 +1947,7 @@
     const entry = window.AstroVitalFeatureData.normalizeWellbeingHistory([{
       id: existing?.id || createFeatureId('wellbeing'),
       date: existing?.date || today,
-      time: existing?.time || new Date().toLocaleTimeString(localeTag(), { hour: '2-digit', minute: '2-digit' }),
+      time: existing?.time || new Date().toLocaleTimeString(localeTag(), { timeZone: state.profile.timezone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
       mood,
       fatigue,
       stress,
@@ -2159,7 +2248,7 @@
     const history = state.medicationLog.slice().sort((first, second) => second.recordedAt.localeCompare(first.recordedAt)).slice(0, 6);
     $('#medication-history-list').innerHTML = history.length ? history.map((entry) => {
       const slot = demoMedication.schedule.find((item) => item.id === entry.scheduleId);
-      const time = new Date(entry.recordedAt).toLocaleTimeString(localeTag(), { hour: '2-digit', minute: '2-digit' });
+      const time = new Date(entry.recordedAt).toLocaleTimeString(localeTag(), { timeZone: state.profile.timezone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
       return `<article class="medication-history-row"><span class="medication-history-mark ${entry.status}">${entry.status === 'taken' ? '✓' : '–'}</span><div><strong>${entry.status === 'taken' ? 'Taken' : 'Skipped'} · ${slot ? slot.time : ''}</strong><small>${escapeHtml(formatAppDate(entry.date))} · ${escapeHtml(time)}</small>${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : ''}</div><span class="sim-tag">DEMO</span></article>`;
     }).join('') : '<p class="medication-empty">No demo entries yet.</p>';
   }
@@ -2466,6 +2555,7 @@
       const claimedLegacyProfile = !savedAccount
         && localStorage.getItem(STORAGE_KEY)
         && !localStorage.getItem(LEGACY_PROFILE_CLAIMED_KEY);
+      const returningProfile = Boolean(savedAccount || claimedLegacyProfile);
       let migrationWarning = false;
       activeStorageKey = savedAccount ? accountKey : STORAGE_KEY;
       state = savedAccount
@@ -2487,9 +2577,13 @@
         personnelId,
         role: state.profile.role || 'Crew Member',
         language: languageNames[preferredLanguage] ? preferredLanguage : 'en',
-        timezone: state.profile.timezone || localTimeZone,
+        timezone: returningProfile && isValidTimeZone(state.profile.timezone)
+          ? state.profile.timezone
+          : DEFAULT_TIME_ZONE,
         onboarded: true
       };
+      today = localDateKey(new Date(), state.profile.timezone);
+      resetDailyProgressIfNeeded();
       delete state.profile.email;
       delete state.profile.username;
       if (!persist()) {
@@ -2530,14 +2624,26 @@
         sleepMax: Number(form.get('sleepMax')),
         radiationReviewAt: Number(form.get('radiationReviewAt'))
       };
-      if (!next.name || !isValidTimeZone(next.timezone) || next.heartMin >= next.heartMax || next.sleepMin >= next.sleepMax) {
+      if (!isValidTimeZone(next.timezone)) {
+        showToast(timeZoneCopy[next.language]?.invalid || timeZoneCopy.en.invalid);
+        $('#profile-timezone').focus();
+        return;
+      }
+      if (!next.name || next.heartMin >= next.heartMax || next.sleepMin >= next.sleepMax) {
         showToast('Enter a name, valid time zone, and valid ranges.');
         return;
       }
       state.profile = next;
+      today = localDateKey(new Date(), next.timezone);
+      resetDailyProgressIfNeeded();
       persist();
       closeModal();
       window.RufusI18n.setLocale(next.language);
+      updateClock();
+      renderOverview();
+      renderWellbeing();
+      renderHydration();
+      renderMedicationManager();
       showToast('Crew profile updated');
     }
     if (event.target.id === 'hydration-plan-form') {
@@ -2719,9 +2825,7 @@
         return value && Number.isFinite(Number(value)) ? Number(value) : null;
       };
       if (state.checkinDate !== today) {
-        const yesterday = new Date();
-        yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-        const previousDate = yesterday.toISOString().slice(0, 10);
+        const previousDate = previousDateKey(today);
         state.streak = state.lastCheckinDate === previousDate ? state.streak + 1 : 1;
       }
       state.metrics.heart = Number(form.get('heart'));
@@ -2761,7 +2865,7 @@
       state.sleepHistory.push(state.metrics.sleep);
       state.heartHistory = state.heartHistory.slice(-30);
       state.sleepHistory = state.sleepHistory.slice(-30);
-      state.lastCheckin = `TODAY, ${new Date().toLocaleTimeString(localeTag(), { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })} UTC`;
+      state.lastCheckin = `TODAY, ${new Date().toLocaleTimeString(localeTag(), { timeZone: state.profile.timezone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })}`;
       state.checkinDate = today;
       state.lastCheckinDate = today;
       closeModal();
@@ -2835,6 +2939,7 @@
   document.addEventListener('input', (event) => {
     if (event.target.id === 'energy-slider') $('#fatigue-value').textContent = event.target.value;
     if (event.target.id === 'stress-slider') $('#stress-value').textContent = event.target.value;
+    if (event.target.id === 'timezone-filter') filterTimeZoneOptions(event.target.value, $('#profile-timezone'));
     if (event.target.closest('#hydration-plan-form')) {
       clearHydrationPreview();
     }
@@ -2845,9 +2950,13 @@
       welcomeLanguageTouched = true;
       window.RufusI18n.setLocale(event.target.value);
     }
+    if (event.target.name === 'language' && event.target.closest('#profile-form')) {
+      window.RufusI18n.setLocale(event.target.value);
+    }
   });
 
   document.addEventListener('rufus:localechange', () => {
+    updateTimeZoneLanguage(window.RufusI18n.locale);
     updateClock();
     if (document.body.classList.contains('show-entry')) return;
     updateProfileLabels();
@@ -2870,6 +2979,7 @@
     if (event.key === 'Escape') closeModal();
   });
 
+  today = localDateKey(new Date(), state.profile.timezone || DEFAULT_TIME_ZONE);
   resetDailyProgressIfNeeded();
   document.body.classList.add('show-entry');
   const initialLocale = languageNames[state.profile.language] ? state.profile.language : 'en';

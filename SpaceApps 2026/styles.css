@@ -54,6 +54,14 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .topbar-divider{height:20px;border-left:1px solid #253342}
 .mission-clock{font:11px var(--mono);color:#d5e0e8;display:flex;align-items:center;gap:7px}
 .mission-clock small{font-size:8px;color:#718294}
+.clock-readouts{display:grid;gap:2px;min-width:0}
+.clock-readout{display:flex;align-items:baseline;gap:7px;min-width:0;white-space:nowrap}
+.clock-readout>span{font:11px var(--mono);font-variant-numeric:tabular-nums}
+.clock-readout small{font-size:7px;letter-spacing:.35px}
+.profile-clock-readout>span{color:#a7bdcb;font-size:9px}
+#profile-clock-zone{display:block;max-width:110px;overflow:hidden;text-overflow:ellipsis;direction:ltr}
+@media(max-width:760px){.mission-clock{gap:4px}.clock-readouts{gap:1px}.clock-readout{gap:4px}.clock-readout>span{font-size:9px}.profile-clock-readout>span{font-size:8px}#profile-clock-zone{max-width:72px;font-size:6px;letter-spacing:0}}
+@media(max-width:430px){.mission-clock{gap:3px}.clock-readout{gap:3px}.clock-readout>span{font-size:8px}.clock-readout small{font-size:6px}.profile-clock-readout>span{font-size:7px}#profile-clock-zone{max-width:60px}}
 .clock-icon{font-size:14px;color:#79a6c0}
 .install-button{height:30px;padding:0 10px;border:1px solid #31515b;border-radius:5px;background:#10232b;color:#9be7e9;font:9px var(--mono);letter-spacing:.7px;cursor:pointer;white-space:nowrap}
 .install-button:hover{border-color:#65d4da;background:#15313a}
@@ -459,6 +467,13 @@ body.show-entry .app-shell{display:none}
 .entry-label{display:grid;gap:7px;margin:18px 0 8px;color:#9db0c0;font:8px var(--mono);letter-spacing:.8px}
 .entry-control{width:100%;height:39px;border:1px solid #30475f;border-radius:5px;background:#091728;color:#e8f3fa;padding:0 10px;font:11px var(--sans)}
 .entry-control:focus-visible{outline:2px solid #5dd8e8;outline-offset:2px;border-color:#5dd8e8}
+.timezone-field .entry-control{font-family:var(--mono);font-size:10px;letter-spacing:0}
+.timezone-hint{margin:2px 0 12px;color:#8298aa;font-size:8px;line-height:1.55}
+.timezone-hint strong,.timezone-hint code{color:#a8c5d2;font:8px var(--mono)}
+.timezone-field small{color:#8298aa;font:8px/1.5 var(--sans);letter-spacing:0}
+.modal-form .timezone-field{display:grid;grid-column:1/-1;gap:7px;min-width:0}
+.timezone-detected{display:block;color:#8298aa;font-size:8px;line-height:1.5}
+.timezone-detected code{color:#a8c5d2;font:8px var(--mono)}
 #login-personnel-id{font:13px var(--mono);letter-spacing:1.2px}
 .entry-note,.entry-content .entry-note{font-size:9px;color:#849caf;margin:7px 0 16px}
 .entry-note strong{color:#bfeaf1;font-family:var(--mono);font-weight:600}
