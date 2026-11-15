@@ -1918,6 +1918,164 @@
     $$('[data-wellbeing-range]').forEach((button) => button.classList.toggle('active', Number(button.dataset.wellbeingRange) === wellbeingRange));
   }
 
+  function initializeInspirationCarousel() {
+    const carousel = $('[data-inspiration-carousel]');
+    if (!carousel) return;
+    const quoteNode = $('#inspiration-quote', carousel);
+    const headingNode = $('#inspiration-label', carousel);
+    const countNode = $('#inspiration-count', carousel);
+    const copyNode = $('#inspiration-copy', carousel);
+    const controls = $('.inspiration-controls', carousel);
+    const previousButton = $('[data-inspiration-prev]', carousel);
+    const nextButton = $('[data-inspiration-next]', carousel);
+    if (!quoteNode || !headingNode || !countNode || !copyNode || !controls || !previousButton || !nextButton) return;
+
+    const quotesByLanguage = {
+      en: [
+        'The mission matters, but so does the person carrying it.',
+        'Failure is only the opportunity to begin again.',
+        'In the darkest times, hope is something you give yourself.',
+        'While it is always best to believe in oneself, a little help from others can be a great blessing.',
+        'Life happens wherever you are, whether you make it or not.',
+        "Courage isn't the absence of fear. It's choosing to move forward."
+      ],
+      es: [
+        'La misión importa, pero también importa quien la lleva adelante.',
+        'El fracaso es solo la oportunidad de empezar de nuevo.',
+        'En los momentos más oscuros, la esperanza es algo que puedes darte.',
+        'Aunque siempre es mejor creer en uno mismo, un poco de ayuda de los demás puede ser una gran bendición.',
+        'La vida sucede dondequiera que estés, te esfuerces por cambiarla o no.',
+        'El valor no es no tener miedo. Es elegir seguir adelante.'
+      ],
+      fr: [
+        'La mission compte, mais la personne qui la porte compte aussi.',
+        'L’échec est seulement l’occasion de recommencer.',
+        'Dans les moments les plus sombres, l’espoir est quelque chose que l’on se donne.',
+        'Il est toujours préférable de croire en soi, mais un peu d’aide des autres peut être une grande bénédiction.',
+        'La vie se déroule où que vous soyez, que vous cherchiez à la façonner ou non.',
+        'Le courage, ce n’est pas l’absence de peur. C’est choisir d’avancer.'
+      ],
+      de: [
+        'Die Mission ist wichtig, aber genauso wichtig ist der Mensch, der sie trägt.',
+        'Scheitern ist nur die Gelegenheit, neu anzufangen.',
+        'In den dunkelsten Zeiten ist Hoffnung etwas, das man sich selbst geben kann.',
+        'An sich selbst zu glauben ist immer am besten, doch ein wenig Hilfe von anderen kann ein großer Segen sein.',
+        'Das Leben findet statt, wo immer du bist, ob du es gestaltest oder nicht.',
+        'Mut bedeutet nicht, keine Angst zu haben. Mut bedeutet, trotzdem weiterzugehen.'
+      ],
+      zh: [
+        '任务固然重要，承担任务的人也同样重要。',
+        '失败只是重新开始的机会。',
+        '在最黑暗的时刻，希望是你可以给予自己的东西。',
+        '相信自己固然最好，但他人的帮助也可能成为一份珍贵的祝福。',
+        '无论你身在何处，生活都在继续，不论你是否参与其中。',
+        '勇气不是没有恐惧，而是选择继续前行。'
+      ],
+      ja: [
+        '任務は大切です。でも、それを担う人も同じくらい大切です。',
+        '失敗は、もう一度始めるための機会にすぎません。',
+        '最も暗い時こそ、希望は自分自身に与えるものです。',
+        '自分を信じるのが一番ですが、誰かの助けも大きな支えになります。',
+        'どこにいても人生は続きます。自分が何かをしようとしまいと。',
+        '勇気とは恐れがないことではありません。それでも前に進むと決めることです。'
+      ],
+      ar: [
+        'المهمة مهمة، لكن الشخص الذي يحمل مسؤوليتها مهم أيضًا.',
+        'الفشل ليس إلا فرصة للبدء من جديد.',
+        'في أحلك الأوقات، يكون الأمل شيئًا تمنحه لنفسك.',
+        'من الأفضل دائمًا أن تؤمن بنفسك، لكن قليلًا من مساعدة الآخرين قد يكون نعمة كبيرة.',
+        'الحياة تمضي أينما كنت، سواء شاركت فيها أم لم تفعل.',
+        'الشجاعة ليست غياب الخوف، بل اختيار المضي قدمًا.'
+      ]
+    };
+    const labelsByLanguage = {
+      en: { carousel: 'Crew inspiration', heading: 'A MOMENT OF INSPIRATION', controls: 'Quote controls', previous: 'Previous quote', next: 'Next quote', slide: 'Slide' },
+      es: { carousel: 'Inspiración para la tripulación', heading: 'UN MOMENTO DE INSPIRACIÓN', controls: 'Controles de citas', previous: 'Cita anterior', next: 'Cita siguiente', slide: 'Diapositiva' },
+      fr: { carousel: 'Inspiration pour l’équipage', heading: 'UN MOMENT D’INSPIRATION', controls: 'Commandes des citations', previous: 'Citation précédente', next: 'Citation suivante', slide: 'Diapositive' },
+      de: { carousel: 'Inspiration für die Crew', heading: 'EIN MOMENT DER INSPIRATION', controls: 'Zitatsteuerung', previous: 'Vorheriges Zitat', next: 'Nächstes Zitat', slide: 'Folie' },
+      zh: { carousel: '给乘组的灵感', heading: '片刻灵感', controls: '引言控制', previous: '上一条引言', next: '下一条引言', slide: '第' },
+      ja: { carousel: 'クルーへのひとこと', heading: '心に残るひとこと', controls: '引用の操作', previous: '前の引用', next: '次の引用', slide: 'スライド' },
+      ar: { carousel: 'إلهام للطاقم', heading: 'لحظة إلهام', controls: 'عناصر التحكم في الاقتباسات', previous: 'الاقتباس السابق', next: 'الاقتباس التالي', slide: 'الشريحة' }
+    };
+    const interval = 10000;
+    const view = carousel.closest('.view');
+    let activeIndex = 0;
+    let rotationTimer;
+    let transitionTimer;
+    let hoverPaused = false;
+    let focusPaused = false;
+
+    const currentLanguage = () => Object.hasOwn(quotesByLanguage, state.profile.language) ? state.profile.language : 'en';
+    const currentQuotes = () => quotesByLanguage[currentLanguage()];
+    const currentLabels = () => labelsByLanguage[currentLanguage()];
+    const isActive = () => !document.hidden
+      && !document.body.classList.contains('show-entry')
+      && view?.classList.contains('active');
+
+    const scheduleRotation = () => {
+      clearTimeout(rotationTimer);
+      copyNode.setAttribute('aria-live', hoverPaused || focusPaused || !isActive() ? 'polite' : 'off');
+      if (hoverPaused || focusPaused || !isActive()) return;
+      rotationTimer = setTimeout(() => showQuote(activeIndex + 1), interval);
+    };
+
+    const showQuote = (index, animate = true) => {
+      const quotes = currentQuotes();
+      const labels = currentLabels();
+      activeIndex = (index + quotes.length) % quotes.length;
+      clearTimeout(transitionTimer);
+      const delay = animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 240 : 0;
+      if (delay) copyNode.classList.add('is-transitioning');
+      transitionTimer = setTimeout(() => {
+        quoteNode.textContent = quotes[activeIndex];
+        countNode.textContent = `${String(activeIndex + 1).padStart(2, '0')} / ${String(quotes.length).padStart(2, '0')}`;
+        copyNode.setAttribute('aria-label', `${labels.slide} ${activeIndex + 1} / ${quotes.length}`);
+        copyNode.classList.remove('is-transitioning');
+        scheduleRotation();
+      }, delay);
+    };
+
+    const applyLanguage = () => {
+      const labels = currentLabels();
+      carousel.setAttribute('aria-label', labels.carousel);
+      headingNode.textContent = labels.heading;
+      controls.setAttribute('aria-label', labels.controls);
+      previousButton.setAttribute('aria-label', labels.previous);
+      previousButton.setAttribute('title', labels.previous);
+      nextButton.setAttribute('aria-label', labels.next);
+      nextButton.setAttribute('title', labels.next);
+      activeIndex = 0;
+      showQuote(activeIndex, false);
+    };
+
+    previousButton.addEventListener('click', () => showQuote(activeIndex - 1));
+    nextButton.addEventListener('click', () => showQuote(activeIndex + 1));
+    carousel.addEventListener('pointerenter', () => {
+      hoverPaused = true;
+      scheduleRotation();
+    });
+    carousel.addEventListener('pointerleave', () => {
+      hoverPaused = false;
+      scheduleRotation();
+    });
+    controls.addEventListener('focusin', () => {
+      focusPaused = true;
+      scheduleRotation();
+    });
+    controls.addEventListener('focusout', () => {
+      setTimeout(() => {
+        focusPaused = controls.contains(document.activeElement);
+        scheduleRotation();
+      }, 0);
+    });
+    document.addEventListener('visibilitychange', scheduleRotation);
+    document.addEventListener('click', (event) => {
+      if (event.target.closest('[data-nav]')) setTimeout(scheduleRotation, 0);
+    });
+    document.addEventListener('rufus:localechange', applyLanguage);
+    applyLanguage();
+  }
+
   function renderWellbeingHistory() {
     const target = $('#wellbeing-history') || $('#journal-history');
     if (!target) return;
@@ -2727,6 +2885,7 @@
   renderSleep();
   renderMeals();
   renderWellbeing();
+  initializeInspirationCarousel();
   renderSettings();
   $('#cog-sessions').innerHTML = `${state.cognitiveSessions} <small>sessions</small>`;
   $('#cog-best').innerHTML = `${state.bestReaction} <small>ms</small>`;
