@@ -163,8 +163,13 @@
               <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon pressure-icon">↕</span><span class="metric-trend muted">NOT CONNECTED</span></div><div class="metric-name">BLOOD PRESSURE</div><div class="metric-reading"><strong>—</strong><span>no sensor</span></div><div class="metric-baseline">SOURCE <strong>NOT AVAILABLE</strong></div></article>
               <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon temperature-icon">⌁</span><span class="metric-trend muted">NOT CONNECTED</span></div><div class="metric-name">BODY TEMPERATURE</div><div class="metric-reading"><strong>—</strong><span>no sensor</span></div><div class="metric-baseline">SOURCE <strong>NOT AVAILABLE</strong></div></article>
               <article class="metric-card"><div class="metric-top"><span class="metric-icon hydration-icon">◍</span><span class="metric-trend muted" id="hydration-status">NO TARGET</span></div><div class="metric-name">HYDRATION GOAL</div><div class="metric-reading"><strong id="metric-hydration">0 mL</strong><span id="hydration-unit">logged today</span></div><div class="metric-baseline">INTAKE TRACKING <strong>AVAILABLE · LOCAL</strong></div></article>
+<<<<<<< Updated upstream
               <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon meal-icon">◒</span><span class="metric-trend muted">NOT SET</span></div><div class="metric-name">NEXT MEAL</div><div class="metric-reading"><strong>—</strong><span>no schedule</span></div><div class="metric-baseline">MEAL REMINDERS <strong>PLANNED · PHASE 3</strong></div></article>
               <article class="metric-card"><div class="metric-top"><span class="metric-icon medication-icon">＋</span><span class="metric-trend muted" id="medication-overview-status">DEMO SCHEDULE</span></div><div class="metric-name">MEDICATION DEMO</div><div class="metric-reading"><strong id="medication-overview-count">0 / 2</strong><span>logged today</span></div><div class="metric-baseline">SAMPLE DATA <strong>LOCAL ONLY</strong></div></article>
+=======
+              <article class="metric-card"><div class="metric-top"><span class="metric-icon meal-icon">◒</span><span class="metric-trend muted" id="overview-next-meal-status">NOT SET</span></div><div class="metric-name">NEXT MEAL</div><div class="metric-reading"><strong id="overview-next-meal-time">—</strong><span id="overview-next-meal-name">no schedule</span></div><div class="metric-baseline">MEAL TRACKING <strong>AVAILABLE · LOCAL</strong></div></article>
+              <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon medication-icon">＋</span><span class="metric-trend muted">NOT SET</span></div><div class="metric-name">MEDICATION SCHEDULE</div><div class="metric-reading"><strong>—</strong><span>no schedule</span></div><div class="metric-baseline">TRACKING <strong>PLANNED · PHASE 3</strong></div></article>
+>>>>>>> Stashed changes
             </div>
 
             <div class="lower-grid">
@@ -237,6 +242,7 @@
             <footer class="disclaimer"><span>✳</span> ASTROVITAL records what you enter. It does not set medical hydration targets or recommend drinking beyond your configured goal.</footer>
           </section>
 
+<<<<<<< Updated upstream
           <section class="view" id="view-medications">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> MEDICATION MANAGER · DEMO</div><h1>Medication <span>log.</span></h1><p>Practice with fictional sample entries. No dosing advice or live reminders.</p></div>
             <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>FICTIONAL DATA</strong> &nbsp;Sample item, times, supply, and expiry only.</span></div>
@@ -264,6 +270,48 @@
               <div id="medication-history-list" class="medication-history-list" aria-live="polite"></div>
             </article>
             <footer class="disclaimer"><span>✳</span> Sample log only. Not a prescription or reliable reminder.</footer>
+=======
+          <section class="view" id="view-meals">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> MEALS · PERSONAL NUTRITION LOG</div><h1>Fuel your mission, <span>your way.</span></h1><p>Log foods from USDA FoodData Central or add your own food details. Nutrition targets are optional and user-configured.</p></div>
+            <div class="meal-toolbar">
+              <label for="meal-history-date">MEAL HISTORY DATE<input id="meal-history-date" class="entry-control" type="date"></label>
+              <button class="primary-button" type="button" data-action="add-meal"><span>＋</span> LOG A MEAL</button>
+            </div>
+            <div class="nutrition-summary-grid" id="nutrition-summary"></div>
+            <article class="panel nutrition-chart-panel">
+              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> SAVED MEAL HISTORY</div><h2>Nutrition over the last seven days</h2></div><span class="sim-tag">LOCAL RECORDS</span></div>
+              <div id="nutrition-history-chart" class="nutrition-history-chart" role="img" aria-label="Seven day nutrition trends"></div>
+              <div class="nutrition-chart-legend"><span><i class="legend-dot cyan"></i>CALORIES · KCAL</span><span><i class="legend-dot blue"></i>PROTEIN · G</span><span><i class="legend-dot green"></i>CARBOHYDRATES · G</span><span><i class="legend-dot amber"></i>FAT · G</span></div>
+            </article>
+            <div class="meal-history-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> YOUR MEALS</div><h2 id="meal-history-title">Meals for today</h2></div><span id="meal-entry-count" class="sim-tag">0 MEALS</span></div>
+            <div id="meal-history-list" class="meal-history-list"></div>
+            <article class="panel meal-schedule-panel">
+              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> OPTIONAL IN-APP REMINDERS</div><h2>Meal schedule</h2></div><span class="sim-tag">ONLY WHILE APP IS OPEN</span></div>
+              <p class="meal-helper">Choose your own reminder times. Rufus can remind you while ASTROVITAL is open; no meal is marked complete until you log it.</p>
+              <form id="meal-schedule-form" class="meal-schedule-form">
+                <label>BREAKFAST<input class="entry-control" type="time" name="breakfast"></label>
+                <label>LUNCH<input class="entry-control" type="time" name="lunch"></label>
+                <label>DINNER<input class="entry-control" type="time" name="dinner"></label>
+                <label>SNACKS<input class="entry-control" type="time" name="snacks"></label>
+                <button class="secondary-button" type="submit">SAVE SCHEDULE</button>
+              </form>
+            </article>
+            <article class="panel nutrition-goals-panel">
+              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> YOUR PREFERENCES</div><h2>Optional daily nutrition goals</h2></div></div>
+              <p class="meal-helper">Set or clear goals using guidance appropriate for you. ASTROVITAL does not prescribe nutrition targets.</p>
+              <form id="nutrition-goals-form" class="nutrition-goals-form">
+                <label>CALORIES · KCAL<input class="entry-control" type="number" min="0" max="100000" step="any" name="calories" placeholder="Not set"></label>
+                <label>PROTEIN · G<input class="entry-control" type="number" min="0" max="10000" step="any" name="protein" placeholder="Not set"></label>
+                <label>CARBOHYDRATES · G<input class="entry-control" type="number" min="0" max="10000" step="any" name="carbohydrates" placeholder="Not set"></label>
+                <label>FAT · G<input class="entry-control" type="number" min="0" max="10000" step="any" name="fat" placeholder="Not set"></label>
+                <label>FIBER · G<input class="entry-control" type="number" min="0" max="10000" step="any" name="fiber" placeholder="Not set"></label>
+                <label>SUGAR · G<input class="entry-control" type="number" min="0" max="10000" step="any" name="sugar" placeholder="Not set"></label>
+                <label>SODIUM · MG<input class="entry-control" type="number" min="0" max="1000000" step="any" name="sodium" placeholder="Not set"></label>
+                <button class="primary-button" type="submit">SAVE MY GOALS</button>
+              </form>
+            </article>
+            <div class="health-note"><span>ⓘ</span><div><strong>Food data and privacy</strong><p>USDA search needs the separately configured proxy; without it, manual food entry remains available. Nutrition values may be missing in USDA records and are never filled with invented estimates. Meal records and goals stay in this browser. A water amount entered when saving a meal updates the existing Hydration Tracker and will not create duplicate linked entries.</p></div></div>
+>>>>>>> Stashed changes
           </section>
 
           <section class="view" id="view-environment">
@@ -319,7 +367,11 @@
               <div id="settings-summary" class="settings-summary"></div>
               <button class="primary-button" data-action="profile">EDIT PROFILE & PREFERENCES <span>→</span></button>
             </article>
+<<<<<<< Updated upstream
             <div class="health-note"><span>ⓘ</span><div><strong>Local-only prototype</strong><p>Hydration and medication demo entries save on this device. Background notifications, meal tracking, full translations, and cloud sync are not implemented.</p></div></div>
+=======
+            <div class="health-note"><span>ⓘ</span><div><strong>Local-only prototype</strong><p>Hydration and meal tracking are available on this device. Medication tracking, background notifications, and cloud sync are not implemented.</p></div></div>
+>>>>>>> Stashed changes
           </section>
 
           <section class="view" id="view-roadmap">
@@ -400,10 +452,17 @@
     </div>
 
     <div class="modal-backdrop" id="modal-backdrop" aria-hidden="true"><section class="modal" id="app-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button class="modal-close" data-action="close-modal" aria-label="Close dialog">×</button><div id="modal-content"></div></section></div>
+    <aside id="meal-reminder-banner" class="meal-reminder-banner" role="status" aria-live="polite" hidden>
+      <img src="./icons/rufus-confident.png" alt="" aria-hidden="true">
+      <div class="meal-reminder-copy"><strong id="meal-reminder-title">Rufus has a mission reminder</strong><p id="meal-reminder-message"></p></div>
+      <div class="meal-reminder-actions"><button class="primary-button" type="button" data-action="meal-reminder-log">LOG MEAL</button><button class="secondary-button" type="button" data-action="meal-reminder-snooze">SNOOZE</button><button class="secondary-button" type="button" data-action="meal-reminder-dismiss">DISMISS</button></div>
+    </aside>
     <div class="toast" id="toast" aria-live="polite"><img data-rufus-art="wave" src="./icons/rufus-wave.png" alt="" aria-hidden="true" loading="eager" decoding="async"><span id="toast-message"></span></div>
     <script src="./i18n-catalog.js"></script>
+    <script src="./meals-i18n.js"></script>
     <script src="./i18n.js"></script>
     <script src="./nasa-power.js"></script>
+    <script src="./usda-config.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>
