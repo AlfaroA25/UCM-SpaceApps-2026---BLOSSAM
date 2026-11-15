@@ -28,18 +28,27 @@ Installation and offline use require HTTPS or localhost. The GitHub Pages deploy
 - Name, mission ID, language, time zone, hydration preferences, notification preference, and wellness interests can be updated in the app. No account or external service is required.
 - The interface supports English, Spanish, French, German, Simplified Chinese, Japanese, and Arabic. UI translations are bundled locally, switching applies immediately, and Arabic uses a right-to-left layout. Dates and numbers follow the selected locale; personal journal notes are not translated.
 - Translations are machine-generated and should be reviewed by fluent speakers before operational or medical use.
-- Responsive navigation, a health monitor, daily missions, Mind Lab, and wellbeing log.
+- Responsive navigation, a health monitor, daily missions, Mind Lab, and a unified wellbeing check-in and private journal.
+- Physical Activity: schedule and log approved activities, track planned/completed/skipped status, review recent history, and sync completed activity minutes with Daily Missions.
+- Sleep Tracking: create sleep-opportunity schedules, log timed sleep periods with optional quality/restedness check-ins, and review duration trends. Periods can cross midnight; health-check-in sleep is integrated without double-counting manual periods.
+- Meals and Nutrition: schedule meals and record eaten, partial, or skipped entries with optional notes. Nutrition details appear only when entered with a source; RUFUS does not calculate or invent nutrition information.
+- Wellbeing: mood, fatigue, stress, crew connection, and optional private reflections are kept together in one local journal with editable history. Existing wellbeing entries are preserved when profiles load.
+- Personal Health Baseline: collect daily self-reported indicators, establish a reference from the first 30 unique dated records spanning at least 30 calendar days, and review personal trends, illustrative scores, and rule-based flags. A generic synthetic demo is available and is clearly labeled.
 - A RUFUS companion panel with original temporary bobcat placeholder artwork and reactions to supported check-ins and activities.
 - Hydration goal and unit setup, preview-before-confirm schedule planning, manual intake entries, edit/delete history, daily progress, and a seven-day summary.
 - Hydration plans and intake entries remain on this device. The schedule appears only in the app; there are no background or operating-system notifications.
 - NASA POWER Phase 1: a browser-based daily point query for 2 m temperature, 10 m wind speed/direction, surface pressure, and all-sky surface shortwave radiation, with unit-aware summaries, trend chart, date table, and source metadata.
 - Offline app-shell caching for the current assets.
 
-The NASA POWER query requires an internet connection and sends the selected coordinates and dates directly to NASA. NASA POWER does not require an API key, so no secret or `.env` configuration is needed. Results are cached in memory for up to six hours and duplicate in-flight requests are shared. Health readings remain illustrative sample data. Language catalogs are shipped with the app; no translation request or health-data upload is made when switching languages. Satellite imagery, NASA FIRMS, dataset discovery, meal and medication tracking, background notifications, IndexedDB, synchronization, Supabase, and actual sensor integrations are not implemented.
+The NASA POWER query requires an internet connection and sends the selected coordinates and dates directly to NASA. NASA POWER does not require an API key, so no secret or `.env` configuration is needed. Results are cached in memory for up to six hours and duplicate in-flight requests are shared. Health readings remain illustrative sample data. Language catalogs are shipped with the app; no translation request or health-data upload is made when switching languages. Satellite imagery, NASA FIRMS, dataset discovery, background notifications, IndexedDB, synchronization, Supabase, and actual sensor integrations are not implemented.
 
 ## Safety and limitations
 
 Hydration goals are user-entered from an approved plan; RUFUS does not prescribe a target or recommend catch-up drinking. Configure or edit a goal on the Hydration Tracker, review its schedule preview, then explicitly confirm it. Entries are manually logged and can be edited or deleted. The app is a prototype, not a medical device or diagnostic system.
+
+Activity and sleep schedules are personal planning aids and do not replace crew medical guidance. Wellbeing entries are self-reported and non-clinical. Meal entries are not a nutrition analysis tool; use only mission-approved menus and verified nutrition sources.
+
+The personal baseline uses only records saved in the selected local profile; it does not import NASA participant-level data or compare against astronaut populations. Its scores, trends, and review flags are illustrative heuristics, not validated medical measures, diagnosis, or calibrated risk probabilities. Optional indicators can be left blank. Loading the synthetic demo replaces the displayed records after confirmation; personal records are kept in a local backup and restored when the demo is cleared or replaced with a personal check-in.
 
 NASA POWER values are daily Earth-surface environmental estimates, not personal astronaut biometrics, spacecraft conditions, or personal space-radiation exposure. Surface solar radiation must not be interpreted as astronaut radiation dose. The Daily API reports a date and time standard rather than an exact observation timestamp; the UI labels the latest available day and retrieval time separately. Missing measurements are shown as unavailable, not replaced with sample values.
 

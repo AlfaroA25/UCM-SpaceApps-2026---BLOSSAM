@@ -29,7 +29,8 @@
     'wrist-computer': { name: 'Wrist computer', description: 'A compact mission communicator on Rufus’s cuff.', src: './icons/rufus-layer-wrist.svg', cost: 35 },
     'holo-slate': { name: 'Holographic slate', description: 'A luminous field slate for curious explorers.', src: './icons/rufus-layer-slate.svg', cost: 50 },
     'comms-pack': { name: 'Comms pack', description: 'A flight-ready communications pack.', src: './icons/rufus-layer-pack.svg', cost: 60 }
-  };  const futurePages = {
+  };
+  const futurePages = {
     meals: { title: 'Meals and nutrition', phase: 'PHASE 3', detail: 'Meal schedules and meal logs are planned for Phase 3. RUFUS will not invent nutrition information.' },
     activity: { title: 'Physical activity', phase: 'PHASE 5', detail: 'This prototype can log mission-approved activity through Daily Missions. A dedicated schedule and activity-history view are planned for Phase 5.' },
     mental: { title: 'Mental wellness', phase: 'PHASE 5', detail: 'The current wellbeing log supports private, local check-ins. Expanded stress, sleep-quality, and wellness-history tools are planned for Phase 5.' },
@@ -42,9 +43,11 @@
     version: 1,
     profile: { name: 'Astronaut', personnelId: '', role: 'Crew Member', missionId: '', language: 'en', timezone: localTimeZone, notifications: false, hydrationGoal: '', hydrationUnit: 'mL', reminderStart: '', reminderEnd: '', reminderCount: '', hydrationScheduleConfirmed: false, interests: [], onboarded: false, heartMin: 58, heartMax: 72, sleepMin: 7.5, sleepMax: 9, radiationReviewAt: 50 },
     rufus: { pose: 'wave', inventory: ['orbit-satellite'], accessories: ['orbit-satellite'], stardust: 0, bondXp: 0, petDate: today, petCount: 0, petStreak: 0, lastPetDate: '' },
-    metrics: { heart: 64, sleep: 7.4, exercise: 42, resistanceExercise: 24, fatigue: 3, mood: 'Good', connection: 'Connected', immuneSymptoms: 'None', cognition: 92, radiation: 38 },
+    metrics: { heart: 64, sleep: 7.4, sleepEfficiency: null, hrv: null, activityScore: null, reactionTime: null, exercise: 42, resistanceExercise: 24, fatigue: 3, stress: 3, mood: 'Good', connection: 'Connected', immuneSymptoms: 'None', cognition: 92, radiation: 38 },
     companion: { state: 'hello' }, hydrationLogs: [], medicationLog: [], xp: 2480, streak: 6, lastCheckin: 'TODAY, 07:42', checkinDate: today, lastCheckinDate: today,
-    checkinHistory: [], completed: [], completedDate: today, achievements: [], cognitiveSessions: 3, bestReaction: 284,
+    checkinHistory: [], activityEntries: [], sleepSchedule: [], sleepLogs: [], mealEntries: [],
+    healthBaseline: { records: [], baseline: null, isSynthetic: false, personalRecordsBackup: [], personalBaselineBackup: null },
+    completed: [], completedDate: today, achievements: [], cognitiveSessions: 3, bestReaction: 284,
     heartHistory: [68, 66, 67, 65, 66, 64, 64], sleepHistory: [6.8, 7.1, 7.6, 6.9, 7.8, 7.2, 7.4]
   };  const clone = (value) => JSON.parse(JSON.stringify(value));
   const DEMO_PERSONNEL_ID = '1234';
@@ -55,6 +58,11 @@
   let state = loadState(activeStorageKey);
   let activeGame = 'memory';
   let activeRange = 7;
+  let baselineChartRange = 30;
+  let activityRange = 30;
+  let sleepRange = 30;
+  let mealRange = 30;
+  let wellbeingRange = 30;
   let rufusCheerIndex = 0;
   let toastTimer;
   let gameTimer;
@@ -81,6 +89,33 @@
     maximumFractionDigits: digits
   });
 
+  function normalizeBaselineData(value) {
+    const engine = window.AstroVitalBaseline;
+    const validDate = (date) => typeof date === 'string'
+      && /^\d{4}-\d{2}-\d{2}$/.test(date)
+      && Number.isFinite(Date.parse(`${date}T00:00:00Z`))
+      && new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) === date;
+    const normalizeSnapshot = (saved) => {
+      if (saved?.ready !== true || saved.sample_days !== engine.BASELINE_DAYS
+        || !validDate(saved.start_date) || !validDate(saved.end_date)
+        || saved.start_date > saved.end_date || !saved.values || typeof saved.values !== 'object') return null;
+      const normalizedValues = engine.normalizeRecords([{ date: saved.end_date, ...saved.values }])[0];
+      return normalizedValues ? {
+        ready: true,
+        sample_days: engine.BASELINE_DAYS,
+        start_date: saved.start_date,
+        end_date: saved.end_date,
+        values: Object.fromEntries(engine.METRICS.map(({ key }) => [key, normalizedValues[key]]))
+      } : null;
+    };
+    const records = engine.normalizeRecords(value?.records);
+    const calculated = engine.calculateBaseline(records);
+    const baseline = normalizeSnapshot(value?.baseline) || (calculated.ready ? calculated : null);
+    const personalRecordsBackup = engine.normalizeRecords(value?.personalRecordsBackup);
+    const personalBaselineBackup = normalizeSnapshot(value?.personalBaselineBackup);
+    return { records, baseline, isSynthetic: value?.isSynthetic === true, personalRecordsBackup, personalBaselineBackup };
+  }
+
   function loadState(storageKey = STORAGE_KEY) {
     try {
       const saved = localStorage.getItem(storageKey);
@@ -102,7 +137,14 @@
           petStreak: Number.isFinite(savedRufus.petStreak) ? Math.max(0, savedRufus.petStreak) : 0,
           lastPetDate: typeof savedRufus.lastPetDate === 'string' ? savedRufus.lastPetDate : ''
         },
-        metrics: { ...seed.metrics, ...parsed.metrics }, companion: { ...seed.companion, ...parsed.companion },
+        metrics: {
+          ...seed.metrics,
+          ...parsed.metrics,
+          stress: Number.isFinite(Number(parsed.metrics?.stress)) && Number(parsed.metrics?.stress) >= 1 && Number(parsed.metrics?.stress) <= 10
+            ? Number(parsed.metrics?.stress)
+            : seed.metrics.stress
+        },
+        companion: { ...seed.companion, ...parsed.companion },
         hydrationLogs: Array.isArray(parsed.hydrationLogs) ? parsed.hydrationLogs : [],
         medicationLog: Array.isArray(parsed.medicationLog)
           ? parsed.medicationLog.filter((entry) => entry && typeof entry === 'object'
@@ -115,7 +157,12 @@
             .slice(0, 100)
           : clone(seed.medicationLog),
         completed: Array.isArray(parsed.completed) ? parsed.completed : [], achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
-        checkinHistory: Array.isArray(parsed.checkinHistory) ? parsed.checkinHistory : [],
+        checkinHistory: window.AstroVitalFeatureData.normalizeWellbeingHistory(parsed.checkinHistory),
+        activityEntries: window.AstroVitalFeatureData.normalizeActivityEntries(parsed.activityEntries),
+        sleepSchedule: window.AstroVitalFeatureData.normalizeSleepSchedule(parsed.sleepSchedule),
+        sleepLogs: window.AstroVitalFeatureData.normalizeSleepLogs(parsed.sleepLogs),
+        mealEntries: window.AstroVitalFeatureData.normalizeMealEntries(parsed.mealEntries),
+        healthBaseline: normalizeBaselineData(parsed.healthBaseline),
         heartHistory: Array.isArray(parsed.heartHistory) ? parsed.heartHistory : clone(seed.heartHistory),
         sleepHistory: Array.isArray(parsed.sleepHistory) ? parsed.sleepHistory : clone(seed.sleepHistory)
       };
@@ -218,32 +265,39 @@
   }
 
   function setNav(view) {
-    const isFuturePage = Boolean(futurePages[view]);
-    const activeView = isFuturePage ? 'roadmap' : view;
+    const newWellbeingView = Boolean($('#view-wellbeing'));
+    const aliases = { journal: newWellbeingView ? 'wellbeing' : 'journal', mental: newWellbeingView ? 'wellbeing' : 'journal' };
+    const selectedView = aliases[view] || view;
+    const isFuturePage = Boolean(futurePages[selectedView] && !$(`#view-${selectedView}`));
+    const activeView = isFuturePage ? 'roadmap' : selectedView;
     $$('.view').forEach((section) => section.classList.toggle('active', section.id === `view-${activeView}`));
-    $$('.nav-link[data-nav]').forEach((button) => button.classList.toggle('active', button.dataset.nav === view));
+    $$('.nav-link[data-nav]').forEach((button) => button.classList.toggle('active', button.dataset.nav === selectedView));
     const labels = {
       overview: 'HOME DASHBOARD', health: 'HEALTH MONITOR', hydration: 'HYDRATION TRACKER', environment: 'NASA ENVIRONMENTAL DATA',
       meals: 'MEALS & NUTRITION', medications: 'MEDICATION MANAGER', activity: 'PHYSICAL ACTIVITY',
-      mental: 'MENTAL WELLNESS', sleep: 'SLEEP TRACKING', reports: 'HEALTH REPORTS',
-      alerts: 'ALERTS', missions: 'DAILY MISSIONS', cognitive: 'MIND LAB', journal: 'WELLBEING LOG',
+      baseline: 'PERSONAL BASELINE', sleep: 'SLEEP TRACKING', reports: 'HEALTH REPORTS',
+      alerts: 'ALERTS', missions: 'DAILY MISSIONS', cognitive: 'MIND LAB', wellbeing: 'WELLBEING', journal: 'WELLBEING LOG',
       settings: 'SETTINGS'
     };
-    $('#page-crumb').textContent = labels[view] || labels.overview;
+    $('#page-crumb').textContent = labels[selectedView] || labels.overview;
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (view === 'health') renderHealth();
+    if (view === 'baseline') renderBaseline();
     if (view === 'hydration') renderHydration(true);
     if (view === 'medications') renderMedicationManager();
+    if (view === 'activity') renderActivity();
+    if (view === 'sleep') renderSleep();
+    if (view === 'meals') renderMeals();
     if (view === 'missions') renderMissions();
-    if (view === 'journal') renderJournalHistory();
+    if (selectedView === 'wellbeing') renderWellbeing();
     if (view === 'settings') renderSettings();
     if (view === 'companion') renderCompanion();
     if (view === 'cognitive') speakRufus('A curious mind is ready for its next little puzzle.', 'Curious', 'confident');
     if (view === 'alerts') renderAlertsPage();
     if (isFuturePage) {
-      $('#roadmap-title').textContent = futurePages[view].title;
-      $('#roadmap-phase').textContent = `${futurePages[view].phase} · PLANNED`;
-      $('#roadmap-detail').textContent = futurePages[view].detail;
+      $('#roadmap-title').textContent = futurePages[selectedView].title;
+      $('#roadmap-phase').textContent = `${futurePages[selectedView].phase} · PLANNED`;
+      $('#roadmap-detail').textContent = futurePages[selectedView].detail;
     }
   }
 
@@ -845,6 +899,182 @@
     renderHeartChart($('#health-chart'), activeRange, true);
   }
 
+  function upsertBaselineRecord(values) {
+    const existing = state.healthBaseline.records.find((entry) => entry.date === today);
+    const record = { ...existing, ...values, date: today };
+    const records = state.healthBaseline.records.filter((entry) => entry.date !== today);
+    records.push(record);
+    state.healthBaseline.records = window.AstroVitalBaseline.normalizeRecords(records);
+    if (!state.healthBaseline.baseline) {
+      const baseline = window.AstroVitalBaseline.calculateBaseline(state.healthBaseline.records);
+      if (baseline.ready) state.healthBaseline.baseline = baseline;
+    }
+  }
+
+  function restorePersonalBaselineRecords() {
+    if (!state.healthBaseline.isSynthetic) return true;
+    if (!window.confirm('Replace the synthetic demo with personal check-in records?')) return false;
+    const records = state.healthBaseline.personalRecordsBackup;
+    state.healthBaseline = {
+      records,
+      baseline: state.healthBaseline.personalBaselineBackup
+        || window.AstroVitalBaseline.calculateBaseline(records),
+      isSynthetic: false,
+      personalRecordsBackup: [],
+      personalBaselineBackup: null
+    };
+    return true;
+  }
+
+  function renderBaseline() {
+    if (!$('#view-baseline')) return;
+    const engine = window.AstroVitalBaseline;
+    const data = state.healthBaseline;
+    const records = data.records.slice().sort((first, second) => first.date.localeCompare(second.date));
+    const baseline = data.baseline || engine.calculateBaseline(records);
+    if (baseline.ready && !data.baseline) {
+      data.baseline = baseline;
+      persist();
+    }
+    const latest = records.at(-1);
+    const count = Math.min(records.length, engine.BASELINE_DAYS);
+    $('#baseline-record-count').textContent = `${formatNumber(count)} / ${engine.BASELINE_DAYS} records`;
+    $('#baseline-progress-percent').textContent = `${Math.round(count / engine.BASELINE_DAYS * 100)}%`;
+    $('#baseline-progress-fill').style.width = `${count / engine.BASELINE_DAYS * 100}%`;
+    $('#baseline-state').textContent = baseline.ready ? 'Your personal baseline is ready' : 'Collecting personal records';
+    $('#baseline-description').textContent = baseline.ready
+      ? `Calculated from your first ${baseline.sample_days} dated records (${formatAppDate(baseline.start_date)}–${formatAppDate(baseline.end_date)}). Later entries do not change this reference.`
+      : `Log ${Math.max(0, engine.BASELINE_DAYS - count)} more daily records. Your first 30 records, covering at least 30 calendar dates, establish your personal reference.`;
+    $('#baseline-data-mode').textContent = data.isSynthetic
+      ? 'SYNTHETIC DEMO DATA · NOT PERSONAL READINGS'
+      : 'PERSONAL RECORDS · LOCAL ONLY';
+    $('#baseline-load-demo').textContent = data.isSynthetic ? 'CLEAR SYNTHETIC DEMO' : 'LOAD SYNTHETIC DEMO';
+
+    const comparisons = baseline.ready && latest ? engine.compareToBaseline(latest, baseline) : null;
+    const score = comparisons ? engine.calculateHealthScore(latest, baseline) : { score: null, status: 'unavailable' };
+    $('#baseline-score').textContent = score.score === null ? '—' : formatNumber(score.score);
+    $('#baseline-score-status').textContent = score.status === 'unavailable' ? 'Collecting baseline' : score.status;
+    if (!baseline.ready || !latest || !comparisons) {
+      $('#baseline-summary-title').textContent = 'Your trends will appear here.';
+      $('#baseline-summary').textContent = `You have ${count} of ${engine.BASELINE_DAYS} records needed to establish a personal baseline.`;
+    } else {
+      const declining = engine.METRICS.filter(({ key }) => comparisons[key].status === 'declining')
+        .map((metric) => metric.label.toLowerCase());
+      const risks = engine.detectRisks(latest, baseline);
+      const changes = declining.length ? ` Changes to review: ${declining.join(', ')}.` : ' Your latest measurements are stable or improving against your baseline.';
+      const flags = risks.length ? ` Rule-based flags to review: ${risks.map((risk) => risk.risk.toLowerCase()).join(', ')}.` : '';
+      $('#baseline-summary-title').textContent = `Personal health score: ${score.score ?? '—'} · ${score.status}.`;
+      $('#baseline-summary').textContent = `${changes}${flags} This is not a diagnosis.`;
+    }
+
+    $('#baseline-metrics').innerHTML = engine.METRICS.map((metric) => {
+      const comparison = comparisons?.[metric.key];
+      const value = comparison?.current;
+      const reference = comparison?.baseline;
+      const percent = comparison?.percentChange;
+      const arrow = comparison?.status === 'declining' ? '↓' : comparison?.status === 'improving' ? '↑' : comparison?.status === 'stable' ? '→' : '·';
+      const status = comparison?.status || 'unavailable';
+      const digits = ['moodScore', 'sleepHours', 'sleepEfficiency'].includes(metric.key) ? 1 : 0;
+      const currentText = Number.isFinite(value) ? formatDecimal(value, digits) : '—';
+      const baselineText = Number.isFinite(reference) ? formatDecimal(reference, digits) : '—';
+      const changeText = Number.isFinite(percent) ? `${percent > 0 ? '+' : ''}${formatDecimal(percent)}%` : '—';
+      return `<article class="baseline-metric-card"><div class="baseline-metric-head"><h3>${escapeHtml(metric.label.toUpperCase())}</h3><span class="baseline-trend-status ${status}">${arrow} ${status.toUpperCase()}</span></div><div class="baseline-metric-current">${currentText}<small>${escapeHtml(metric.unit)}</small></div><div class="baseline-metric-detail"><span>BASELINE <strong>${baselineText} ${escapeHtml(metric.unit)}</strong></span><strong>${changeText}</strong></div></article>`;
+    }).join('');
+
+    if (!baseline.ready || !latest || !comparisons) {
+      $('#baseline-risks').innerHTML = '<p class="baseline-empty">Rule-based review flags are available after your personal baseline is established.</p>';
+      $('#baseline-trends').innerHTML = '<p class="baseline-empty">Trend windows become available after a personal baseline is established.</p>';
+    } else {
+      const risks = engine.detectRisks(latest, baseline);
+      const review = {
+        Fatigue: 'Review recent sleep and reaction-time entries. Protect recovery opportunities and follow crew medical guidance.',
+        'Behavioral health': 'Consider checking in with a trusted crewmate or behavioral-health support. Contact your crew medical officer if changes persist or concern you.',
+        'Cardiovascular watch': 'If practical, verify the measurement and follow mission guidance. Contact your flight surgeon about persistent or concerning changes.'
+      };
+      $('#baseline-risks').innerHTML = risks.length
+        ? `<div class="baseline-risk-list">${risks.map((risk) => `<article class="baseline-risk-item"><strong>${escapeHtml(`${risk.risk.toLowerCase()} · ${risk.severity.toLowerCase()}`)}</strong><p>${risk.reasons.map(escapeHtml).join(' ')}</p><p>Rule strength ${Math.round(risk.ruleStrength * 100)}% · heuristic, not a medical probability.</p><p>Suggested review: ${escapeHtml(review[risk.risk])}</p></article>`).join('')}</div>`
+        : '<p class="baseline-empty">No current review flags are triggered by the illustrative rules. Continue following mission medical guidance.</p>';
+      const trends = engine.analyzeTrends(records);
+      $('#baseline-trends').innerHTML = `<table class="baseline-trend-table"><thead><tr><th>INDICATOR</th><th>7 DAYS</th><th>14 DAYS</th><th>30 DAYS</th></tr></thead><tbody>${engine.METRICS.map(({ key, label }) => `<tr><th>${escapeHtml(label.toUpperCase())}</th>${[7, 14, 30].map((days) => `<td class="${trends[days][key]}">${trends[days][key]}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    }
+    renderBaselineCharts(records, baseline);
+  }
+
+  function renderBaselineCharts(records, baseline) {
+    const engine = window.AstroVitalBaseline;
+    const latestDate = records.at(-1)?.date;
+    const latestDay = latestDate ? Date.parse(`${latestDate}T00:00:00Z`) / 86400000 : null;
+    const startDay = latestDay === null ? null : latestDay - baselineChartRange + 1;
+    const points = records.filter((record) => startDay !== null && Date.parse(`${record.date}T00:00:00Z`) / 86400000 >= startDay);
+    const definitions = [
+      { key: 'sleepHours', title: 'SLEEP DURATION', unit: 'hrs' },
+      { key: 'reactionTime', title: 'REACTION TIME', unit: 'ms' },
+      { key: 'moodScore', title: 'MOOD CHECK-IN', unit: '/5' },
+      { key: 'score', title: 'PERSONAL HEALTH SCORE', unit: '/100' }
+    ];
+    $('#baseline-charts').innerHTML = definitions.map((definition) => {
+      const series = points.map((record) => ({
+        date: record.date,
+        value: definition.key === 'score'
+          ? baseline.ready ? engine.calculateHealthScore(record, baseline).score : null
+          : record[definition.key]
+      })).filter((point) => Number.isFinite(point.value));
+      const values = series.map((point) => point.value);
+      const min = values.length ? Math.min(...values) : 0;
+      const max = values.length ? Math.max(...values) : 1;
+      const spread = max - min || 1;
+      const coords = series.map((point, index) => {
+        const x = 18 + index / Math.max(1, series.length - 1) * 564;
+        const y = 104 - (point.value - min) / spread * 82;
+        return `${x},${y}`;
+      });
+      const latestValue = values.at(-1);
+      return `<article class="baseline-chart"><h3>${definition.title}</h3><p>${Number.isFinite(latestValue) ? `LATEST ${formatDecimal(latestValue)} ${definition.unit} · ` : ''}${series.length} records · ${baselineChartRange} day view</p><svg viewBox="0 0 600 130" role="img" aria-label="${definition.title.toLowerCase()} over the last ${baselineChartRange} days"><line class="baseline-chart-grid" x1="15" y1="22" x2="585" y2="22"/><line class="baseline-chart-grid" x1="15" y1="63" x2="585" y2="63"/><line class="baseline-chart-grid" x1="15" y1="104" x2="585" y2="104"/>${coords.length > 1 ? `<polyline class="baseline-chart-line" points="${coords.join(' ')}"/>` : ''}${coords.length ? `<circle class="baseline-chart-dot" cx="${coords.at(-1).split(',')[0]}" cy="${coords.at(-1).split(',')[1]}" r="3.5"/>` : ''}<text class="baseline-chart-label" x="15" y="124">${series[0]?.date || 'No data'}</text><text class="baseline-chart-label" x="585" y="124" text-anchor="end">${series.at(-1)?.date || ''}</text></svg></article>`;
+    }).join('');
+    $$('[data-baseline-range]').forEach((button) => {
+      button.classList.toggle('active', Number(button.dataset.baselineRange) === baselineChartRange);
+    });
+  }
+
+  function loadBaselineDemo() {
+    if (state.healthBaseline.records.length && !state.healthBaseline.isSynthetic
+      && !window.confirm('Load the synthetic demo and replace this profile’s personal baseline records?')) return;
+    const personalRecordsBackup = state.healthBaseline.isSynthetic
+      ? state.healthBaseline.personalRecordsBackup
+      : state.healthBaseline.records;
+    const personalBaselineBackup = state.healthBaseline.isSynthetic
+      ? state.healthBaseline.personalBaselineBackup
+      : state.healthBaseline.baseline;
+    const records = window.AstroVitalBaseline.generateSampleData();
+    state.healthBaseline = {
+      records,
+      baseline: window.AstroVitalBaseline.calculateBaseline(records),
+      isSynthetic: true,
+      personalRecordsBackup,
+      personalBaselineBackup
+    };
+    persist();
+    renderBaseline();
+    showToast('Synthetic baseline demo loaded. It is not personal or NASA participant data.');
+  }
+
+  function clearBaselineDemo() {
+    if (!state.healthBaseline.isSynthetic) return;
+    if (!window.confirm('Clear the synthetic demo records from this profile?')) return;
+    const records = state.healthBaseline.personalRecordsBackup;
+    state.healthBaseline = {
+      records,
+      baseline: state.healthBaseline.personalBaselineBackup
+        || window.AstroVitalBaseline.calculateBaseline(records),
+      isSynthetic: false,
+      personalRecordsBackup: [],
+      personalBaselineBackup: null
+    };
+    persist();
+    renderBaseline();
+    showToast('Synthetic demo records cleared.');
+  }
+
   function renderHeartChart(container, days, withSleep) {
     const width = 640;
     const height = withSleep ? 190 : 126;
@@ -1009,7 +1239,22 @@
   }
 
   function openCheckin() {
-    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> DAILY WELLNESS · SIMULATED DATA</div><h2 id="modal-title">Health check-in</h2><p>Enter illustrative self-reported values. This prototype does not connect to sensors or provide medical advice.</p><form id="checkin-form"><div class="modal-form"><label>RESTING HEART RATE · BPM<input name="heart" type="number" min="30" max="220" value="${state.metrics.heart}" required></label><label>SLEEP DURATION · HOURS<input name="sleep" type="number" min="0" max="24" step=".1" value="${state.metrics.sleep}" required></label><label>EXERCISE · MINUTES TODAY<input name="exercise" type="number" min="0" max="600" value="${state.metrics.exercise}" required></label><label>RESISTANCE EXERCISE · MINUTES<input name="resistanceExercise" type="number" min="0" max="300" value="${state.metrics.resistanceExercise}" required></label><label>FATIGUE · 1–10<input name="fatigue" type="number" min="1" max="10" value="${state.metrics.fatigue}" required></label><label>MOOD<select name="mood"><option ${state.metrics.mood === 'Low' ? 'selected' : ''}>Low</option><option ${state.metrics.mood === 'Okay' ? 'selected' : ''}>Okay</option><option ${state.metrics.mood === 'Good' ? 'selected' : ''}>Good</option><option ${state.metrics.mood === 'Great' ? 'selected' : ''}>Great</option></select></label><label>CREW CONNECTION<select name="connection"><option ${state.metrics.connection === 'Connected' ? 'selected' : ''}>Connected</option><option ${state.metrics.connection === 'A little isolated' ? 'selected' : ''}>A little isolated</option><option ${state.metrics.connection === 'Isolated' ? 'selected' : ''}>Isolated</option></select></label><label>SYMPTOMS TODAY<select name="immuneSymptoms"><option ${state.metrics.immuneSymptoms === 'None' ? 'selected' : ''}>None</option><option ${state.metrics.immuneSymptoms === 'Mild' ? 'selected' : ''}>Mild</option><option ${state.metrics.immuneSymptoms === 'Moderate' ? 'selected' : ''}>Moderate</option><option ${state.metrics.immuneSymptoms === 'Severe' ? 'selected' : ''}>Severe</option></select></label><label>RADIATION · SIMULATED mSv<input name="radiation" type="number" min="0" max="1000" step=".1" value="${state.metrics.radiation}" required></label></div><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE CHECK-IN</button></div></form>`);
+    const recordedSleep = window.AstroVitalFeatureData.sleepTotalForDate(state.sleepLogs, today);
+    const sleepValue = recordedSleep === null ? state.metrics.sleep : recordedSleep;
+    const hasSleepPeriods = state.sleepLogs.some((entry) => entry.date === today && entry.kind === 'period');
+    const optionalValue = (value) => Number.isFinite(value) ? value : '';
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> DAILY HEALTH · SIMULATED DATA</div><h2 id="modal-title">Health check-in</h2><p>Enter illustrative self-reported values. Optional measurements extend your private personal baseline; this prototype does not connect to sensors or provide medical advice.</p><form id="checkin-form"><div class="modal-form">
+      <label>RESTING HEART RATE · BPM<input name="heart" type="number" min="30" max="220" value="${state.metrics.heart}" required></label>
+      <label>SLEEP DURATION · HOURS<input name="sleep" type="number" min="0" max="24" step=".1" value="${sleepValue}" ${hasSleepPeriods ? 'readonly' : ''} required></label>
+      <label>EXERCISE · MINUTES TODAY<input name="exercise" type="number" min="0" max="600" value="${state.metrics.exercise}" required></label>
+      <label>RESISTANCE EXERCISE · MINUTES<input name="resistanceExercise" type="number" min="0" max="300" value="${state.metrics.resistanceExercise}" required></label>
+      <label>SYMPTOMS TODAY<select name="immuneSymptoms"><option ${state.metrics.immuneSymptoms === 'None' ? 'selected' : ''}>None</option><option ${state.metrics.immuneSymptoms === 'Mild' ? 'selected' : ''}>Mild</option><option ${state.metrics.immuneSymptoms === 'Moderate' ? 'selected' : ''}>Moderate</option><option ${state.metrics.immuneSymptoms === 'Severe' ? 'selected' : ''}>Severe</option></select></label>
+      <label>RADIATION · SIMULATED mSv<input name="radiation" type="number" min="0" max="1000" step=".1" value="${state.metrics.radiation}" required></label>
+      <label>SLEEP EFFICIENCY · % · OPTIONAL<input name="sleepEfficiency" type="number" min="0" max="100" step=".1" value="${optionalValue(state.metrics.sleepEfficiency)}"></label>
+      <label>HRV · ms · OPTIONAL<input name="hrv" type="number" min="0" max="300" step=".1" value="${optionalValue(state.metrics.hrv)}"></label>
+      <label>DAILY ACTIVITY SCORE · 0–100 · OPTIONAL<input name="activityScore" type="number" min="0" max="100" step=".1" value="${optionalValue(state.metrics.activityScore)}"></label>
+      <label>REACTION TIME · ms · OPTIONAL<input name="reactionTime" type="number" min="50" max="5000" step="1" value="${optionalValue(state.metrics.reactionTime)}"></label>
+    </div><div class="health-note"><span>ⓘ</span><div><strong>Optional metrics</strong><p>Leave unavailable measurements blank. Self-reported values and sample data are not sensor readings or clinical assessments.</p></div></div><div class="wellbeing-link-note">Mood, fatigue, stress, and crew-connection check-ins are in <button type="button" class="text-button" data-nav="wellbeing">Wellbeing</button>. ${hasSleepPeriods ? 'Sleep duration is the total of today’s logged sleep periods.' : ''}</div><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE CHECK-IN</button></div></form>`);
   }
 
   function renderRufusArtwork() {
@@ -1232,6 +1477,223 @@
     openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> PHYSICAL WELLNESS · ACTIVITY LOG</div><h2 id="modal-title">Log an activity</h2><p>Record a completed mission-approved exercise or mobility activity. Follow your crew medical officer’s exercise plan.</p><form id="activity-form"><div class="modal-form"><label>ACTIVITY TYPE<select name="type"><option>Resistance exercise</option><option>Cardio session</option><option>Mobility / stretch</option><option>Other approved activity</option></select></label><label>DURATION · MINUTES<input name="minutes" type="number" min="1" max="300" value="18" required></label></div><div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE ACTIVITY</button></div></form>`);
   }
 
+  function createFeatureId(prefix) {
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function dateRangeStart(range) {
+    return new Date(Date.parse(`${today}T00:00:00Z`) - (range - 1) * 86400000).toISOString().slice(0, 10);
+  }
+
+  function ensureFeatureDate(selector) {
+    const input = $(selector);
+    if (input && !input.value) input.value = today;
+  }
+
+  function renderActivity() {
+    if (!$('#activity-history-list')) return;
+    ensureFeatureDate('#activity-entry-form [name="date"]');
+    const startDate = dateRangeStart(activityRange);
+    const entries = state.activityEntries.filter((entry) => entry.status === 'scheduled' || entry.date >= startDate)
+      .slice().sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+    const completed = entries.filter((entry) => entry.status === 'completed');
+    $('#activity-completed-count').textContent = formatNumber(completed.length);
+    $('#activity-total-minutes').textContent = `${formatNumber(completed.reduce((sum, entry) => sum + entry.actualMinutes, 0))} min`;
+    $('#activity-scheduled-count').textContent = formatNumber(entries.filter((entry) => entry.status === 'scheduled').length);
+    $('#activity-history-list').innerHTML = entries.length ? entries.map((entry) => `<article class="feature-row">
+      <div class="feature-row-main"><div class="feature-row-heading"><strong>${escapeHtml(entry.name)}</strong><span class="feature-status ${entry.status}">${escapeHtml(entry.status)}</span></div>
+      <small>${escapeHtml(formatAppDate(entry.date))} · ${escapeHtml(entry.category)}${entry.actualMinutes ? ` · ${formatNumber(entry.actualMinutes)} min logged` : ''}${entry.plannedMinutes ? ` · ${formatNumber(entry.plannedMinutes)} min planned` : ''}</small>
+      ${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : ''}</div>
+      <div class="feature-row-actions"><button type="button" class="secondary-button" data-activity-edit="${escapeHtml(entry.id)}">EDIT</button><button type="button" class="secondary-button" data-activity-delete="${escapeHtml(entry.id)}">DELETE</button></div>
+    </article>`).join('') : '<p class="feature-empty">No activity scheduled or logged in this range. Add an activity from your approved plan above.</p>';
+    $$('[data-activity-range]').forEach((button) => button.classList.toggle('active', Number(button.dataset.activityRange) === activityRange));
+  }
+
+  function adjustActivityMetrics(entry, multiplier) {
+    if (entry.status !== 'completed' || entry.date !== today || !entry.actualMinutes) return;
+    state.metrics.exercise = Math.max(0, Number(state.metrics.exercise || 0) + entry.actualMinutes * multiplier);
+    if (entry.category === 'Resistance') {
+      state.metrics.resistanceExercise = Math.max(0, Number(state.metrics.resistanceExercise || 0) + entry.actualMinutes * multiplier);
+    }
+  }
+
+  function activityEntryFromForm(form, id = createFeatureId('activity')) {
+    const values = new FormData(form);
+    return window.AstroVitalFeatureData.normalizeActivityEntries([{
+      id,
+      date: String(values.get('date') || ''),
+      name: String(values.get('name') || ''),
+      category: String(values.get('category') || ''),
+      status: String(values.get('status') || ''),
+      plannedMinutes: values.get('plannedMinutes'),
+      actualMinutes: values.get('actualMinutes'),
+      note: String(values.get('note') || '')
+    }])[0] || null;
+  }
+
+  function openActivityEntryEditor(id) {
+    const entry = state.activityEntries.find((item) => item.id === id);
+    if (!entry) {
+      showToast('That activity entry is no longer available.');
+      return;
+    }
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> PHYSICAL ACTIVITY · EDIT ENTRY</div><h2 id="modal-title">Update activity</h2><form id="activity-edit-form" class="feature-form">
+      <input type="hidden" name="id" value="${escapeHtml(entry.id)}">
+      <label>ACTIVITY<input name="name" maxlength="80" value="${escapeHtml(entry.name)}" required></label>
+      <label>CATEGORY<select name="category">${window.AstroVitalFeatureData.ACTIVITY_CATEGORIES.map((category) => `<option ${entry.category === category ? 'selected' : ''}>${escapeHtml(category)}</option>`).join('')}</select></label>
+      <label>DATE<input name="date" type="date" value="${escapeHtml(entry.date)}" required></label>
+      <label>STATUS<select name="status">${window.AstroVitalFeatureData.ENTRY_STATUSES.map((status) => `<option value="${status}" ${entry.status === status ? 'selected' : ''}>${status}</option>`).join('')}</select></label>
+      <label>PLANNED MINUTES<input name="plannedMinutes" type="number" min="1" max="600" value="${entry.plannedMinutes || ''}"></label>
+      <label>ACTUAL MINUTES<input name="actualMinutes" type="number" min="1" max="600" value="${entry.actualMinutes || ''}"></label>
+      <label class="feature-full-width">NOTE<textarea name="note" rows="2" maxlength="300">${escapeHtml(entry.note)}</textarea></label>
+      <div class="feature-full-width modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE CHANGES</button></div>
+    </form>`);
+  }
+
+  function deleteActivityEntry(id) {
+    const entry = state.activityEntries.find((item) => item.id === id);
+    if (!entry || !window.confirm('Delete this activity entry from this local profile?')) return;
+    adjustActivityMetrics(entry, -1);
+    state.activityEntries = state.activityEntries.filter((item) => item.id !== id);
+    persist();
+    renderActivity();
+    renderHealth();
+    renderOverview();
+    showToast('Activity entry deleted');
+  }
+
+  function renderSleep() {
+    if (!$('#sleep-trend-list')) return;
+    ensureFeatureDate('#sleep-schedule-form [name="date"]');
+    ensureFeatureDate('#sleep-entry-form [name="date"]');
+    const startDate = dateRangeStart(sleepRange);
+    const periodRecords = state.sleepLogs.filter((entry) => entry.kind === 'period' && entry.date >= startDate);
+    const dates = [...new Set(state.sleepLogs.filter((entry) => entry.date >= startDate).map((entry) => entry.date))].sort().reverse();
+    const totals = dates.map((date) => ({ date, hours: window.AstroVitalFeatureData.sleepTotalForDate(state.sleepLogs, date) }));
+    const loggedTotals = totals.filter((item) => Number.isFinite(item.hours));
+    const quality = periodRecords.filter((entry) => Number.isFinite(entry.quality)).map((entry) => entry.quality);
+    $('#sleep-average-duration').textContent = loggedTotals.length
+      ? `${formatDecimal(loggedTotals.reduce((sum, item) => sum + item.hours, 0) / loggedTotals.length)} hr`
+      : '—';
+    $('#sleep-average-quality').textContent = quality.length
+      ? `${formatDecimal(quality.reduce((sum, value) => sum + value, 0) / quality.length)} / 5`
+      : '—';
+    $('#sleep-logged-days').textContent = formatNumber(loggedTotals.length);
+    $('#sleep-schedule-list').innerHTML = state.sleepSchedule.filter((entry) => entry.date >= startDate)
+      .slice().sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime))
+      .map((entry) => `<article class="feature-row compact"><div class="feature-row-main"><strong>${escapeHtml(entry.label)}</strong><small>${escapeHtml(formatAppDate(entry.date))} · ${escapeHtml(entry.startTime)}–${escapeHtml(entry.endTime)}</small></div><button type="button" class="secondary-button" data-sleep-schedule-delete="${escapeHtml(entry.id)}">REMOVE</button></article>`).join('')
+      || '<p class="feature-empty">No sleep opportunities scheduled in this range.</p>';
+    $('#sleep-trend-list').innerHTML = totals.length ? totals.map((item) => `<div class="feature-trend-row"><span>${escapeHtml(formatAppDate(item.date))}</span><div class="feature-bar"><i style="width:${Math.min(100, item.hours / 12 * 100)}%"></i></div><strong>${formatDecimal(item.hours)} hr</strong></div>`).join('')
+      : '<p class="feature-empty">Sleep trends will appear after you record a sleep period or health check-in.</p>';
+    const logs = state.sleepLogs.filter((entry) => entry.date >= startDate).slice()
+      .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+    $('#sleep-history-list').innerHTML = logs.length ? logs.map((entry) => {
+      const details = entry.kind === 'period'
+        ? `${entry.startTime}–${entry.endTime} · ${formatDecimal(entry.durationHours)} hr${entry.quality ? ` · quality ${entry.quality}/5` : ''}${entry.restedness ? ` · rested ${entry.restedness}/5` : ''}${entry.interruptions !== null ? ` · ${entry.interruptions} interruptions` : ''}`
+        : `${formatDecimal(entry.sleepHours)} hr · entered in health check-in`;
+      return `<article class="feature-row compact"><div class="feature-row-main"><strong>${escapeHtml(formatAppDate(entry.date))}</strong><small>${escapeHtml(details)}</small></div><button type="button" class="secondary-button" data-sleep-delete="${escapeHtml(entry.id)}">DELETE</button></article>`;
+    }).join('') : '<p class="feature-empty">No sleep periods recorded in this range.</p>';
+    $$('[data-sleep-range]').forEach((button) => button.classList.toggle('active', Number(button.dataset.sleepRange) === sleepRange));
+  }
+
+  function sleepEntryFromForm(form, id = createFeatureId('sleep')) {
+    const values = new FormData(form);
+    return window.AstroVitalFeatureData.normalizeSleepLogs([{
+      id,
+      kind: 'period',
+      date: String(values.get('date') || ''),
+      startTime: String(values.get('startTime') || ''),
+      endTime: String(values.get('endTime') || ''),
+      quality: values.get('quality'),
+      restedness: values.get('restedness'),
+      interruptions: values.get('interruptions')
+    }])[0] || null;
+  }
+
+  function deleteSleepEntry(id) {
+    if (!state.sleepLogs.some((entry) => entry.id === id) || !window.confirm('Delete this sleep record from this local profile?')) return;
+    state.sleepLogs = state.sleepLogs.filter((entry) => entry.id !== id);
+    const todayTotal = window.AstroVitalFeatureData.sleepTotalForDate(state.sleepLogs, today);
+    if (todayTotal !== null) state.metrics.sleep = todayTotal;
+    persist();
+    renderSleep();
+    renderHealth();
+    renderOverview();
+    showToast('Sleep record deleted');
+  }
+
+  function deleteSleepSchedule(id) {
+    if (!state.sleepSchedule.some((entry) => entry.id === id) || !window.confirm('Remove this scheduled sleep opportunity?')) return;
+    state.sleepSchedule = state.sleepSchedule.filter((entry) => entry.id !== id);
+    persist();
+    renderSleep();
+    showToast('Sleep opportunity removed');
+  }
+
+  function renderMeals() {
+    if (!$('#meal-history-list')) return;
+    ensureFeatureDate('#meal-entry-form [name="date"]');
+    const startDate = dateRangeStart(mealRange);
+    const entries = state.mealEntries.filter((entry) => entry.status === 'scheduled' || entry.date >= startDate)
+      .slice().sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time));
+    const scheduled = entries.filter((entry) => entry.status === 'scheduled');
+    const logged = entries.filter((entry) => entry.status !== 'scheduled');
+    const eatenToday = state.mealEntries.filter((entry) => entry.date === today && ['eaten', 'partial'].includes(entry.status));
+    $('#meal-scheduled-count').textContent = formatNumber(scheduled.length);
+    $('#meal-logged-count').textContent = formatNumber(logged.length);
+    $('#meal-today-count').textContent = formatNumber(eatenToday.length);
+    $('#meal-history-list').innerHTML = entries.length ? entries.map((entry) => {
+      const nutrition = window.AstroVitalFeatureData.hasTraceableNutrition(entry)
+        ? `<p class="feature-source-note"><strong>Nutrition details supplied:</strong> ${escapeHtml(entry.nutritionInfo)} <small>Source: ${escapeHtml(entry.nutritionSource)}</small></p>`
+        : '<p class="feature-source-note">Nutrition information not available.</p>';
+      return `<article class="feature-row"><div class="feature-row-main"><div class="feature-row-heading"><strong>${escapeHtml(entry.name)}</strong><span class="feature-status ${escapeHtml(entry.status)}">${escapeHtml(entry.status)}</span></div><small>${escapeHtml(formatAppDate(entry.date))} · ${escapeHtml(entry.time)}</small>${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : ''}${nutrition}</div><div class="feature-row-actions"><button type="button" class="secondary-button" data-meal-edit="${escapeHtml(entry.id)}">EDIT</button><button type="button" class="secondary-button" data-meal-delete="${escapeHtml(entry.id)}">DELETE</button></div></article>`;
+    }).join('') : '<p class="feature-empty">No meals scheduled or logged in this range. Add an entry from your approved meal plan.</p>';
+    $$('[data-meal-range]').forEach((button) => button.classList.toggle('active', Number(button.dataset.mealRange) === mealRange));
+  }
+
+  function mealEntryFromForm(form, id = createFeatureId('meal')) {
+    const values = new FormData(form);
+    const raw = {
+      id,
+      date: String(values.get('date') || ''),
+      time: String(values.get('time') || ''),
+      name: String(values.get('name') || ''),
+      status: String(values.get('status') || ''),
+      note: String(values.get('note') || ''),
+      nutritionInfo: String(values.get('nutritionInfo') || ''),
+      nutritionSource: String(values.get('nutritionSource') || '')
+    };
+    if (raw.nutritionInfo.trim() && !raw.nutritionSource.trim()) return null;
+    return window.AstroVitalFeatureData.normalizeMealEntries([raw])[0] || null;
+  }
+
+  function openMealEntryEditor(id) {
+    const entry = state.mealEntries.find((item) => item.id === id);
+    if (!entry) {
+      showToast('That meal entry is no longer available.');
+      return;
+    }
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> MEALS · EDIT ENTRY</div><h2 id="modal-title">Update meal</h2><form id="meal-edit-form" class="feature-form">
+      <input type="hidden" name="id" value="${escapeHtml(entry.id)}">
+      <label>MEAL OR MENU ITEM<input name="name" maxlength="100" value="${escapeHtml(entry.name)}" required></label>
+      <label>STATUS<select name="status">${window.AstroVitalFeatureData.MEAL_STATUSES.map((status) => `<option value="${status}" ${entry.status === status ? 'selected' : ''}>${status}</option>`).join('')}</select></label>
+      <label>DATE<input name="date" type="date" value="${escapeHtml(entry.date)}" required></label>
+      <label>TIME<input name="time" type="time" value="${escapeHtml(entry.time)}" required></label>
+      <label class="feature-full-width">NOTE<textarea name="note" rows="2" maxlength="300">${escapeHtml(entry.note)}</textarea></label>
+      <label class="feature-full-width">NUTRITION INFORMATION · OPTIONAL<textarea name="nutritionInfo" rows="2" maxlength="500">${escapeHtml(entry.nutritionInfo)}</textarea></label>
+      <label class="feature-full-width">SOURCE · REQUIRED IF INFORMATION IS ENTERED<input name="nutritionSource" maxlength="200" value="${escapeHtml(entry.nutritionSource)}"></label>
+      <div class="feature-full-width modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE CHANGES</button></div>
+    </form>`);
+  }
+
+  function deleteMealEntry(id) {
+    if (!state.mealEntries.some((entry) => entry.id === id) || !window.confirm('Delete this meal entry from this local profile?')) return;
+    state.mealEntries = state.mealEntries.filter((entry) => entry.id !== id);
+    persist();
+    renderMeals();
+    showToast('Meal entry deleted');
+  }
+
   function openAlerts() {
     const alerts = currentAlerts();
     openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> HEALTH MONITOR · SAMPLE DATA</div><h2 id="modal-title">Health alerts</h2><p>Changes are compared with personal reference values and are prompts for review, not diagnoses.</p><div class="alert-list">${alerts.length ? alerts.map((alert) => `<div class="alert-card"><span class="alert-mark">⚠</span><div><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.detail)}</p></div></div>`).join('') : '<div class="alert-empty">✓ &nbsp; No sample readings currently flag for review. Keep monitoring and contact your flight surgeon with health concerns.</div>'}</div><div class="modal-actions"><button class="secondary-button" data-action="close-modal">CLOSE</button><button class="primary-button" data-nav="health">VIEW HEALTH REPORT</button></div>`);
@@ -1389,29 +1851,126 @@
     showToast(message);
   }
 
-  function saveJournal(mood, fatigue, note) {
-    const entry = { date: today, time: new Date().toLocaleTimeString(localeTag(), { hour: '2-digit', minute: '2-digit' }), mood, fatigue, note: note.trim() };
-    state.checkinHistory.unshift(entry);
-    state.checkinHistory = state.checkinHistory.slice(0, 20);
-    state.metrics.mood = mood;
-    state.metrics.fatigue = fatigue;
+  function saveWellbeing(mood, fatigue, stress, connection, note, entryId = null) {
+    const existing = entryId
+      ? state.checkinHistory.find((entry) => entry.id === entryId)
+      : state.checkinHistory.find((entry) => entry.date === today);
+    const entry = window.AstroVitalFeatureData.normalizeWellbeingHistory([{
+      id: existing?.id || createFeatureId('wellbeing'),
+      date: existing?.date || today,
+      time: existing?.time || new Date().toLocaleTimeString(localeTag(), { hour: '2-digit', minute: '2-digit' }),
+      mood,
+      fatigue,
+      stress,
+      connection,
+      note
+    }])[0];
+    if (!entry) {
+      showToast('Check the wellbeing values and try again.');
+      return false;
+    }
+    if (entry.date === today && !restorePersonalBaselineRecords()) return false;
+    if (existing) {
+      state.checkinHistory = state.checkinHistory.map((item) => item.id === existing.id ? entry : item);
+    } else {
+      state.checkinHistory.unshift(entry);
+    }
+    state.checkinHistory = state.checkinHistory.slice()
+      .sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time))
+      .slice(0, 365);
+    if (entry.date === today) {
+      state.metrics.mood = entry.mood;
+      state.metrics.fatigue = entry.fatigue;
+      state.metrics.stress = entry.stress;
+      state.metrics.connection = entry.connection;
+      const moodScores = { Low: 1, Okay: 2.5, Good: 4, Great: 5 };
+      upsertBaselineRecord({ moodScore: moodScores[entry.mood] ?? null });
+    }
     reactToActivity('journal');
     persist();
     renderOverview();
     renderHealth();
-    renderJournalHistory();
-    $('#journal-feedback').textContent = 'Your check-in has been saved on this device.';
-    showToast('Wellbeing check-in saved locally');
+    renderWellbeing();
+    renderBaseline();
+    if ($('#journal-feedback')) $('#journal-feedback').textContent = 'Your check-in has been saved on this device.';
+    showToast(entryId ? 'Wellbeing entry updated locally' : 'Wellbeing check-in saved locally');
+    return true;
   }
 
-  function renderJournalHistory() {
-    const target = $('#journal-history');
+  function renderWellbeing() {
+    if (!$('#view-wellbeing')) return;
+    const todayEntry = state.checkinHistory.find((entry) => entry.date === today);
+    $('#wellbeing-greeting').textContent = `How are you feeling, ${state.profile.name || 'crew member'}?`;
+    $$('input[name="mood"]').forEach((input) => { input.checked = input.value === state.metrics.mood; });
+    $('#energy-slider').value = String(state.metrics.fatigue);
+    $('#fatigue-value').textContent = String(state.metrics.fatigue);
+    $('#stress-slider').value = String(state.metrics.stress || 3);
+    $('#stress-value').textContent = String(state.metrics.stress || 3);
+    $('#wellbeing-connection').value = state.metrics.connection;
+    if (todayEntry) $('#journal-note').value = todayEntry.note;
+    const startDate = dateRangeStart(wellbeingRange);
+    const entries = state.checkinHistory.filter((entry) => entry.date >= startDate);
+    const withStress = entries.filter((entry) => Number.isFinite(entry.stress));
+    const withFatigue = entries.filter((entry) => Number.isFinite(entry.fatigue));
+    const avg = (values) => values.length ? formatDecimal(values.reduce((sum, value) => sum + value, 0) / values.length) : '—';
+    $('#wellbeing-summary').innerHTML = `<div class="wellbeing-stat"><span>CHECK-INS</span><strong>${formatNumber(entries.length)}</strong></div><div class="wellbeing-stat"><span>AVG. SELF-REPORTED FATIGUE</span><strong>${avg(withFatigue.map((entry) => entry.fatigue))} / 10</strong></div><div class="wellbeing-stat"><span>AVG. SELF-REPORTED STRESS</span><strong>${avg(withStress.map((entry) => entry.stress))} / 10</strong></div>`;
+    renderWellbeingHistory();
+    $$('[data-wellbeing-range]').forEach((button) => button.classList.toggle('active', Number(button.dataset.wellbeingRange) === wellbeingRange));
+  }
+
+  function renderWellbeingHistory() {
+    const target = $('#wellbeing-history') || $('#journal-history');
     if (!target) return;
-    if (!state.checkinHistory.length) {
-      target.innerHTML = `<div class="journal-entry journal-empty">${rufusImage('confident', 'journal-empty-art')}<div><strong>No saved reflections yet</strong><small>YOUR DEVICE</small><p>Rufus is ready when you are. Save a wellbeing check-in to begin your personal log.</p></div></div>`;
+    const startDate = dateRangeStart(wellbeingRange);
+    const entries = state.checkinHistory.filter((entry) => entry.date >= startDate);
+    if (!entries.length) {
+      target.innerHTML = `<div class="journal-entry journal-empty">${rufusImage('confident', 'journal-empty-art')}<div><strong>No saved reflections in this range</strong><small>YOUR DEVICE</small><p>Your check-ins and journal notes stay in this local profile.</p></div></div>`;
       return;
     }
-    target.innerHTML = state.checkinHistory.slice(0, 5).map((entry) => `<article class="journal-entry"><span>${entry.mood === 'Great' ? '✦' : entry.mood === 'Good' ? '☀' : entry.mood === 'Okay' ? '◒' : '☁'}</span><div><strong>${escapeHtml(entry.mood)} · Fatigue ${escapeHtml(entry.fatigue)}/10</strong><small>${escapeHtml(formatAppDate(entry.date))} · ${escapeHtml(entry.time)}</small>${entry.note ? `<p data-user-content>${escapeHtml(entry.note)}</p>` : ''}</div></article>`).join('');
+    target.innerHTML = entries.map((entry) => `<article class="journal-entry">
+      <span>${entry.mood === 'Great' ? '✦' : entry.mood === 'Good' ? '☀' : entry.mood === 'Okay' ? '◒' : '☁'}</span>
+      <div class="wellbeing-entry-copy"><strong>${escapeHtml(entry.mood)} · Fatigue ${formatNumber(entry.fatigue)}/10${Number.isFinite(entry.stress) ? ` · Stress ${formatNumber(entry.stress)}/10` : ''}</strong>
+      <small>${escapeHtml(formatAppDate(entry.date))} · ${escapeHtml(entry.time || 'time not recorded')}${entry.connection ? ` · ${escapeHtml(entry.connection)}` : ''}</small>
+      ${entry.note ? `<p data-user-content>${escapeHtml(entry.note)}</p>` : ''}</div>
+      <div class="feature-row-actions"><button type="button" class="secondary-button" data-wellbeing-edit="${escapeHtml(entry.id)}">EDIT</button><button type="button" class="secondary-button" data-wellbeing-delete="${escapeHtml(entry.id)}">DELETE</button></div>
+    </article>`).join('');
+  }
+
+  function openWellbeingEditor(id) {
+    const entry = state.checkinHistory.find((item) => item.id === id);
+    if (!entry) {
+      showToast('That wellbeing entry is no longer available.');
+      return;
+    }
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> WELLBEING · EDIT ENTRY</div><h2 id="modal-title">Update your reflection</h2><p>${escapeHtml(formatAppDate(entry.date))} · Stored in this local profile.</p><form id="wellbeing-edit-form">
+      <input type="hidden" name="id" value="${escapeHtml(entry.id)}">
+      <div class="modal-form">
+        <label>MOOD<select name="mood">${window.AstroVitalFeatureData.MOODS.map((mood) => `<option ${entry.mood === mood ? 'selected' : ''}>${mood}</option>`).join('')}</select></label>
+        <label>CREW CONNECTION<select name="connection">${window.AstroVitalFeatureData.CONNECTIONS.map((connection) => `<option ${entry.connection === connection ? 'selected' : ''}>${escapeHtml(connection)}</option>`).join('')}</select></label>
+        <label>FATIGUE · 1–10<input name="fatigue" type="number" min="1" max="10" value="${entry.fatigue}" required></label>
+        <label>STRESS · 1–10<input name="stress" type="number" min="1" max="10" value="${entry.stress || ''}"></label>
+      </div>
+      <label class="feature-full-width">PRIVATE NOTE<textarea name="note" rows="4" maxlength="500">${escapeHtml(entry.note)}</textarea></label>
+      <div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE CHANGES</button></div>
+    </form>`);
+  }
+
+  function deleteWellbeingEntry(id) {
+    const entry = state.checkinHistory.find((item) => item.id === id);
+    if (!entry || !window.confirm('Delete this check-in and journal note from this local profile?')) return;
+    state.checkinHistory = state.checkinHistory.filter((item) => item.id !== id);
+    if (entry.date === today) {
+      const replacement = state.checkinHistory.find((item) => item.date === today);
+      state.metrics.mood = replacement?.mood || seed.metrics.mood;
+      state.metrics.fatigue = replacement?.fatigue || seed.metrics.fatigue;
+      state.metrics.stress = replacement?.stress || seed.metrics.stress;
+      state.metrics.connection = replacement?.connection || seed.metrics.connection;
+    }
+    persist();
+    renderOverview();
+    renderHealth();
+    renderWellbeing();
+    showToast('Wellbeing entry deleted');
   }
 
   function renderMedicationOverview() {
@@ -1540,6 +2099,10 @@
     }
     if (action === 'profile') openProfile();
     if (action === 'checkin') openCheckin();
+    if (action === 'baseline-load-demo') {
+      if (state.healthBaseline.isSynthetic) clearBaselineDemo();
+      else loadBaselineDemo();
+    }
     if (action === 'alerts') openAlerts();
     if (action === 'rufus-cheer') cheerRufus();
     if (action === 'pet-rufus') petRufus();
@@ -1665,6 +2228,47 @@
     if (editHydrationId) openHydrationEdit(editHydrationId);
     const deleteHydrationId = event.target.closest('[data-hydration-delete]')?.dataset.hydrationDelete;
     if (deleteHydrationId) confirmDeleteHydration(deleteHydrationId);
+    const activityEditId = event.target.closest('[data-activity-edit]')?.dataset.activityEdit;
+    if (activityEditId) openActivityEntryEditor(activityEditId);
+    const activityDeleteId = event.target.closest('[data-activity-delete]')?.dataset.activityDelete;
+    if (activityDeleteId) deleteActivityEntry(activityDeleteId);
+    const sleepDeleteId = event.target.closest('[data-sleep-delete]')?.dataset.sleepDelete;
+    if (sleepDeleteId) deleteSleepEntry(sleepDeleteId);
+    const sleepScheduleDeleteId = event.target.closest('[data-sleep-schedule-delete]')?.dataset.sleepScheduleDelete;
+    if (sleepScheduleDeleteId) deleteSleepSchedule(sleepScheduleDeleteId);
+    const mealEditId = event.target.closest('[data-meal-edit]')?.dataset.mealEdit;
+    if (mealEditId) openMealEntryEditor(mealEditId);
+    const mealDeleteId = event.target.closest('[data-meal-delete]')?.dataset.mealDelete;
+    if (mealDeleteId) deleteMealEntry(mealDeleteId);
+    const wellbeingEditId = event.target.closest('[data-wellbeing-edit]')?.dataset.wellbeingEdit;
+    if (wellbeingEditId) openWellbeingEditor(wellbeingEditId);
+    const wellbeingDeleteId = event.target.closest('[data-wellbeing-delete]')?.dataset.wellbeingDelete;
+    if (wellbeingDeleteId) deleteWellbeingEntry(wellbeingDeleteId);
+    const activityRangeButton = event.target.closest('[data-activity-range]');
+    if (activityRangeButton) {
+      activityRange = Number(activityRangeButton.dataset.activityRange);
+      renderActivity();
+    }
+    const sleepRangeButton = event.target.closest('[data-sleep-range]');
+    if (sleepRangeButton) {
+      sleepRange = Number(sleepRangeButton.dataset.sleepRange);
+      renderSleep();
+    }
+    const mealRangeButton = event.target.closest('[data-meal-range]');
+    if (mealRangeButton) {
+      mealRange = Number(mealRangeButton.dataset.mealRange);
+      renderMeals();
+    }
+    const wellbeingRangeButton = event.target.closest('[data-wellbeing-range]');
+    if (wellbeingRangeButton) {
+      wellbeingRange = Number(wellbeingRangeButton.dataset.wellbeingRange);
+      renderWellbeing();
+    }
+    const baselineRangeButton = event.target.closest('[data-baseline-range]');
+    if (baselineRangeButton) {
+      baselineChartRange = Number(baselineRangeButton.dataset.baselineRange);
+      renderBaseline();
+    }
     const gameTab = event.target.closest('[data-game]')?.dataset.game;
     if (gameTab) setGame(gameTab);
     const rangeButton = event.target.closest('[data-range]');
@@ -1825,9 +2429,137 @@
       renderHydration();
       showToast('Intake entry updated');
     }
+    if (event.target.id === 'activity-entry-form') {
+      event.preventDefault();
+      const entry = activityEntryFromForm(event.target);
+      if (!entry) {
+        $('#activity-feedback').textContent = 'Enter a name, valid date, category, and status. Completed activities need an actual duration.';
+        return;
+      }
+      state.activityEntries.unshift(entry);
+      adjustActivityMetrics(entry, 1);
+      persist();
+      if (entry.status === 'completed' && entry.date === today) completeMission('move');
+      renderActivity();
+      renderHealth();
+      renderOverview();
+      $('#activity-feedback').textContent = 'Activity saved in this local profile.';
+      return;
+    }
+    if (event.target.id === 'activity-edit-form') {
+      event.preventDefault();
+      const values = new FormData(event.target);
+      const id = String(values.get('id') || '');
+      const previous = state.activityEntries.find((entry) => entry.id === id);
+      const updated = activityEntryFromForm(event.target, id);
+      if (!previous || !updated) {
+        showToast('Enter a valid activity. Completed activities need an actual duration.');
+        return;
+      }
+      adjustActivityMetrics(previous, -1);
+      adjustActivityMetrics(updated, 1);
+      state.activityEntries = state.activityEntries.map((entry) => entry.id === id ? updated : entry);
+      closeModal();
+      persist();
+      if (updated.status === 'completed' && updated.date === today) completeMission('move');
+      renderActivity();
+      renderHealth();
+      renderOverview();
+      showToast('Activity entry updated');
+      return;
+    }
+    if (event.target.id === 'sleep-schedule-form') {
+      event.preventDefault();
+      const values = new FormData(event.target);
+      const entry = window.AstroVitalFeatureData.normalizeSleepSchedule([{
+        id: createFeatureId('sleep-schedule'),
+        date: String(values.get('date') || ''),
+        label: String(values.get('label') || ''),
+        startTime: String(values.get('startTime') || ''),
+        endTime: String(values.get('endTime') || '')
+      }])[0];
+      if (!entry) {
+        $('#sleep-schedule-list').insertAdjacentHTML('afterbegin', '<p class="form-feedback" role="alert">Choose a valid date and different start and end times.</p>');
+        return;
+      }
+      state.sleepSchedule.unshift(entry);
+      persist();
+      event.target.reset();
+      renderSleep();
+      showToast('Sleep opportunity saved locally');
+      return;
+    }
+    if (event.target.id === 'sleep-entry-form') {
+      event.preventDefault();
+      const entry = sleepEntryFromForm(event.target);
+      if (!entry) {
+        $('#sleep-feedback').textContent = 'Enter a valid date and different start and end times for this sleep period.';
+        return;
+      }
+      state.sleepLogs = state.sleepLogs.filter((item) => !(item.date === entry.date && item.kind === 'checkin'));
+      state.sleepLogs.unshift(entry);
+      const totalForToday = window.AstroVitalFeatureData.sleepTotalForDate(state.sleepLogs, today);
+      if (entry.date === today && totalForToday !== null) state.metrics.sleep = totalForToday;
+      persist();
+      event.target.reset();
+      renderSleep();
+      renderHealth();
+      renderOverview();
+      $('#sleep-feedback').textContent = 'Sleep period saved in this local profile.';
+      return;
+    }
+    if (event.target.id === 'meal-entry-form') {
+      event.preventDefault();
+      const entry = mealEntryFromForm(event.target);
+      if (!entry) {
+        $('#meal-feedback').textContent = 'Enter a valid meal, date, and time. Nutrition information requires a source.';
+        return;
+      }
+      state.mealEntries.unshift(entry);
+      persist();
+      event.target.reset();
+      renderMeals();
+      $('#meal-feedback').textContent = 'Meal entry saved in this local profile.';
+      return;
+    }
+    if (event.target.id === 'meal-edit-form') {
+      event.preventDefault();
+      const values = new FormData(event.target);
+      const id = String(values.get('id') || '');
+      const updated = mealEntryFromForm(event.target, id);
+      if (!updated || !state.mealEntries.some((entry) => entry.id === id)) {
+        showToast('Enter a valid meal entry. Nutrition information requires a source.');
+        return;
+      }
+      state.mealEntries = state.mealEntries.map((entry) => entry.id === id ? updated : entry);
+      closeModal();
+      persist();
+      renderMeals();
+      showToast('Meal entry updated');
+      return;
+    }
+    if (event.target.id === 'wellbeing-edit-form') {
+      event.preventDefault();
+      const values = new FormData(event.target);
+      const stress = values.get('stress') === '' ? null : Number(values.get('stress'));
+      if (saveWellbeing(
+        String(values.get('mood')),
+        Number(values.get('fatigue')),
+        stress,
+        String(values.get('connection')),
+        String(values.get('note') || ''),
+        String(values.get('id') || '')
+      )) closeModal();
+      return;
+    }
     if (event.target.id === 'checkin-form') {
       event.preventDefault();
+      if (!restorePersonalBaselineRecords()) return;
       const form = new FormData(event.target);
+      const optionalMetric = (name) => {
+        const value = String(form.get(name) || '').trim();
+        return value && Number.isFinite(Number(value)) ? Number(value) : null;
+      };
       if (state.checkinDate !== today) {
         const yesterday = new Date();
         yesterday.setUTCDate(yesterday.getUTCDate() - 1);
@@ -1835,14 +2567,37 @@
         state.streak = state.lastCheckinDate === previousDate ? state.streak + 1 : 1;
       }
       state.metrics.heart = Number(form.get('heart'));
-      state.metrics.sleep = Number(form.get('sleep'));
       state.metrics.exercise = Number(form.get('exercise'));
       state.metrics.resistanceExercise = Number(form.get('resistanceExercise'));
-      state.metrics.fatigue = Number(form.get('fatigue'));
-      state.metrics.mood = String(form.get('mood'));
-      state.metrics.connection = String(form.get('connection'));
+      const sleepPeriods = state.sleepLogs.filter((entry) => entry.date === today && entry.kind === 'period');
+      if (sleepPeriods.length) {
+        state.metrics.sleep = window.AstroVitalFeatureData.sleepTotalForDate(state.sleepLogs, today);
+        state.sleepLogs = state.sleepLogs.filter((entry) => !(entry.date === today && entry.kind === 'checkin'));
+      } else {
+        state.metrics.sleep = Number(form.get('sleep'));
+        const checkinSleep = {
+          id: state.sleepLogs.find((entry) => entry.date === today && entry.kind === 'checkin')?.id || createFeatureId('sleep-checkin'),
+          kind: 'checkin',
+          date: today,
+          sleepHours: state.metrics.sleep
+        };
+        state.sleepLogs = state.sleepLogs.filter((entry) => !(entry.date === today && entry.kind === 'checkin'));
+        state.sleepLogs.push(checkinSleep);
+      }
       state.metrics.immuneSymptoms = String(form.get('immuneSymptoms'));
       state.metrics.radiation = Number(form.get('radiation'));
+      state.metrics.sleepEfficiency = optionalMetric('sleepEfficiency');
+      state.metrics.hrv = optionalMetric('hrv');
+      state.metrics.activityScore = optionalMetric('activityScore');
+      state.metrics.reactionTime = optionalMetric('reactionTime');
+      upsertBaselineRecord({
+        sleepHours: state.metrics.sleep,
+        sleepEfficiency: state.metrics.sleepEfficiency,
+        restingHeartRate: state.metrics.heart,
+        hrv: state.metrics.hrv,
+        activityScore: state.metrics.activityScore,
+        reactionTime: state.metrics.reactionTime
+      });
       reactToActivity('checkin');
       state.heartHistory.push(state.metrics.heart);
       state.sleepHistory.push(state.metrics.sleep);
@@ -1856,29 +2611,51 @@
       completeMission('checkin');
       renderOverview();
       renderHealth();
+      renderSleep();
+      renderBaseline();
       showToast('Health check-in saved · simulated data only');
     }
     if (event.target.id === 'activity-form') {
       event.preventDefault();
       const form = new FormData(event.target);
       const duration = Number(form.get('minutes'));
-      state.metrics.exercise += duration;
-      if (form.get('type') === 'Resistance exercise') state.metrics.resistanceExercise += duration;
+      const type = String(form.get('type'));
+      const category = type === 'Resistance exercise' ? 'Resistance'
+        : type === 'Cardio session' ? 'Aerobic'
+          : type === 'Mobility / stretch' ? 'Mobility' : 'Other approved activity';
+      const entry = window.AstroVitalFeatureData.normalizeActivityEntries([{
+        id: createFeatureId('activity'),
+        date: today,
+        name: type,
+        category,
+        status: 'completed',
+        actualMinutes: duration
+      }])[0];
+      if (!entry) {
+        showToast('Enter a valid activity duration.');
+        return;
+      }
+      state.activityEntries.unshift(entry);
+      adjustActivityMetrics(entry, 1);
       reactToActivity('activity');
       closeModal();
       persist();
       completeMission('move');
+      renderActivity();
       renderOverview();
       renderHealth();
-      showToast(`${escapeHtml(form.get('type'))} logged · ${duration} min`);
+      showToast(`${escapeHtml(type)} logged · ${duration} min`);
     }
     if (event.target.id === 'wellness-form') {
       event.preventDefault();
-      const mood = new FormData(event.target).get('mood');
-      saveJournal(String(mood), Number($('#energy-slider').value), $('#journal-note').value);
-      event.target.reset();
-      $('#energy-slider').value = state.metrics.fatigue;
-      $('#fatigue-value').textContent = $('#energy-slider').value;
+      const values = new FormData(event.target);
+      saveWellbeing(
+        String(values.get('mood')),
+        Number($('#energy-slider').value),
+        $('#stress-slider') ? Number($('#stress-slider').value) : null,
+        String(values.get('connection') || state.metrics.connection),
+        String(values.get('note') || $('#journal-note')?.value || '')
+      );
     }
     if (event.target.id === 'rufus-form') {
       event.preventDefault();
@@ -1899,6 +2676,7 @@
 
   document.addEventListener('input', (event) => {
     if (event.target.id === 'energy-slider') $('#fatigue-value').textContent = event.target.value;
+    if (event.target.id === 'stress-slider') $('#stress-value').textContent = event.target.value;
     if (event.target.closest('#hydration-plan-form')) {
       clearHydrationPreview();
     }
@@ -1918,7 +2696,10 @@
     renderOverview();
     renderHealth();
     renderMissions();
-    renderJournalHistory();
+    renderActivity();
+    renderSleep();
+    renderMeals();
+    renderWellbeing();
     renderMedicationManager();
     renderHydration();
     renderSettings();
@@ -1942,7 +2723,10 @@
   renderOverview();
   renderHealth();
   renderMissions();
-  renderJournalHistory();
+  renderActivity();
+  renderSleep();
+  renderMeals();
+  renderWellbeing();
   renderSettings();
   $('#cog-sessions').innerHTML = `${state.cognitiveSessions} <small>sessions</small>`;
   $('#cog-best').innerHTML = `${state.bestReaction} <small>ms</small>`;
