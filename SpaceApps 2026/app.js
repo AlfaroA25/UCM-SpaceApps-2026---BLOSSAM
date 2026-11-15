@@ -50,11 +50,11 @@
   const millilitersPerUnit = { mL: 1, L: 1000, 'fl oz': 29.5735295625 };
   const seed = {
     version: 1,
-    profile: { name: 'Astronaut', personnelId: '', role: 'Crew Member', missionId: '', language: 'en', timezone: DEFAULT_TIME_ZONE, notifications: false, hydrationGoal: '', hydrationUnit: 'mL', reminderStart: '', reminderEnd: '', reminderCount: '', hydrationScheduleConfirmed: false, interests: [], onboarded: false, heartMin: null, heartMax: null, sleepMin: null, sleepMax: null, radiationReviewAt: 50 },
+    profile: { name: 'Astronaut', personnelId: '', role: 'Crew Member', missionId: '', language: 'en', timezone: DEFAULT_TIME_ZONE, notifications: false, hydrationGoal: '', hydrationUnit: 'mL', reminderStart: '', reminderEnd: '', reminderCount: '', hydrationScheduleConfirmed: false, interests: [], onboarded: false, age: null, weight: null, weightUnit: 'kg', medicalConditions: '', heartMin: null, heartMax: null, sleepMin: null, sleepMax: null, radiationReviewAt: 50 },
     rufus: { pose: 'wave', inventory: ['orbit-satellite'], accessories: ['orbit-satellite'], stardust: 0, bondXp: 0, petDate: today, petCount: 0, petStreak: 0, lastPetDate: '' },
-    metrics: { heart: null, sleep: null, sleepEfficiency: null, hrv: null, activityScore: null, reactionTime: null, exercise: null, resistanceExercise: null, fatigue: null, stress: null, mood: '', connection: '', immuneSymptoms: '', cognition: null, radiation: null },
+    metrics: { heart: null, sleep: null, sleepEfficiency: null, hrv: null, activityScore: null, reactionTime: null, exercise: null, resistanceExercise: null, fatigue: null, stress: null, mood: '', connection: '', immuneSymptoms: '', symptomNotes: '', cognition: null, radiation: null },
     companion: { state: 'hello' }, hydrationLogs: [], medicationLog: [], xp: 2480, streak: 6, lastCheckin: '', checkinDate: '', lastCheckinDate: '',
-    checkinHistory: [], activityEntries: [], sleepSchedule: [], sleepLogs: [], mealEntries: [],
+    checkinHistory: [], symptomLogs: [], activityEntries: [], sleepSchedule: [], sleepLogs: [], mealEntries: [],
     healthBaseline: { records: [], baseline: null, isSynthetic: false, personalRecordsBackup: [], personalBaselineBackup: null },
     completed: [], completedDate: today, achievements: [], cognitiveSessions: 0, bestReaction: null,
     userCognitiveSessions: 0, userBestReaction: null, hasUserCognitiveResult: false,
@@ -82,6 +82,16 @@
   let reactionStart = 0;
   let memorySequence = [];
   let memoryInput = [];
+  let matchCards = [];
+  let matchSelection = [];
+  let matchedCards = new Set();
+  let matchMoves = 0;
+  let matchElapsedMs = 0;
+  let matchStartedAt = 0;
+  let matchStopwatchInterval;
+  let scanElapsedMs = 0;
+  let scanStartedAt = 0;
+  let scanStopwatchInterval;
   let gameLocked = false;
   let pendingHydrationPlan = null;
   let pendingHydrationDeleteId = null;
@@ -144,7 +154,11 @@
         ...clone(seed), ...parsed, profile: {
           ...seed.profile,
           ...parsed.profile,
-          timezone: isValidTimeZone(parsed.profile?.timezone) ? parsed.profile.timezone.trim() : DEFAULT_TIME_ZONE
+          timezone: isValidTimeZone(parsed.profile?.timezone) ? parsed.profile.timezone.trim() : DEFAULT_TIME_ZONE,
+          age: Number.isInteger(parsed.profile?.age) && parsed.profile.age >= 0 && parsed.profile.age <= 120 ? parsed.profile.age : null,
+          weight: Number.isFinite(parsed.profile?.weight) && parsed.profile.weight > 0 && parsed.profile.weight <= 500 ? parsed.profile.weight : null,
+          weightUnit: ['kg', 'lb'].includes(parsed.profile?.weightUnit) ? parsed.profile.weightUnit : 'kg',
+          medicalConditions: typeof parsed.profile?.medicalConditions === 'string' ? parsed.profile.medicalConditions.slice(0, 500) : ''
         },
         rufus: {
           pose: Object.hasOwn(rufusArtwork, savedPose) ? savedPose : seed.rufus.pose, inventory, accessories,
@@ -158,6 +172,7 @@
         metrics: {
           ...seed.metrics,
           ...parsed.metrics,
+          symptomNotes: typeof parsed.metrics?.symptomNotes === 'string' ? parsed.metrics.symptomNotes.slice(0, 500) : '',
           stress: Number.isFinite(Number(parsed.metrics?.stress)) && Number(parsed.metrics?.stress) >= 1 && Number(parsed.metrics?.stress) <= 10
             ? Number(parsed.metrics?.stress)
             : seed.metrics.stress
@@ -176,6 +191,11 @@
           : clone(seed.medicationLog),
         completed: Array.isArray(parsed.completed) ? parsed.completed : [], achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
         checkinHistory: window.AstroVitalFeatureData.normalizeWellbeingHistory(parsed.checkinHistory),
+        symptomLogs: Array.isArray(parsed.symptomLogs) ? parsed.symptomLogs.filter((entry) => entry
+          && typeof entry.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(entry.date)
+          && ['None', 'Mild', 'Moderate', 'Severe'].includes(entry.symptoms))
+          .map((entry) => ({ date: entry.date, symptoms: entry.symptoms, notes: typeof entry.notes === 'string' ? entry.notes.slice(0, 500) : '' }))
+          .slice(-365) : [],
         activityEntries: window.AstroVitalFeatureData.normalizeActivityEntries(parsed.activityEntries),
         sleepSchedule: window.AstroVitalFeatureData.normalizeSleepSchedule(parsed.sleepSchedule),
         sleepLogs: window.AstroVitalFeatureData.normalizeSleepLogs(parsed.sleepLogs),
@@ -351,6 +371,7 @@
       mood: latestWellbeing?.mood || null,
       connection: latestWellbeing?.connection || null,
       immuneSymptoms: checkin?.immuneSymptoms || null,
+      symptomNotes: checkin?.symptomNotes || '',
       cognition: state.hasUserCognitiveResult === true && Number.isFinite(state.metrics.cognition) ? state.metrics.cognition : null,
       radiation: null,
       latestRecord,
@@ -1071,9 +1092,9 @@
     const list = compact ? missions.slice(0, 3) : missions;
     container.innerHTML = list.map((mission) => {
       const done = state.completed.includes(mission.id);
-      const actionLabel = window.RufusI18n.translate(done ? 'Completed' : 'Complete');
       const missionLabel = window.RufusI18n.translate(mission.title);
-      return `<div class="mission-row"><button class="mission-check ${done ? 'done' : ''}" data-complete="${mission.id}" aria-label="${escapeHtml(`${actionLabel} ${missionLabel}`)}">${done ? '✓' : ''}</button><div class="mission-copy"><strong>${escapeHtml(mission.title)}</strong><small>${escapeHtml(mission.description)}</small></div><span class="mission-reward">${done ? 'DONE' : `+${formatNumber(mission.reward)} XP`}</span></div>`;
+      const actionLabel = window.RufusI18n.translate(done ? 'Mark uncompleted' : 'Mark completed');
+      return `<div class="mission-row"><button class="mission-check ${done ? 'done' : ''}" data-complete="${mission.id}" aria-label="${escapeHtml(`${actionLabel} ${missionLabel}`)}" aria-pressed="${done}">${done ? '✓' : ''}</button><div class="mission-copy"><strong>${escapeHtml(mission.title)}</strong><small>${escapeHtml(mission.description)}</small></div><span class="mission-reward">${done ? 'DONE' : `+${formatNumber(mission.reward)} XP`}</span></div>`;
     }).join('');
   }
 
@@ -1123,6 +1144,8 @@
         ? t('Simulation only; not a personal exposure reading')
         : metric.key === 'cognition' && value !== null
           ? t('Game result only; not an assessment')
+        : metric.key === 'immuneSymptoms' && snapshot.symptomNotes
+          ? `${t('Self-reported')}${sourceDate ? ` · ${sourceDate}` : ''} · ${snapshot.symptomNotes}`
         : value === null || value === undefined
           ? t('Awaiting personal records')
           : `${t(loggedActivity ? 'User logged' : 'Self-reported')}${sourceDate ? ` · ${sourceDate}` : ''}`;
@@ -1131,6 +1154,10 @@
         : value === null || value === undefined ? t('NO RECORD') : t(status ? 'REVIEW' : 'RECORDED');
       return `<article class="health-metric ${status ? 'health-metric-alert' : ''}"><div class="health-metric-head"><span class="metric-icon ${metric.key}-icon">${metric.icon}</span><span class="health-status ${status ? 'watch' : ''}">${escapeHtml(label)}</span></div><h3>${escapeHtml(metric.name)}</h3><div class="health-metric-value">${displayValue}<small>${escapeHtml(metric.unit)}</small></div><div class="health-metric-baseline">${escapeHtml(source)}</div></article>`;
     }).join('');
+    const symptomNotes = [...(state.symptomLogs || [])].filter((entry) => entry.notes).sort((first, second) => second.date.localeCompare(first.date)).slice(0, 10);
+    $('#health-symptom-history').innerHTML = symptomNotes.length
+      ? `<article class="panel symptom-history-panel"><div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> SELF-REPORTED · LOCAL ONLY</div><h2>Symptom notes</h2></div></div><div class="symptom-history-list">${symptomNotes.map((entry) => `<div class="symptom-history-entry"><strong>${escapeHtml(formatAppDate(entry.date))} · ${escapeHtml(entry.symptoms)}</strong><p>${escapeHtml(entry.notes)}</p></div>`).join('')}</div></article>`
+      : '';
     renderHeartChart($('#health-chart'), activeRange, true);
   }
 
@@ -1560,7 +1587,10 @@
     }
     $('#mission-objectives').innerHTML = missions.map((mission) => {
       const done = state.completed.includes(mission.id);
-      return `<article class="objective-card ${done ? 'complete' : ''}"><div class="objective-icon">${mission.icon}</div><div class="objective-copy"><h3>${escapeHtml(mission.title)}</h3><p>${escapeHtml(mission.description)}</p></div><div class="objective-meta"><strong>${done ? 'COMPLETE' : `+${mission.reward} XP`}</strong></div><button class="objective-button ${done ? 'complete-button' : ''}" data-mission-action="${mission.id}" ${done ? 'disabled' : ''}>${done ? '✓ DONE' : mission.id === 'checkin' ? 'CHECK IN' : mission.id === 'move' ? 'LOG ACTIVITY' : mission.id === 'breathe' ? 'START PAUSE' : 'OPEN MIND LAB'}</button></article>`;
+      const action = done
+        ? `data-toggle-mission="${mission.id}" aria-label="Mark ${escapeHtml(mission.title)} uncompleted"`
+        : `data-mission-action="${mission.id}"`;
+      return `<article class="objective-card ${done ? 'complete' : ''}"><div class="objective-icon">${mission.icon}</div><div class="objective-copy"><h3>${escapeHtml(mission.title)}</h3><p>${escapeHtml(mission.description)}</p></div><div class="objective-meta"><strong>${done ? 'COMPLETE' : `+${mission.reward} XP`}</strong></div><button class="objective-button ${done ? 'complete-button' : ''}" ${action}>${done ? 'UNDO' : mission.id === 'checkin' ? 'CHECK IN' : mission.id === 'move' ? 'LOG ACTIVITY' : mission.id === 'breathe' ? 'START PAUSE' : 'OPEN MIND LAB'}</button></article>`;
     }).join('');
   }
 
@@ -1581,6 +1611,25 @@
     renderMissions();
     if ($('#view-companion').classList.contains('active')) renderCompanion();
     showToast(`Objective complete · +${mission.reward} mission XP · +10 stardust${newBadges.length ? ` · ${newBadges.join(', ')} insignia earned` : ''}`);
+  }
+
+  function uncompleteMission(id) {
+    const mission = missions.find((item) => item.id === id);
+    if (!mission || !state.completed.includes(id)) return;
+    state.completed = state.completed.filter((completedId) => completedId !== id);
+    state.xp = Math.max(0, state.xp - mission.reward);
+    state.rufus.stardust = Math.max(0, state.rufus.stardust - 10);
+    state.rufus.bondXp = Math.max(0, state.rufus.bondXp - 8);
+    persist();
+    renderOverview();
+    renderMissions();
+    if ($('#view-companion').classList.contains('active')) renderCompanion();
+    showToast('Objective marked uncompleted. Personal check-in records are unchanged.');
+  }
+
+  function toggleMissionCompletion(id) {
+    if (state.completed.includes(id)) uncompleteMission(id);
+    else completeMission(id);
   }
 
   function unlockEligibleAchievements() {
@@ -1615,13 +1664,16 @@
     const profileValue = (value) => Number.isFinite(value) ? value : '';
     openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> LOCAL PROFILE</div>
       <h2 id="modal-title">Profile and preferences</h2>
-      <p>Your crew profile and preferences stay in this browser. Set or edit hydration goals on the Hydration Tracker, where you can preview the schedule before saving it.</p>
+      <p>Your crew profile, optional health context, and preferences stay in this browser. Avoid entering sensitive details on a shared device.</p>
       <p>Optional health references are examples for personal comparison only. They are not medical targets and do not determine health status.</p>
       <form id="profile-form">
         <div class="modal-form">
           <label>PERSONNEL ID · LOCAL PROFILE<input value="${escapeHtml(state.profile.personnelId)}" readonly></label>
           <label>DISPLAY NAME<input name="name" maxlength="50" value="${escapeHtml(state.profile.name)}" required></label>
           <label>MISSION IDENTIFIER<input name="missionId" maxlength="40" value="${escapeHtml(state.profile.missionId)}"></label>
+          <label>AGE · YEARS · OPTIONAL<input name="age" type="number" min="0" max="120" step="1" value="${profileValue(state.profile.age)}"></label>
+          <label>WEIGHT · OPTIONAL<div class="entry-inline"><input name="weight" type="number" min="0.1" max="500" step="0.1" value="${profileValue(state.profile.weight)}" aria-label="Weight"><select name="weightUnit" aria-label="Weight unit"><option value="kg" ${state.profile.weightUnit === 'kg' ? 'selected' : ''}>kg</option><option value="lb" ${state.profile.weightUnit === 'lb' ? 'selected' : ''}>lb</option></select></div></label>
+          <label class="profile-health-context">MEDICAL CONDITIONS OR HEALTH CONTEXT · OPTIONAL<textarea name="medicalConditions" rows="2" maxlength="500" placeholder="Optional notes for your own reference">${escapeHtml(state.profile.medicalConditions)}</textarea><small>Stored locally; not shared with crew medical systems.</small></label>
           <label>LANGUAGE<select name="language"><option value="en" ${state.profile.language === 'en' ? 'selected' : ''}>English</option><option value="es" ${state.profile.language === 'es' ? 'selected' : ''}>Español</option><option value="fr" ${state.profile.language === 'fr' ? 'selected' : ''}>Français</option><option value="de" ${state.profile.language === 'de' ? 'selected' : ''}>Deutsch</option><option value="zh" ${state.profile.language === 'zh' ? 'selected' : ''}>简体中文</option><option value="ja" ${state.profile.language === 'ja' ? 'selected' : ''}>日本語</option><option value="ar" ${state.profile.language === 'ar' ? 'selected' : ''}>العربية</option></select></label>
           <div class="timezone-field"><label for="profile-timezone" id="timezone-profile-label">TIME ZONE</label><input id="timezone-filter" class="entry-control timezone-filter" type="search" autocomplete="off" placeholder="Filter IANA time zones"><select id="profile-timezone" name="timezone" class="entry-control" required></select><small id="timezone-profile-help">Choose the zone used for local time, dates, and in-app schedules.</small><small class="timezone-detected"><span id="timezone-detected-label">Browser detected:</span> <code id="browser-timezone">${escapeHtml(localTimeZone)}</code></small></div>
           <label>OPTIONAL HEART-RATE REFERENCE MIN · BPM<input name="heartMin" type="number" min="35" max="110" value="${profileValue(state.profile.heartMin)}"></label>
@@ -1654,6 +1706,7 @@
       <label>EXERCISE · MINUTES TODAY<input name="exercise" type="number" min="0" max="600" value="${optionalValue(savedCheckin?.exercise)}" required></label>
       <label>RESISTANCE EXERCISE · MINUTES<input name="resistanceExercise" type="number" min="0" max="300" value="${optionalValue(savedCheckin?.resistanceExercise)}" required></label>
       <label>SYMPTOMS TODAY<select name="immuneSymptoms" required><option value="" ${savedCheckin?.immuneSymptoms ? '' : 'selected'}>Not recorded</option><option ${savedCheckin?.immuneSymptoms === 'None' ? 'selected' : ''}>None</option><option ${savedCheckin?.immuneSymptoms === 'Mild' ? 'selected' : ''}>Mild</option><option ${savedCheckin?.immuneSymptoms === 'Moderate' ? 'selected' : ''}>Moderate</option><option ${savedCheckin?.immuneSymptoms === 'Severe' ? 'selected' : ''}>Severe</option></select></label>
+      <label class="feature-full-width">SYMPTOM NOTES · OPTIONAL<textarea name="symptomNotes" rows="3" maxlength="500" placeholder="If you’re experiencing symptoms, describe what you’re noticing. This private note is saved on this device.">${escapeHtml(savedCheckin?.symptomNotes || '')}</textarea></label>
       <label>SLEEP EFFICIENCY · % · OPTIONAL<input name="sleepEfficiency" type="number" min="0" max="100" step=".1" value="${optionalValue(savedCheckin?.sleepEfficiency)}"></label>
       <label>HRV · ms · OPTIONAL<input name="hrv" type="number" min="0" max="300" step=".1" value="${optionalValue(savedCheckin?.hrv)}"></label>
       <label>DAILY ACTIVITY SCORE · 0–100 · OPTIONAL<input name="activityScore" type="number" min="0" max="100" step=".1" value="${optionalValue(savedCheckin?.activityScore)}"></label>
@@ -2101,21 +2154,93 @@
 
   function setGame(game) {
     clearTimeout(gameTimer);
+    clearInterval(scanStopwatchInterval);
+    clearInterval(matchStopwatchInterval);
+    matchStartedAt = 0;
     gameLocked = false;
-    activeGame = game;
-    $$('.game-tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.game === game));
+    activeGame = ['memory', 'reaction', 'attention', 'match'].includes(game) ? game : 'memory';
+    $$('.game-tab').forEach((tab) => {
+      const selected = tab.dataset.game === activeGame;
+      tab.classList.toggle('active', selected);
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+    });
     const settings = {
       memory: { kicker: 'MEMORY SEQUENCE', title: 'Sequence protocol', description: 'Watch the sequence, then repeat it in the same order. Each round adds one new step.', duration: '~1 MIN', emblem: '⌘' },
       reaction: { kicker: 'REACTION TIME', title: 'Signal response', description: 'Wait for the green signal, then tap as quickly as you can. Do not tap while the signal is amber.', duration: '~30 SEC', emblem: 'ϟ' },
-      attention: { kicker: 'SELECTIVE ATTENTION', title: 'Target scan', description: 'Find the one symbol that differs from the rest. A new pattern appears each round.', duration: '~1 MIN', emblem: '⊙' }
+      attention: { kicker: 'SELECTIVE ATTENTION', title: 'Target scan', description: 'Scan a dense symbol field, find the unique target, and use the built-in stopwatch at your own pace.', duration: '~1 MIN', emblem: '⊙' },
+      match: { kicker: 'VISUAL MEMORY', title: 'Memory match', description: 'Reveal cards two at a time and find all six matching pairs. Take a pause whenever you like.', duration: '~2 MIN', emblem: '◈' }
     };
-    const item = settings[game];
+    const item = settings[activeGame];
     $('#game-kicker').textContent = item.kicker;
     $('#game-title').textContent = item.title;
     $('#game-description').textContent = item.description;
     $('#game-duration').textContent = item.duration;
     $('#game-stage').innerHTML = `<div class="game-idle"><div class="game-emblem">${item.emblem}</div><span>COGNITIVE TRAINING MODULE</span><small>SELECT START TO BEGIN</small></div>`;
     $('#game-start').disabled = false;
+  }
+
+  function formatStopwatchTime(milliseconds) {
+    const tenths = Math.floor(milliseconds / 100);
+    const minutes = Math.floor(tenths / 600);
+    const seconds = Math.floor(tenths / 10) % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${tenths % 10}`;
+  }
+
+  function updateScanStopwatch() {
+    const display = $('#attention-stopwatch-value');
+    if (!display) return;
+    display.textContent = formatStopwatchTime(scanElapsedMs + (scanStartedAt ? performance.now() - scanStartedAt : 0));
+  }
+
+  function startScanStopwatch() {
+    if (scanStartedAt) return;
+    scanStartedAt = performance.now();
+    $('#attention-stopwatch-toggle').textContent = 'PAUSE';
+    scanStopwatchInterval = setInterval(updateScanStopwatch, 100);
+  }
+
+  function pauseScanStopwatch() {
+    if (!scanStartedAt) return;
+    scanElapsedMs += performance.now() - scanStartedAt;
+    scanStartedAt = 0;
+    clearInterval(scanStopwatchInterval);
+    updateScanStopwatch();
+    $('#attention-stopwatch-toggle').textContent = 'RESUME';
+  }
+
+  function resetScanStopwatch() {
+    scanElapsedMs = 0;
+    if (scanStartedAt) scanStartedAt = performance.now();
+    updateScanStopwatch();
+  }
+
+  function updateMatchStopwatch() {
+    const display = $('#match-stopwatch-value');
+    if (!display) return;
+    display.textContent = formatStopwatchTime(matchElapsedMs + (matchStartedAt ? performance.now() - matchStartedAt : 0));
+  }
+
+  function startMatchStopwatch() {
+    if (matchStartedAt) return;
+    matchStartedAt = performance.now();
+    $('#match-stopwatch-toggle').textContent = 'PAUSE';
+    matchStopwatchInterval = setInterval(updateMatchStopwatch, 100);
+  }
+
+  function pauseMatchStopwatch() {
+    if (!matchStartedAt) return;
+    matchElapsedMs += performance.now() - matchStartedAt;
+    matchStartedAt = 0;
+    clearInterval(matchStopwatchInterval);
+    updateMatchStopwatch();
+    $('#match-stopwatch-toggle').textContent = 'RESUME';
+  }
+
+  function resetMatchStopwatch() {
+    matchElapsedMs = 0;
+    if (matchStartedAt) matchStartedAt = performance.now();
+    updateMatchStopwatch();
   }
 
   function beginMemory() {
@@ -2200,20 +2325,84 @@
   }
 
   function beginAttention() {
-    const symbols = ['◈', '○', '△', '⌑', '⊙', '◇', '□'];
+    const symbols = ['◈', '○', '△', '⌑', '⊙', '◇', '□', '✦', '⌘'];
     const base = symbols[Math.floor(Math.random() * symbols.length)];
     let odd = symbols[(symbols.indexOf(base) + 1 + Math.floor(Math.random() * (symbols.length - 1))) % symbols.length];
-    const oddIndex = Math.floor(Math.random() * 25);
+    const oddIndex = Math.floor(Math.random() * 36);
     const stage = $('#game-stage');
-    stage.innerHTML = `<div class="game-stage-inner"><p id="attention-instruction">Select the symbol that differs</p><div class="attention-grid">${Array.from({ length: 25 }, (_, i) => `<button class="attention-cell" data-attention="${i}">${i === oddIndex ? odd : base}</button>`).join('')}</div></div>`;
+    scanElapsedMs = 0;
+    scanStartedAt = 0;
+    stage.innerHTML = `<div class="game-stage-inner"><p id="attention-instruction">Find the single target that differs from the repeated field</p><div class="scan-stopwatch"><span>STOPWATCH</span><strong id="attention-stopwatch-value" role="timer" aria-label="Elapsed target scan time">00:00.0</strong><button class="secondary-button" id="attention-stopwatch-toggle" type="button">PAUSE</button><button class="secondary-button" id="attention-stopwatch-reset" type="button">RESET</button></div><div class="attention-grid scan-grid">${Array.from({ length: 36 }, (_, i) => `<button class="attention-cell" data-attention="${i}" aria-label="Scan tile ${i + 1}">${i === oddIndex ? odd : base}</button>`).join('')}</div></div>`;
+    startScanStopwatch();
     $$('[data-attention]', stage).forEach((button) => button.addEventListener('click', () => {
       if (Number(button.dataset.attention) === oddIndex) {
         button.classList.add('correct');
-        finishGame('Target identified · +25 mission XP', 92);
+        pauseScanStopwatch();
+        const elapsedSeconds = scanElapsedMs / 1000;
+        const score = Math.max(50, Math.min(100, Math.round(100 - elapsedSeconds * 2)));
+        $('#attention-instruction').textContent = `Target found in ${formatStopwatchTime(scanElapsedMs)} · Game result only`;
+        finishGame('Target identified · +25 mission XP', score);
       } else {
-        $('#attention-instruction').textContent = 'Not that one — scan again.';
+        $('#attention-instruction').textContent = 'Not that one — scan again. No penalty; take your time.';
       }
-    }, { once: true }));
+    }));
+  }
+
+  function beginMatch() {
+    const symbols = ['✦', '◈', '⌁', '⊙', '☾', '♢'];
+    matchCards = [...symbols, ...symbols].map((symbol, index) => ({ id: index, symbol })).sort(() => Math.random() - 0.5);
+    matchSelection = [];
+    matchedCards = new Set();
+    matchMoves = 0;
+    matchElapsedMs = 0;
+    matchStartedAt = 0;
+    gameLocked = false;
+    $('#game-stage').innerHTML = `<div class="game-stage-inner"><p id="match-instruction">Find all six pairs · 0 pairs · 0 turns</p><div class="scan-stopwatch"><span>ELAPSED TIME</span><strong id="match-stopwatch-value" role="timer" aria-label="Memory Match elapsed time">00:00.0</strong><button class="secondary-button" id="match-stopwatch-toggle" type="button">PAUSE</button><button class="secondary-button" id="match-stopwatch-reset" type="button">RESET</button></div><div class="memory-match-grid">${matchCards.map((card) => `<button class="match-card" type="button" data-match="${card.id}" aria-label="Hidden memory card ${card.id + 1}" aria-pressed="false">?</button>`).join('')}</div></div>`;
+    startMatchStopwatch();
+  }
+
+  function tapMatch(cardId) {
+    if (gameLocked || matchedCards.has(cardId) || matchSelection.includes(cardId)) return;
+    const card = matchCards.find((entry) => entry.id === cardId);
+    const button = $(`[data-match="${cardId}"]`);
+    if (!card || !button) return;
+    button.textContent = card.symbol;
+    button.classList.add('revealed');
+    button.setAttribute('aria-label', `Memory card ${cardId + 1}: ${card.symbol}`);
+    button.setAttribute('aria-pressed', 'true');
+    matchSelection.push(cardId);
+    if (matchSelection.length < 2) return;
+    matchMoves += 1;
+    const [firstId, secondId] = matchSelection;
+    const first = matchCards.find((entry) => entry.id === firstId);
+    const second = matchCards.find((entry) => entry.id === secondId);
+    const instruction = $('#match-instruction');
+    if (first.symbol === second.symbol) {
+      matchedCards.add(firstId);
+      matchedCards.add(secondId);
+      $$(`[data-match="${firstId}"],[data-match="${secondId}"]`).forEach((item) => item.classList.add('matched'));
+      matchSelection = [];
+      instruction.textContent = `Pair found · ${matchedCards.size / 2} of 6 pairs · ${matchMoves} turns`;
+      if (matchedCards.size === matchCards.length) {
+        pauseMatchStopwatch();
+        finishGame(`All six pairs found in ${matchMoves} turns · ${formatStopwatchTime(matchElapsedMs)} · +25 mission XP`, 100);
+      }
+      return;
+    }
+    instruction.textContent = `No match · ${matchedCards.size / 2} of 6 pairs · ${matchMoves} turns`;
+    gameLocked = true;
+    gameTimer = setTimeout(() => {
+      [firstId, secondId].forEach((id) => {
+        const item = $(`[data-match="${id}"]`);
+        if (!item) return;
+        item.textContent = '?';
+        item.classList.remove('revealed');
+        item.setAttribute('aria-label', `Hidden memory card ${id + 1}`);
+        item.setAttribute('aria-pressed', 'false');
+      });
+      matchSelection = [];
+      gameLocked = false;
+    }, 850);
   }
 
   function startGame() {
@@ -2221,12 +2410,24 @@
     if (activeGame === 'memory') beginMemory();
     if (activeGame === 'reaction') beginReaction();
     if (activeGame === 'attention') beginAttention();
+    if (activeGame === 'match') beginMatch();
   }
 
   function finishGame(message, score) {
     clearTimeout(gameTimer);
+    clearInterval(scanStopwatchInterval);
+    if (matchStartedAt) pauseMatchStopwatch();
+    clearInterval(matchStopwatchInterval);
+    const matchStopwatchToggle = $('#match-stopwatch-toggle');
+    const matchStopwatchReset = $('#match-stopwatch-reset');
+    if (matchStopwatchToggle) {
+      matchStopwatchToggle.disabled = true;
+      matchStopwatchToggle.textContent = 'DONE';
+    }
+    if (matchStopwatchReset) matchStopwatchReset.disabled = true;
+    scanStartedAt = 0;
     gameLocked = true;
-    $$('.memory-cell,.attention-cell').forEach((button) => { button.disabled = true; });
+    $$('.memory-cell,.attention-cell,.match-card').forEach((button) => { button.disabled = true; });
     state.cognitiveSessions += 1;
     state.userCognitiveSessions += 1;
     state.metrics.cognition = score;
@@ -2812,12 +3013,17 @@
       setNav('cognitive');
       return;
     }
+    const undoMissionId = event.target.closest('[data-toggle-mission]')?.dataset.toggleMission;
+    if (undoMissionId) {
+      uncompleteMission(undoMissionId);
+      return;
+    }
     if (action === 'complete-breath') {
       closeModal();
       completeMission('breathe');
     }
     const completeId = event.target.closest('[data-complete]')?.dataset.complete;
-    if (completeId) completeMission(completeId);
+    if (completeId) toggleMissionCompletion(completeId);
     const quickAmount = event.target.closest('[data-hydration-quick]')?.dataset.hydrationQuick;
     if (quickAmount) recordHydration(Number(quickAmount), 'mL');
     const editHydrationId = event.target.closest('[data-hydration-edit]')?.dataset.hydrationEdit;
@@ -2878,6 +3084,18 @@
     }
     const memoryCell = event.target.closest('[data-memory]')?.dataset.memory;
     if (memoryCell !== undefined) tapMemory(Number(memoryCell));
+    const matchCard = event.target.closest('[data-match]')?.dataset.match;
+    if (matchCard !== undefined) tapMatch(Number(matchCard));
+    if (event.target.closest('#attention-stopwatch-toggle')) {
+      if (scanStartedAt) pauseScanStopwatch();
+      else startScanStopwatch();
+    }
+    if (event.target.closest('#attention-stopwatch-reset')) resetScanStopwatch();
+    if (event.target.closest('#match-stopwatch-toggle')) {
+      if (matchStartedAt) pauseMatchStopwatch();
+      else startMatchStopwatch();
+    }
+    if (event.target.closest('#match-stopwatch-reset')) resetMatchStopwatch();
     if (event.target.closest('#game-start')) startGame();
   });
 
@@ -2977,10 +3195,16 @@
         const value = String(form.get(name) || '').trim();
         return value ? Number(value) : null;
       };
+      const ageValue = String(form.get('age') || '').trim();
+      const weightValue = String(form.get('weight') || '').trim();
       const next = {
         ...state.profile,
         name: String(form.get('name')).trim(),
         missionId: String(form.get('missionId') || '').trim(),
+        age: ageValue ? Number(ageValue) : null,
+        weight: weightValue ? Number(weightValue) : null,
+        weightUnit: String(form.get('weightUnit') || 'kg'),
+        medicalConditions: String(form.get('medicalConditions') || '').trim().slice(0, 500),
         language: String(form.get('language') || 'en'),
         timezone,
         notifications: form.get('notifications') === 'on',
@@ -2998,9 +3222,12 @@
       }
       const validReference = (min, max) => (min === null && max === null)
         || (Number.isFinite(min) && Number.isFinite(max) && min < max);
+      const validAge = next.age === null || (Number.isInteger(next.age) && next.age >= 0 && next.age <= 120);
+      const validWeight = next.weight === null || (Number.isFinite(next.weight) && next.weight > 0 && next.weight <= 500);
       if (!next.name || !validReference(next.heartMin, next.heartMax)
-        || !validReference(next.sleepMin, next.sleepMax)) {
-        showToast('Enter a name, valid time zone, and valid ranges.');
+        || !validReference(next.sleepMin, next.sleepMax) || !validAge || !validWeight
+        || !['kg', 'lb'].includes(next.weightUnit)) {
+        showToast('Enter a name, valid time zone, optional age and weight, and valid ranges.');
         return;
       }
       state.profile = next;
@@ -3217,6 +3444,13 @@
         state.sleepLogs.push(checkinSleep);
       }
       state.metrics.immuneSymptoms = String(form.get('immuneSymptoms'));
+      state.metrics.symptomNotes = String(form.get('symptomNotes') || '').trim().slice(0, 500);
+      state.symptomLogs = state.symptomLogs.filter((entry) => entry.date !== today);
+      state.symptomLogs.push({
+        date: today,
+        symptoms: state.metrics.immuneSymptoms,
+        notes: state.metrics.symptomNotes
+      });
       state.metrics.sleepEfficiency = optionalMetric('sleepEfficiency');
       state.metrics.hrv = optionalMetric('hrv');
       state.metrics.activityScore = optionalMetric('activityScore');
@@ -3350,7 +3584,6 @@
     renderHydration();
     renderSettings();
     if ($('#view-insights').classList.contains('active')) setInsightTab(activeInsightTab);
-    if (nasaPowerData) renderPowerResults(nasaPowerData);
   });
   $('#modal-backdrop').addEventListener('click', (event) => {
     if (event.target.id === 'modal-backdrop') closeModal();

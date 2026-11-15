@@ -369,23 +369,58 @@
             <footer class="disclaimer"><span>✳</span> Meal schedules and logs are personal records. Follow your crew’s approved menu and medical guidance; nutrition information is shown only when its source is recorded.</footer>
           </section>
 
-          <section class="view" id="view-environment">
+<section class="view" id="view-environment">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> NASA ENVIRONMENTAL DATA · PHASE 1</div><h1>Earth conditions, <span>in context.</span></h1><p>Explore daily surface meteorology and solar measurements from NASA POWER for a selected coordinate and date range.</p></div>
             <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>ENVIRONMENTAL DATA ONLY</strong> &nbsp;These are gridded Earth-surface observations/estimates, not astronaut biometrics, spacecraft conditions, or personal space-radiation exposure. Data are daily aggregates and may be delayed.</span></div>
+            <section class="nasa-research-dashboard" aria-labelledby="nasa-research-title">
+              <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> HISTORICAL NASA RESEARCH DATA</div><h2 id="nasa-research-title">NASA Research &amp; Mission Data</h2></div><span class="sim-tag">RESEARCH · NOT LIVE CREW DATA</span></div>
+              <p class="nasa-research-intro">Explore historical ISS environmental telemetry and radiation measurements from NASA’s Environmental Data Application (EDA), plus human spaceflight studies from NASA’s Open Science Data Repository (OSDR). EDA’s mission records include research-hardware conditions; these are not personal astronaut readings.</p>
+              <article class="panel nasa-eda-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> NASA EDA · HISTORICAL ISS TELEMETRY</div><h3>Environmental &amp; radiation monitoring</h3></div><span class="sim-tag">MISSION-SPECIFIC · HISTORICAL</span></div>
+                <div class="eda-controls">
+                  <label>MISSION / DATASET<select id="eda-mission" class="entry-control"><option value="RR-1">RR-1 · Rodent Research 1 (SpaceX-4)</option><option value="RR-3" selected="">RR-3 · Rodent Research 3 (SpaceX-8)</option><option value="RR-6">RR-6 · Rodent Research 6 (SpaceX-13)</option></select></label>
+                  <label>COMPARE WITH<select id="eda-compare-mission" class="entry-control"><option value="">No comparison</option><option value="RR-1">RR-1 · SpaceX-4</option><option value="RR-3">RR-3 · SpaceX-8</option><option value="RR-6" selected="">RR-6 · SpaceX-13</option></select></label>
+                  <label>MEASUREMENT<select id="eda-measurement" class="entry-control"><option value="temperatureC">ISS-side temperature · °C</option><option value="co2Ppm">Carbon dioxide · ppm</option><option value="humidityPercent">Relative humidity · % RH</option><option value="radiationGcr">Radiation · GCR · mGy/day</option><option value="radiationSaa">Radiation · SAA · mGy/day</option><option value="radiationTotal">Radiation · total · mGy/day</option></select></label>
+                  <label>FROM · OPTIONAL<input id="eda-start-date" class="entry-control" type="date"></label>
+                  <label>TO · OPTIONAL<input id="eda-end-date" class="entry-control" type="date"></label>
+                  <div class="eda-control-actions"><button id="eda-load-button" class="primary-button" type="button">LOAD NASA MISSION DATA</button><button id="eda-reset-range" class="secondary-button" type="button">CLEAR DATES</button></div>
+                </div>
+                <p class="power-query-privacy">NASA EDA values are historical mission measurements, never live astronaut exposure or vital signs. ISS telemetry trends are daily means of available ISS-side readings; radiation values retain the NASA EDA series and units.</p>
+                <div id="eda-status" class="power-request-status" role="status" aria-live="polite">Select a mission and load NASA EDA data. Verified historical mission data are bundled for offline use.</div>
+                <div id="eda-error" class="power-request-error" role="alert" hidden=""></div>
+                <div id="eda-summary" class="eda-summary-grid"></div>
+                <div id="eda-chart" class="eda-chart" aria-live="polite"><p class="eda-empty">NASA mission trends will appear here after loading a dataset.</p></div>
+                <div id="eda-source-info" class="eda-source-info"></div>
+              </article>
+              <article class="panel osdr-research-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> NASA OSDR · HUMAN SPACEFLIGHT RESEARCH</div><h3>Research studies from astronauts</h3></div><span class="sim-tag">HUMAN · IN-FLIGHT FILTER</span></div>
+                <p>Search dataset titles and abstracts from NASA OSDR studies filtered to <strong>Homo sapiens</strong> and in-flight research. Cell, tissue, and animal experiments are excluded. Abstracts are displayed as study-provided context, not individual health guidance.</p>
+                <div class="osdr-controls"><label>SEARCH NASA STUDIES<input id="osdr-search" class="entry-control" type="search" placeholder="Try astronaut, plasma, hair follicle…" autocomplete="off"></label><button id="osdr-load-button" class="primary-button" type="button">SEARCH NASA OSDR</button></div>
+                <div id="osdr-status" class="power-request-status" role="status" aria-live="polite">Search NASA OSDR for verified human in-flight datasets.</div>
+                <div id="osdr-error" class="power-request-error" role="alert" hidden=""></div>
+                <div id="osdr-results" class="osdr-results"></div>
+              </article>
+              <article class="panel nasa-radlab-note">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> SOURCE &amp; SAFETY</div><h3>Historical research, not personal monitoring</h3></div></div>
+                <p>Radiation plots above are historical NASA EDA mission data and are not a live exposure monitor. The NASA RadLab page was unavailable during integration; use its official portal for availability updates. No RadLab measurements are fabricated or substituted.</p>
+                <p><a href="https://visualization.osdr.nasa.gov/eda/" target="_blank" rel="noopener noreferrer">NASA Environmental Data Application ↗</a> · <a href="https://visualization.osdr.nasa.gov/eda/api_reference" target="_blank" rel="noopener noreferrer">EDA API reference ↗</a> · <a href="https://visualization.osdr.nasa.gov/radlab/gui/overview/" target="_blank" rel="noopener noreferrer">NASA RadLab ↗</a> · <a href="https://osdr.nasa.gov/bio/repo/" target="_blank" rel="noopener noreferrer">NASA OSDR ↗</a> · <a href="https://visualization.osdr.nasa.gov/biodata/api/" target="_blank" rel="noopener noreferrer">OSDR API documentation ↗</a></p>
+                <p class="nasa-prototype-disclaimer">AstroVital is an educational monitoring prototype, not a medical diagnostic system. Historical environmental and research data do not establish an individual’s medical condition and do not replace crew medical guidance.</p>
+              </article>
+            </section>
             <article class="panel power-query-panel">
               <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> NASA POWER · DAILY POINT API</div><h2>Select a location and date range</h2></div></div>
               <form id="nasa-power-form" class="power-query-form">
-                <label>LATITUDE · DEGREES<input id="power-latitude" name="latitude" class="entry-control" type="number" min="-90" max="90" step="any" value="37.365" required></label>
-                <label>LONGITUDE · DEGREES<input id="power-longitude" name="longitude" class="entry-control" type="number" min="-180" max="180" step="any" value="-120.425" required></label>
-                <label>START DATE<input id="power-start" name="start" class="entry-control" type="date" min="1981-01-01" required></label>
-                <label>END DATE<input id="power-end" name="end" class="entry-control" type="date" required></label>
+                <label>LATITUDE · DEGREES<input id="power-latitude" name="latitude" class="entry-control" type="number" min="-90" max="90" step="any" value="37.365" required=""></label>
+                <label>LONGITUDE · DEGREES<input id="power-longitude" name="longitude" class="entry-control" type="number" min="-180" max="180" step="any" value="-120.425" required=""></label>
+                <label>START DATE<input id="power-start" name="start" class="entry-control" type="date" min="1981-01-01" required=""></label>
+                <label>END DATE<input id="power-end" name="end" class="entry-control" type="date" required=""></label>
                 <button id="power-load-button" class="primary-button" type="submit">LOAD NASA POWER DATA</button>
               </form>
               <p class="power-query-privacy">The selected coordinates and dates are sent directly from this browser to the public NASA POWER API. No AstroVital account or API key is used.</p>
               <div id="power-request-status" class="power-request-status" role="status" aria-live="polite">Choose a location and dates, then load the NASA POWER daily data.</div>
-              <div id="power-request-error" class="power-request-error" role="alert" hidden></div>
+              <div id="power-request-error" class="power-request-error" role="alert" hidden=""></div>
             </article>
-            <section id="power-results" hidden>
+            <section id="power-results" hidden="">
               <div class="power-results-meta">
                 <div><small>SELECTED COORDINATES</small><strong id="power-location">—</strong></div>
                 <div><small>REQUESTED DATE RANGE</small><strong id="power-range">—</strong></div>
@@ -409,10 +444,91 @@
                 <p><a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA Prediction Of Worldwide Energy Resources (POWER) ↗</a> · <a href="https://power.larc.nasa.gov/docs/services/api/temporal/daily/" target="_blank" rel="noopener noreferrer">Daily API documentation ↗</a></p>
               </article>
             </section>
-            <article class="panel power-roadmap-panel">
-              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> FOLLOWING DATA INTEGRATION PHASES</div><h2>More NASA and USGS sources</h2></div><span class="sim-tag">NOT YET CONNECTED</span></div>
-              <p>Satellite imagery (Worldview/GIBS), FIRMS fire detections, Earthdata and NASA dataset catalogs, Giovanni, AppEEARS, and USGS discovery are not part of this NASA POWER phase.</p>
-            </article>
+            <section class="source-explorer" aria-labelledby="source-explorer-title">
+              <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> NASA &amp; USGS · LIVE SOURCE EXPLORER</div><h2 id="source-explorer-title">More mission and Earth science data</h2></div><span class="sim-tag">RESEARCH CONTEXT · NOT PERSONAL HEALTH DATA</span></div>
+              <p class="source-explorer-intro">Explore satellite visualizations, Earth observation catalogs, water monitoring locations, and earthquake reports. These environmental and geoscience records describe places and research products; they do not measure an astronaut’s health.</p>
+              <article class="panel source-catalog-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> OFFICIAL DATA CATALOG</div><h3>NASA and USGS sources</h3></div><span class="sim-tag">PRIMARY SOURCES</span></div>
+                <div class="source-catalog-grid">
+                  <a href="https://worldview.earthdata.nasa.gov/" target="_blank" rel="noopener noreferrer"><strong>NASA Worldview / GIBS</strong><span>Satellite imagery and map visualizations</span></a>
+                  <a href="https://firms.modaps.eosdis.nasa.gov/" target="_blank" rel="noopener noreferrer"><strong>NASA FIRMS</strong><span>Satellite active-fire detections · MAP_KEY required for API</span></a>
+                  <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener noreferrer"><strong>NASA POWER</strong><span>Daily Earth-surface meteorology and solar data</span></a>
+                  <a href="https://visualization.osdr.nasa.gov/eda/" target="_blank" rel="noopener noreferrer"><strong>NASA EDA</strong><span>Historical ISS-associated telemetry and radiation</span></a>
+                  <a href="https://osdr.nasa.gov/bio/repo/" target="_blank" rel="noopener noreferrer"><strong>NASA OSDR</strong><span>Human spaceflight research datasets</span></a>
+                  <a href="https://api.waterdata.usgs.gov/ogcapi/v1/" target="_blank" rel="noopener noreferrer"><strong>USGS Water Data API</strong><span>Monitoring locations and reported measurements</span></a>
+                  <a href="https://earthquake.usgs.gov/earthquakes/feed/" target="_blank" rel="noopener noreferrer"><strong>USGS Earthquake Catalog</strong><span>Recent earthquake GeoJSON feeds</span></a>
+                  <a href="https://landsatlook.usgs.gov/stac-server/" target="_blank" rel="noopener noreferrer"><strong>USGS LandsatLook STAC</strong><span>Landsat Collection 2 imagery metadata and assets</span></a>
+                </div>
+              </article>
+              <div class="source-integration-grid">
+                <article class="panel source-module">
+                  <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> NASA GIBS · WORLDVIEW</div><h3>Satellite imagery</h3></div><span class="sim-tag">NASA VISUALIZATION</span></div>
+                  <form id="worldview-form" class="source-form">
+                    <label>IMAGE LAYER<select id="worldview-layer" class="entry-control"><option value="MODIS_Terra_CorrectedReflectance_TrueColor">Terra MODIS · True Color</option><option value="MODIS_Aqua_CorrectedReflectance_TrueColor">Aqua MODIS · True Color</option><option value="VIIRS_SNPP_CorrectedReflectance_TrueColor">Suomi NPP VIIRS · True Color</option></select></label>
+                    <label>IMAGE DATE<input id="worldview-date" class="entry-control" type="date" required></label>
+                    <button class="primary-button" type="submit">LOAD NASA IMAGERY</button>
+                  </form>
+                  <div id="worldview-status" class="source-status" role="status" aria-live="polite">Choose a layer and date to load NASA GIBS imagery.</div>
+                  <div id="worldview-error" class="source-error" role="alert" hidden></div>
+                  <div class="worldview-image-frame"><img id="worldview-image" alt="Historical NASA satellite image" hidden><span id="worldview-empty">NASA satellite imagery will appear here.</span></div>
+                  <p class="source-attribution">NASA Global Imagery Browse Services (GIBS), EPSG:4326 WMS. Imagery is a global visualization, not a local environmental sensor or health measure.</p>
+                </article>
+                <article class="panel source-module">
+                  <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> NASA FIRMS · ACTIVE FIRES</div><h3>Satellite fire detections</h3></div><span class="sim-tag">API KEY REQUIRED</span></div>
+                  <p>NASA FIRMS requires a personal MAP_KEY. Enter it for a one-time request; it is sent only to the official NASA endpoint and is not saved in AstroVital.</p>
+                  <form id="firms-form" class="source-form">
+                    <label>FIRMS MAP_KEY<input id="firms-map-key" class="entry-control" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your NASA FIRMS MAP_KEY" required></label>
+                    <label>SATELLITE FEED<select id="firms-source" class="entry-control"><option value="VIIRS_SNPP_NRT">Suomi NPP VIIRS · near real time</option><option value="VIIRS_NOAA20_NRT">NOAA-20 VIIRS · near real time</option><option value="MODIS_NRT">MODIS · near real time</option></select></label>
+                    <label>COUNTRY CODE<input id="firms-country" class="entry-control" value="USA" maxlength="3" pattern="[A-Za-z]{3}" required></label>
+                    <label>PAST DAYS<select id="firms-days" class="entry-control"><option value="1">1 day</option><option value="2">2 days</option><option value="3">3 days</option></select></label>
+                    <button class="primary-button" type="submit">LOAD FIRMS DETECTIONS</button>
+                  </form>
+                  <div id="firms-status" class="source-status" role="status" aria-live="polite">No fire data loaded. A valid NASA FIRMS MAP_KEY is required.</div>
+                  <div id="firms-error" class="source-error" role="alert" hidden></div>
+                  <div id="firms-results" class="source-results"></div>
+                  <p class="source-attribution">NASA Fire Information for Resource Management System (FIRMS). Active-fire detections are satellite observations, not a complete fire perimeter or health-risk assessment.</p>
+                </article>
+                <article class="panel source-module">
+                  <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> USGS · EARTHQUAKE CATALOG</div><h3>Recent earthquake events</h3></div><span class="sim-tag">PUBLIC GEOJSON FEED</span></div>
+                  <form id="earthquake-form" class="source-form">
+                    <label>TIME WINDOW<select id="earthquake-range" class="entry-control"><option value="hour">Past hour</option><option value="day" selected>Past day</option><option value="week">Past week</option></select></label>
+                    <label>MINIMUM MAGNITUDE<select id="earthquake-min-mag" class="entry-control"><option value="0">All reported</option><option value="2.5">2.5+</option><option value="4.5">4.5+</option></select></label>
+                    <button class="primary-button" type="submit">LOAD USGS EVENTS</button>
+                  </form>
+                  <div id="earthquake-status" class="source-status" role="status" aria-live="polite">Load the USGS GeoJSON feed to view recent events.</div>
+                  <div id="earthquake-error" class="source-error" role="alert" hidden></div>
+                  <div id="earthquake-results" class="source-results"></div>
+                  <p class="source-attribution">USGS Earthquake Hazards Program GeoJSON feed. Event magnitude, depth, time, and location are source-reported; follow official alerts and guidance.</p>
+                </article>
+                <article class="panel source-module">
+                  <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> USGS · WATER DATA</div><h3>Nearby monitoring locations</h3></div><span class="sim-tag">OGC API · LIVE SEARCH</span></div>
+                  <form id="usgs-water-form" class="source-form">
+                    <label>LATITUDE<input id="usgs-water-lat" class="entry-control" type="number" min="-90" max="90" step="any" value="37.365" required></label>
+                    <label>LONGITUDE<input id="usgs-water-lon" class="entry-control" type="number" min="-180" max="180" step="any" value="-120.425" required></label>
+                    <button class="primary-button" type="submit">FIND WATER SITES</button>
+                  </form>
+                  <div id="usgs-water-status" class="source-status" role="status" aria-live="polite">Search a location to find USGS monitoring sites.</div>
+                  <div id="usgs-water-error" class="source-error" role="alert" hidden></div>
+                  <div id="usgs-water-results" class="source-results"></div>
+                  <div id="usgs-water-measurements" class="source-results"></div>
+                  <p class="source-attribution">USGS Water Data OGC API v1. Site observations can be delayed, historical, or unavailable; each measurement is labeled with its exact time and units.</p>
+                </article>
+                <article class="panel source-module">
+                  <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> USGS · LANDSATLOOK STAC</div><h3>Landsat scene discovery</h3></div><span class="sim-tag">LANDSAT COLLECTION 2</span></div>
+                  <form id="landsat-form" class="source-form">
+                    <label>LATITUDE<input id="landsat-lat" class="entry-control" type="number" min="-90" max="90" step="any" value="37.365" required></label>
+                    <label>LONGITUDE<input id="landsat-lon" class="entry-control" type="number" min="-180" max="180" step="any" value="-120.425" required></label>
+                    <label>FROM<input id="landsat-start" class="entry-control" type="date" required></label>
+                    <label>TO<input id="landsat-end" class="entry-control" type="date" required></label>
+                    <button class="primary-button" type="submit">SEARCH LANDSAT SCENES</button>
+                  </form>
+                  <div id="landsat-status" class="source-status" role="status" aria-live="polite">Search the official USGS Landsat catalog for scenes.</div>
+                  <div id="landsat-error" class="source-error" role="alert" hidden></div>
+                  <div id="landsat-results" class="source-results"></div>
+                  <p class="source-attribution">USGS LandsatLook STAC API, Collection 2 Level-2 Surface Reflectance. If browser cross-origin access is blocked, the official parameterized STAC search link remains available.</p>
+                </article>
+              </div>
+            </section>
             <footer class="disclaimer"><span>✳</span> NASA POWER surface solar radiation is not personal space-radiation exposure. Environmental conditions do not measure astronaut health and must not be used to diagnose or infer a medical state.</footer>
           </section>
 
@@ -461,10 +577,13 @@
             <aside class="rufus-brief health-rufus"><img data-rufus-art="confident" src="./icons/rufus-confident.png" alt="Rufus standing confidently in his astronaut suit" loading="lazy" decoding="async"><div><span class="rufus-brief-label">PERSONAL BASELINE CHECK</span><strong>Your numbers are information, not a score.</strong><p>Notice patterns at your own pace. If a reading concerns you, talk with your flight surgeon.</p></div></aside>
             <div id="health-alerts"></div>
             <div class="health-detail-grid" id="health-metrics"></div>
+            <div id="health-symptom-history"></div>
             <article class="panel full-chart-panel"><div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> HEALTH TIMELINE</div><h2>Personal trends over time</h2></div><div class="range-tabs"><button class="range-tab active" data-range="7">7D</button><button class="range-tab" data-range="30">30D</button></div></div>            <div class="timeline-legend"><span><i class="legend-dot cyan"></i>SELF-REPORTED HEART RATE</span><span><i class="legend-dot blue"></i>SELF-REPORTED SLEEP (HRS)</span><span><i class="legend-line"></i>30-DAY PERSONAL BASELINE</span></div><div class="chart-wrap large-chart" id="health-chart"></div></article>
             <article class="panel baseline-link-panel"><div><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH BASELINE</div><h2>Follow your own trends over time.</h2><p>Establish a 30-day personal reference and compare check-ins with your own history, not population averages.</p></div><button class="primary-button" data-nav="baseline">OPEN PERSONAL BASELINE <span>→</span></button></article>
             <div class="health-note"><span>ⓘ</span><div><strong>About these indicators</strong><p>Exercise, sleep, symptoms, mood, and crew-connection entries are descriptive self-reports, not medical assessments. The radiation scenario is illustrative and does not represent personal exposure. Follow mission medical guidance for health concerns.</p></div></div>
             <footer class="disclaimer"><span>✳</span> AstroVital provides wellness tools, not medical diagnoses. Follow mission medical guidance.</footer>
+
+
           </section>
 
           <section class="view" id="view-insights">
@@ -533,7 +652,7 @@
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> COGNITIVE FITNESS · MIND LAB</div><h1>Keep your mind <span>mission sharp.</span></h1><p>Short, optional brain games offer a fun way to practice focus. They are not clinical cognitive assessments.</p></div>
             <div class="cognitive-stats"><div><span>THIS WEEK</span><strong id="cog-sessions">0 <small>sessions</small></strong></div><div><span>BEST REACTION</span><strong id="cog-best">— <small>ms</small></strong></div><div><span>FOCUS STREAK</span><strong>— <small>not recorded</small></strong></div><span class="sim-tag">GAME RESULTS · NOT AN ASSESSMENT</span></div>
             <aside class="rufus-brief mind-rufus"><img data-rufus-art="confident" src="./icons/rufus-confident.png" alt="Rufus encourages the crew in the Mind Lab" loading="lazy" decoding="async"><div><span class="rufus-brief-label">MIND LAB</span><strong>Curiosity is a great place to start.</strong><p>These are just-for-fun focus games. Take a break whenever you need one.</p></div></aside>
-            <div class="game-tabs" role="tablist"><button class="game-tab active" data-game="memory">01 &nbsp; MEMORY</button><button class="game-tab" data-game="reaction">02 &nbsp; REACTION</button><button class="game-tab" data-game="attention">03 &nbsp; ATTENTION</button></div>
+            <div class="game-tabs" role="tablist"><button class="game-tab active" data-game="memory">01 &nbsp; MEMORY SEQUENCE</button><button class="game-tab" data-game="reaction">02 &nbsp; REACTION</button><button class="game-tab" data-game="attention">03 &nbsp; TARGET SCAN</button><button class="game-tab" data-game="match">04 &nbsp; MEMORY MATCH</button></div>
             <article class="panel game-panel">
               <div class="game-copy"><div class="eyebrow"><span class="eyebrow-line"></span><span id="game-kicker">MEMORY SEQUENCE</span></div><h2 id="game-title">Sequence protocol</h2><p id="game-description">Watch the sequence, then repeat it in the same order. Each round adds one new step.</p><div class="game-meta"><span>◷ &nbsp;<strong id="game-duration">~1 MIN</strong></span><span>✦ &nbsp;+25 XP COMPLETE</span></div><button class="primary-button" id="game-start">START EXERCISE <span>→</span></button></div>
               <div class="game-stage" id="game-stage"><div class="game-idle"><div class="game-emblem">⌘</div><span>COGNITIVE TRAINING MODULE</span><small>SELECT START TO BEGIN</small></div></div>
@@ -570,6 +689,8 @@
     <script src="./i18n-catalog.js"></script>
     <script src="./i18n.js"></script>
     <script src="./nasa-power.js"></script>
+    <script src="./nasa-research.js"></script>
+    <script src="./nasa-usgs.js"></script>
     <script src="./feature-data.js"></script>
     <script src="./health-baseline.js"></script>
     <script src="./health-reports.js"></script>
