@@ -562,6 +562,44 @@ html[dir=rtl] #login-personnel-id{direction:ltr;text-align:left}
 .hydration-day>b{text-align:right;color:#b9c9d4;font:9px var(--mono);font-weight:400}
 @media(max-width:1100px){.hydration-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hydration-layout{grid-template-columns:1fr}}
 @media(max-width:430px){.hydration-summary-grid{grid-template-columns:1fr 1fr;gap:7px}.hydration-summary-card{padding:11px}.hydration-summary-card>strong{font-size:16px}.hydration-progress{padding:11px}.hydration-progress-label{align-items:flex-start;flex-direction:column;gap:5px}.hydration-progress-label strong{text-align:left}.hydration-log-form .entry-inline{grid-template-columns:minmax(0,1fr) 68px}.hydration-log-form .primary-button{grid-column:1/3;width:100%}.hydration-plan-actions{flex-wrap:wrap}.hydration-day{grid-template-columns:54px minmax(45px,1fr) 72px;gap:7px}.hydration-day>b{font-size:8px}.hydration-log-actions .secondary-button{padding:0 5px}}
+.medication-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:17px 0}
+.medication-summary-card{min-width:0;padding:13px;border:1px solid #20384e;border-radius:6px;background:linear-gradient(145deg,#10243a,#0c1929)}
+.medication-summary-card>span,.medication-summary-card>small{display:block;color:#869bad;font:8px var(--mono);letter-spacing:.65px}
+.medication-summary-card>strong{display:block;margin:9px 0 4px;color:#e4f2f7;font:500 16px var(--display);overflow-wrap:anywhere}
+.medication-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(240px,.7fr);gap:13px}
+.medication-schedule-panel,.medication-supply-panel{min-width:0}
+.medication-schedule-list,.medication-history-list{display:grid;gap:7px;margin-top:12px}
+.medication-schedule-row{display:grid;grid-template-columns:67px minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px;border:1px solid #1c3041;border-radius:5px;background:#0a1624}
+.medication-schedule-time{display:grid;gap:3px}
+.medication-schedule-time time{color:#9fcbd3;font:10px var(--mono)}
+.medication-schedule-time small,.medication-schedule-copy small{color:#8195a5;font-size:8px}
+.medication-schedule-copy{display:grid;gap:4px;min-width:0}
+.medication-schedule-copy strong{color:#d6e4ec;font-size:10px;font-weight:500;overflow-wrap:anywhere}
+.medication-status{width:max-content;padding:3px 6px;border:1px solid #28644f;border-radius:3px;color:#8ce0bb;background:#10271f;font:7px var(--mono);letter-spacing:.45px}
+.medication-status.pending{border-color:#374655;color:#9eafbc;background:#101b25}
+.medication-status.skipped{border-color:#665338;color:#e8c486;background:#241d12}
+.medication-actions{display:flex;gap:5px}
+.medication-actions .secondary-button{height:27px;padding:0 7px;font:7px var(--mono)}
+.medication-actions .selected{border-color:#4bc7be;color:#b9f4e8;background:#12332f}
+.medication-limitation{margin:11px 0 0;color:#8195a5;font-size:9px;line-height:1.55}
+.medication-detail-row{display:grid;gap:4px;padding:10px 0;border-bottom:1px solid #1e3041}
+.medication-detail-row span{color:#8298aa;font:8px var(--mono);letter-spacing:.65px}
+.medication-detail-row strong{color:#d6e4ec;font-size:10px;font-weight:500}
+.medication-history-panel{margin-top:13px}
+.medication-history-row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:start;gap:9px;padding:8px 9px;border:1px solid #1c3041;border-radius:4px;background:#0a1624}
+.medication-history-mark{display:grid;place-items:center;width:20px;height:20px;border:1px solid #28644f;border-radius:50%;color:#8ce0bb;font-size:11px}
+.medication-history-mark.skipped{border-color:#665338;color:#e8c486}
+.medication-history-row>div{display:grid;gap:4px;min-width:0}
+.medication-history-row strong{color:#d6e4ec;font-size:9px;font-weight:500}
+.medication-history-row small{color:#8195a5;font:8px var(--mono)}
+.medication-history-row p{margin:1px 0 0;color:#9aabb7;font-size:9px;overflow-wrap:anywhere}
+.medication-empty{padding:11px;color:#8296a7;font-size:9px}
+.medication-note-label{display:grid;gap:6px;margin:14px 0;color:#91a6b4;font:8px var(--mono);letter-spacing:.65px}
+.medication-note-label textarea{width:100%;resize:vertical;border:1px solid #2d4050;border-radius:4px;background:#0a121c;color:#e1ebef;padding:9px;font:11px/1.5 var(--sans)}
+.medication-note-label textarea:focus-visible{outline:2px solid #5dd8e8;outline-offset:2px;border-color:#5dd8e8}
+@media(max-width:1100px){.medication-layout{grid-template-columns:1fr}}
+@media(max-width:760px){.medication-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.medication-summary-grid{gap:7px}.medication-summary-card{padding:10px}.medication-summary-card>strong{font-size:14px}.medication-schedule-row{grid-template-columns:55px minmax(0,1fr);gap:8px}.medication-actions{grid-column:1/3;justify-content:flex-end}.medication-actions .secondary-button{flex:1;max-width:110px}.medication-history-row{grid-template-columns:22px minmax(0,1fr)}.medication-history-row>.sim-tag{grid-column:2;justify-self:start}}
 .power-query-panel{margin-bottom:13px}
 .power-query-form{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr)) auto;align-items:end;gap:10px}
 .power-query-form label,.power-chart-select{display:grid;gap:7px;color:#91a5b4;font:8px var(--mono);letter-spacing:.65px}

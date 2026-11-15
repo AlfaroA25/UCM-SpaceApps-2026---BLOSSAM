@@ -3,6 +3,15 @@
   const LEGACY_PROFILE_CLAIMED_KEY = `${STORAGE_KEY}:legacy-claimed`;
   const today = new Date().toISOString().slice(0, 10);
   const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  const demoMedication = {
+    name: 'Fictional sample A',
+    schedule: [
+      { id: 'sample-morning', time: '08:00' },
+      { id: 'sample-evening', time: '20:00' }
+    ],
+    supply: '12 sample packs',
+    expiry: '2030-06'
+  };
   const missions = [
     { id: 'checkin', title: 'Complete your health check-in', description: 'Log how you slept and how you are feeling.', icon: '⌁', reward: 30, action: 'checkin' },
     { id: 'move', title: 'Move your body', description: 'Log approved exercise or mobility; resistance minutes are tracked separately.', icon: '↗', reward: 50, action: 'activity' },
@@ -22,7 +31,6 @@
     'comms-pack': { name: 'Comms pack', description: 'A flight-ready communications pack.', src: './icons/rufus-layer-pack.svg', cost: 60 }
   };  const futurePages = {
     meals: { title: 'Meals and nutrition', phase: 'PHASE 3', detail: 'Meal schedules and meal logs are planned for Phase 3. RUFUS will not invent nutrition information.' },
-    medications: { title: 'Medication manager', phase: 'PHASE 3', detail: 'Medication schedules and dose-history tracking are planned for Phase 3. This build does not provide dosing guidance.' },
     activity: { title: 'Physical activity', phase: 'PHASE 5', detail: 'This prototype can log mission-approved activity through Daily Missions. A dedicated schedule and activity-history view are planned for Phase 5.' },
     mental: { title: 'Mental wellness', phase: 'PHASE 5', detail: 'The current wellbeing log supports private, local check-ins. Expanded stress, sleep-quality, and wellness-history tools are planned for Phase 5.' },
     sleep: { title: 'Sleep tracking', phase: 'PHASE 5', detail: 'Sleep duration can be entered in the simulated health check-in. Dedicated sleep schedules, quality check-ins, and trends are planned for Phase 5.' },
@@ -35,7 +43,7 @@
     profile: { name: 'Astronaut', personnelId: '', role: 'Crew Member', missionId: '', language: 'en', timezone: localTimeZone, notifications: false, hydrationGoal: '', hydrationUnit: 'mL', reminderStart: '', reminderEnd: '', reminderCount: '', hydrationScheduleConfirmed: false, interests: [], onboarded: false, heartMin: 58, heartMax: 72, sleepMin: 7.5, sleepMax: 9, radiationReviewAt: 50 },
     rufus: { pose: 'wave', inventory: ['orbit-satellite'], accessories: ['orbit-satellite'], stardust: 0, bondXp: 0, petDate: today, petCount: 0, petStreak: 0, lastPetDate: '' },
     metrics: { heart: 64, sleep: 7.4, exercise: 42, resistanceExercise: 24, fatigue: 3, mood: 'Good', connection: 'Connected', immuneSymptoms: 'None', cognition: 92, radiation: 38 },
-    companion: { state: 'hello' }, hydrationLogs: [], xp: 2480, streak: 6, lastCheckin: 'TODAY, 07:42', checkinDate: today, lastCheckinDate: today,
+    companion: { state: 'hello' }, hydrationLogs: [], medicationLog: [], xp: 2480, streak: 6, lastCheckin: 'TODAY, 07:42', checkinDate: today, lastCheckinDate: today,
     checkinHistory: [], completed: [], completedDate: today, achievements: [], cognitiveSessions: 3, bestReaction: 284,
     heartHistory: [68, 66, 67, 65, 66, 64, 64], sleepHistory: [6.8, 7.1, 7.6, 6.9, 7.8, 7.2, 7.4]
   };  const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -96,6 +104,16 @@
         },
         metrics: { ...seed.metrics, ...parsed.metrics }, companion: { ...seed.companion, ...parsed.companion },
         hydrationLogs: Array.isArray(parsed.hydrationLogs) ? parsed.hydrationLogs : [],
+        medicationLog: Array.isArray(parsed.medicationLog)
+          ? parsed.medicationLog.filter((entry) => entry && typeof entry === 'object'
+            && typeof entry.id === 'string'
+            && demoMedication.schedule.some((item) => item.id === entry.scheduleId)
+            && typeof entry.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(entry.date)
+            && ['taken', 'skipped'].includes(entry.status)
+            && typeof entry.recordedAt === 'string')
+            .map((entry) => ({ ...entry, note: typeof entry.note === 'string' ? entry.note.slice(0, 200) : '' }))
+            .slice(0, 100)
+          : clone(seed.medicationLog),
         completed: Array.isArray(parsed.completed) ? parsed.completed : [], achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
         checkinHistory: Array.isArray(parsed.checkinHistory) ? parsed.checkinHistory : [],
         heartHistory: Array.isArray(parsed.heartHistory) ? parsed.heartHistory : clone(seed.heartHistory),
@@ -215,6 +233,7 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (view === 'health') renderHealth();
     if (view === 'hydration') renderHydration(true);
+    if (view === 'medications') renderMedicationManager();
     if (view === 'missions') renderMissions();
     if (view === 'journal') renderJournalHistory();
     if (view === 'settings') renderSettings();
@@ -783,6 +802,7 @@
     $('#last-checkin').textContent = state.checkinDate === today ? state.lastCheckin : 'NOT LOGGED TODAY';
     $('#alert-count').textContent = formatNumber(currentAlerts().length);
     renderRufus();
+    renderMedicationOverview();
     renderMissionList($('#overview-mission-list'), true);
     $$('.range-select').forEach((button) => { button.textContent = `${activeRange} DAYS⌄`; });
     renderHeartChart($('#heart-chart'), activeRange, false);
@@ -1394,6 +1414,75 @@
     target.innerHTML = state.checkinHistory.slice(0, 5).map((entry) => `<article class="journal-entry"><span>${entry.mood === 'Great' ? '✦' : entry.mood === 'Good' ? '☀' : entry.mood === 'Okay' ? '◒' : '☁'}</span><div><strong>${escapeHtml(entry.mood)} · Fatigue ${escapeHtml(entry.fatigue)}/10</strong><small>${escapeHtml(formatAppDate(entry.date))} · ${escapeHtml(entry.time)}</small>${entry.note ? `<p data-user-content>${escapeHtml(entry.note)}</p>` : ''}</div></article>`).join('');
   }
 
+  function renderMedicationOverview() {
+    const count = state.medicationLog.filter((entry) => entry.date === today).length;
+    $('#medication-overview-count').textContent = `${count} / ${demoMedication.schedule.length}`;
+    $('#medication-overview-status').textContent = count ? 'DEMO LOG UPDATED' : 'DEMO SCHEDULE';
+  }
+
+  function renderMedicationManager() {
+    const scheduleRoot = $('#medication-schedule-list');
+    if (!scheduleRoot) return;
+    const todayEntries = state.medicationLog.filter((entry) => entry.date === today);
+    $('#medication-today-count').textContent = `${todayEntries.length} / ${demoMedication.schedule.length}`;
+    $('#medication-supply-value').textContent = demoMedication.supply;
+    $('#medication-expiry-value').textContent = `${demoMedication.expiry} · demo`;
+
+    scheduleRoot.innerHTML = demoMedication.schedule.map((item, index) => {
+      const entry = todayEntries.find((record) => record.scheduleId === item.id);
+      const status = entry ? entry.status : 'pending';
+      const statusLabel = status === 'taken' ? 'TAKEN' : status === 'skipped' ? 'SKIPPED' : 'NOT LOGGED';
+      return `<article class="medication-schedule-row">
+        <div class="medication-schedule-time"><time>${item.time}</time><small>${index === 0 ? 'Morning' : 'Evening'}</small></div>
+        <div class="medication-schedule-copy"><strong>${escapeHtml(demoMedication.name)}</strong><small>Fictional · no dose specified</small><span class="medication-status ${status}">${statusLabel}</span></div>
+        <div class="medication-actions"><button class="secondary-button ${status === 'taken' ? 'selected' : ''}" type="button" data-medication-status="taken" data-medication-slot="${item.id}" aria-pressed="${status === 'taken'}">TAKEN</button><button class="secondary-button ${status === 'skipped' ? 'selected' : ''}" type="button" data-medication-status="skipped" data-medication-slot="${item.id}" aria-pressed="${status === 'skipped'}">SKIP</button></div>
+      </article>`;
+    }).join('');
+
+    const history = state.medicationLog.slice().sort((first, second) => second.recordedAt.localeCompare(first.recordedAt)).slice(0, 6);
+    $('#medication-history-list').innerHTML = history.length ? history.map((entry) => {
+      const slot = demoMedication.schedule.find((item) => item.id === entry.scheduleId);
+      const time = new Date(entry.recordedAt).toLocaleTimeString(localeTag(), { hour: '2-digit', minute: '2-digit' });
+      return `<article class="medication-history-row"><span class="medication-history-mark ${entry.status}">${entry.status === 'taken' ? '✓' : '–'}</span><div><strong>${entry.status === 'taken' ? 'Taken' : 'Skipped'} · ${slot ? slot.time : ''}</strong><small>${escapeHtml(formatAppDate(entry.date))} · ${escapeHtml(time)}</small>${entry.note ? `<p>${escapeHtml(entry.note)}</p>` : ''}</div><span class="sim-tag">DEMO</span></article>`;
+    }).join('') : '<p class="medication-empty">No demo entries yet.</p>';
+  }
+
+  function openMedicationLogModal(scheduleId, status) {
+    const item = demoMedication.schedule.find((slot) => slot.id === scheduleId);
+    if (!item || !['taken', 'skipped'].includes(status)) return;
+    const label = status === 'taken' ? 'taken' : 'skipped';
+    openModal(`<div class="eyebrow"><span class="eyebrow-line"></span> DEMO ENTRY</div>
+      <h2 id="modal-title">Mark ${label}?</h2>
+      <p>Fictional entry · saved on this device only.</p>
+      <form id="medication-log-form">
+        <input type="hidden" name="scheduleId" value="${item.id}">
+        <input type="hidden" name="status" value="${status}">
+        <label class="medication-note-label">NOTE · OPTIONAL<textarea name="note" maxlength="200" rows="3" placeholder="Add a note"></textarea></label>
+        <div class="modal-actions"><button type="button" class="secondary-button" data-action="close-modal">CANCEL</button><button type="submit" class="primary-button">SAVE ENTRY</button></div>
+      </form>`);
+  }
+
+  function recordMedicationStatus(scheduleId, status, note) {
+    const item = demoMedication.schedule.find((slot) => slot.id === scheduleId);
+    if (!item || !['taken', 'skipped'].includes(status)) return;
+    const now = new Date();
+    const existingIndex = state.medicationLog.findIndex((entry) => entry.date === today && entry.scheduleId === scheduleId);
+    const entry = {
+      id: existingIndex >= 0 ? state.medicationLog[existingIndex].id : `demo-${Date.now()}`,
+      scheduleId,
+      date: today,
+      status,
+      recordedAt: now.toISOString(),
+      note: String(note || '').trim().slice(0, 200)
+    };
+    if (existingIndex >= 0) state.medicationLog[existingIndex] = entry;
+    else state.medicationLog.unshift(entry);
+    persist();
+    renderMedicationManager();
+    renderMedicationOverview();
+    showToast('Demo entry saved');
+  }
+
   const mobileNavToggle = $('#mobile-nav-toggle');
   const mobileNavBackdrop = $('#mobile-nav-backdrop');
   const navSidebar = $('#nav-sidebar');
@@ -1435,6 +1524,11 @@
       return;
     }
     const action = event.target.closest('[data-action]')?.dataset.action;
+    const medicationStatusButton = event.target.closest('[data-medication-status]');
+    if (medicationStatusButton) {
+      openMedicationLogModal(medicationStatusButton.dataset.medicationSlot, medicationStatusButton.dataset.medicationStatus);
+      return;
+    }
     if (action === 'sign-out') {
       closeModal();
       $('#login-form').reset();
@@ -1588,6 +1682,13 @@
   });
 
   document.addEventListener('submit', (event) => {
+    if (event.target.id === 'medication-log-form') {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      recordMedicationStatus(String(form.get('scheduleId')), String(form.get('status')), String(form.get('note') || ''));
+      closeModal();
+      return;
+    }
     if (event.target.id === 'login-form') {
       event.preventDefault();
       const form = new FormData(event.target);
@@ -1818,6 +1919,7 @@
     renderHealth();
     renderMissions();
     renderJournalHistory();
+    renderMedicationManager();
     renderHydration();
     renderSettings();
     if (nasaPowerData) renderPowerResults(nasaPowerData);
