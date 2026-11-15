@@ -67,18 +67,18 @@
           <button class="nav-link active" data-nav="overview" title="Home dashboard"><span class="nav-icon">◈</span> Home dashboard</button>
           <button class="nav-link" data-nav="companion" title="Rufus companion"><span class="nav-icon">✦</span> Rufus companion</button>
           <button class="nav-link" data-nav="health" title="Health monitoring"><span class="nav-icon">⌁</span> Health monitoring</button>
+          <button class="nav-link" data-nav="baseline" title="Personal baseline"><span class="nav-icon">◷</span> Personal baseline</button>
           <button class="nav-link" data-nav="environment" title="NASA Environmental Data"><span class="nav-icon">◌</span> NASA Environmental Data</button>
           <button class="nav-link" data-nav="hydration" title="Hydration tracker"><span class="nav-icon">◉</span> Hydration tracker</button>
           <button class="nav-link" data-nav="meals" title="Meals and nutrition"><span class="nav-icon">◒</span> Meals and nutrition</button>
           <button class="nav-link" data-nav="medications" title="Medication manager"><span class="nav-icon">＋</span> Medication manager</button>
           <button class="nav-link" data-nav="activity" title="Physical activity"><span class="nav-icon">↗</span> Physical activity</button>
-          <button class="nav-link" data-nav="mental" title="Mental wellness"><span class="nav-icon">☼</span> Mental wellness</button>
+          <button class="nav-link" data-nav="wellbeing" title="Wellbeing"><span class="nav-icon">☼</span> Wellbeing</button>
           <button class="nav-link" data-nav="sleep" title="Sleep tracking"><span class="nav-icon">☾</span> Sleep tracking</button>
           <button class="nav-link" data-nav="reports" title="Health reports"><span class="nav-icon">▤</span> Health reports</button>
           <button class="nav-link" data-nav="alerts" title="Alerts and notifications"><span class="nav-icon">♧</span> Alerts</button>
           <button class="nav-link" data-nav="missions" title="Daily missions"><span class="nav-icon">◎</span> Daily missions</button>
           <button class="nav-link" data-nav="cognitive" title="Mind lab"><span class="nav-icon">⌘</span> Mind lab</button>
-          <button class="nav-link" data-nav="journal" title="Wellbeing log"><span class="nav-icon">▧</span> Wellbeing log</button>
           <button class="nav-link" data-nav="settings" title="Settings"><span class="nav-icon">⚙</span> Settings</button>
         </nav>
         <div class="sidebar-bottom">
@@ -129,7 +129,7 @@
 
             <article class="rufus-companion" aria-live="polite">
               <div class="rufus-portrait-wrap"><img class="rufus-portrait" id="rufus-portrait" data-rufus-art="wave" data-rufus-live src="./icons/rufus-wave.png" alt="Rufus in his astronaut suit"></div>
-              <div class="rufus-message"><div class="eyebrow"><span class="eyebrow-line"></span> RUFUS · YOUR COMPANION</div><span class="rufus-state" id="rufus-state">READY TO EXPLORE</span><h2 id="rufus-title">Hi, astronaut!</h2><p id="rufus-message">I’m here to help you keep track of your wellbeing. Want to start with a quick check-in?</p><div class="rufus-actions"><button class="primary-button" id="rufus-action" data-action="checkin">LOG A CHECK-IN <span>→</span></button><button class="text-button" data-nav="journal">OPEN WELLBEING LOG <span>↗</span></button></div></div>
+              <div class="rufus-message"><div class="eyebrow"><span class="eyebrow-line"></span> ASTROVITAL · YOUR COMPANION</div><span class="rufus-state" id="rufus-state">READY TO EXPLORE</span><h2 id="rufus-title">Hi, astronaut!</h2><p id="rufus-message">I’m here to help you keep track of your wellbeing. Want to start with a quick check-in?</p><div class="rufus-actions"><button class="primary-button" id="rufus-action" data-action="checkin">LOG A CHECK-IN <span>→</span></button><button class="text-button" data-nav="wellbeing">OPEN WELLBEING <span>↗</span></button></div></div>
               <div class="rufus-orbit" aria-hidden="true"></div>
             </article>
 
@@ -163,7 +163,7 @@
               <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon pressure-icon">↕</span><span class="metric-trend muted">NOT CONNECTED</span></div><div class="metric-name">BLOOD PRESSURE</div><div class="metric-reading"><strong>—</strong><span>no sensor</span></div><div class="metric-baseline">SOURCE <strong>NOT AVAILABLE</strong></div></article>
               <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon temperature-icon">⌁</span><span class="metric-trend muted">NOT CONNECTED</span></div><div class="metric-name">BODY TEMPERATURE</div><div class="metric-reading"><strong>—</strong><span>no sensor</span></div><div class="metric-baseline">SOURCE <strong>NOT AVAILABLE</strong></div></article>
               <article class="metric-card"><div class="metric-top"><span class="metric-icon hydration-icon">◍</span><span class="metric-trend muted" id="hydration-status">NO TARGET</span></div><div class="metric-name">HYDRATION GOAL</div><div class="metric-reading"><strong id="metric-hydration">0 mL</strong><span id="hydration-unit">logged today</span></div><div class="metric-baseline">INTAKE TRACKING <strong>AVAILABLE · LOCAL</strong></div></article>
-              <article class="metric-card unavailable-card"><div class="metric-top"><span class="metric-icon meal-icon">◒</span><span class="metric-trend muted">NOT SET</span></div><div class="metric-name">NEXT MEAL</div><div class="metric-reading"><strong>—</strong><span>no schedule</span></div><div class="metric-baseline">MEAL REMINDERS <strong>PLANNED · PHASE 3</strong></div></article>
+              <article class="metric-card"><div class="metric-top"><span class="metric-icon meal-icon">◒</span><span class="metric-trend muted">LOCAL LOG</span></div><div class="metric-name">MEALS</div><div class="metric-reading"><strong>—</strong><span>check meal schedule</span></div><div class="metric-baseline">MEAL TRACKING <strong>AVAILABLE · LOCAL</strong></div></article>
               <article class="metric-card"><div class="metric-top"><span class="metric-icon medication-icon">＋</span><span class="metric-trend muted" id="medication-overview-status">DEMO SCHEDULE</span></div><div class="metric-name">MEDICATION DEMO</div><div class="metric-reading"><strong id="medication-overview-count">0 / 2</strong><span>logged today</span></div><div class="metric-baseline">SAMPLE DATA <strong>LOCAL ONLY</strong></div></article>
             </div>
 
@@ -180,18 +180,18 @@
                 <button class="all-missions" data-nav="missions">VIEW ALL OBJECTIVES <span>→</span></button>
               </article>
             </div>
-            <footer class="disclaimer"><span>✳</span> RUFUS is a wellness companion, not a medical diagnostic system. Follow your mission medical team's guidance.</footer>
+            <footer class="disclaimer"><span>✳</span> ASTROVITAL is a wellness companion, not a medical diagnostic system. Follow your mission medical team's guidance.</footer>
           </section>
 
           <section class="view" id="view-alerts">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH MONITOR</div><h1>Review your <span>alerts.</span></h1><p>These are prompts to review self-reported or illustrative readings, not diagnoses or emergency monitoring.</p></div>
             <div id="alerts-page-content"></div>
-            <div class="health-note"><span>ⓘ</span><div><strong>Need medical guidance?</strong><p>Follow your mission medical protocols and contact your crew medical officer. RUFUS does not replace medical care.</p></div></div>
+            <div class="health-note"><span>ⓘ</span><div><strong>Need medical guidance?</strong><p>Follow your mission medical protocols and contact your crew medical officer. ASTROVITAL does not replace medical care.</p></div></div>
           </section>
 
           <section class="view" id="view-hydration">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HYDRATION TRACKER</div><h1>Your plan, <span>your pace.</span></h1><p>Set a target from your approved mission plan, preview a schedule, and log what you actually drink. Nothing is auto-recorded.</p></div>
-            <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>YOUR PLAN</strong> &nbsp;RUFUS does not prescribe a water goal. Use the goal and timing approved for you; never drink extra to catch up.</span></div>
+            <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>YOUR PLAN</strong> &nbsp;ASTROVITAL does not prescribe a water goal. Use the goal and timing approved for you; never drink extra to catch up.</span></div>
             <div class="hydration-summary-grid">
               <article class="hydration-summary-card"><span>DAILY TARGET</span><strong id="hydration-goal-summary">Not set</strong><small>From your saved plan</small></article>
               <article class="hydration-summary-card"><span>LOGGED TODAY</span><strong id="hydration-consumed-summary">0 mL</strong><small>Manual entries only</small></article>
@@ -234,7 +234,7 @@
               <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> LOCAL HISTORY</div><h2>Last seven days</h2></div><span class="sim-tag">USER-RECORDED INTAKE</span></div>
               <div id="hydration-week-history" class="hydration-week-history"></div>
             </article>
-            <footer class="disclaimer"><span>✳</span> RUFUS records what you enter. It does not set medical hydration targets or recommend drinking beyond your configured goal.</footer>
+            <footer class="disclaimer"><span>✳</span> ASTROVITAL records what you enter. It does not set medical hydration targets or recommend drinking beyond your configured goal.</footer>
           </section>
 
           <section class="view" id="view-medications">
@@ -266,6 +266,110 @@
             <footer class="disclaimer"><span>✳</span> Sample log only. Not a prescription or reliable reminder.</footer>
           </section>
 
+          <section class="view" id="view-activity">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PHYSICAL ACTIVITY · LOCAL LOG</div><h1>Activity, <span>your mission.</span></h1><p>Schedule and record activities from your mission-approved plan. AstroVital does not prescribe workouts or intensity.</p></div>
+            <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>FOLLOW YOUR APPROVED PLAN</strong> &nbsp;Use the activity schedule provided by your crew or medical team. Activity logs are self-reported.</span></div>
+            <div class="feature-summary-grid">
+              <article class="feature-summary-card"><span>COMPLETED · SELECTED RANGE</span><strong id="activity-completed-count">0</strong><small>sessions</small></article>
+              <article class="feature-summary-card"><span>LOGGED TIME · SELECTED RANGE</span><strong id="activity-total-minutes">0 min</strong><small>completed activities only</small></article>
+              <article class="feature-summary-card"><span>SCHEDULED</span><strong id="activity-scheduled-count">0</strong><small>upcoming or planned entries</small></article>
+            </div>
+            <div class="feature-grid">
+              <article class="panel feature-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> APPROVED ACTIVITY</div><h2>Schedule or log a session</h2></div></div>
+                <form id="activity-entry-form" class="feature-form">
+                  <label>ACTIVITY<input name="name" maxlength="80" placeholder="e.g. Crew-approved mobility" required></label>
+                  <label>CATEGORY<select name="category"><option>Aerobic</option><option>Resistance</option><option>Mobility</option><option>Other approved activity</option></select></label>
+                  <label>DATE<input name="date" type="date" required></label>
+                  <label>STATUS<select name="status"><option value="scheduled">Scheduled</option><option value="completed">Completed</option><option value="skipped">Skipped</option></select></label>
+                  <label>PLANNED DURATION · MINUTES<input name="plannedMinutes" type="number" min="1" max="600" placeholder="Optional"></label>
+                  <label>ACTUAL DURATION · MINUTES<input name="actualMinutes" type="number" min="1" max="600" placeholder="Required when completed"></label>
+                  <label class="feature-full-width">NOTE · OPTIONAL<textarea name="note" rows="2" maxlength="300" placeholder="Optional detail from your approved plan"></textarea></label>
+                  <div class="feature-full-width form-footer"><span>STORED IN THIS LOCAL PROFILE</span><button class="primary-button" type="submit">SAVE ACTIVITY</button></div>
+                </form>
+                <div class="form-feedback" id="activity-feedback" aria-live="polite"></div>
+              </article>
+              <aside class="panel feature-panel feature-guidance"><div class="eyebrow"><span class="eyebrow-line"></span> DAILY MISSION</div><h2>Move your body</h2><p>Completed sessions can count toward today’s Move your body mission. A mission reward is granted at most once per day.</p><button class="secondary-button" data-nav="missions">VIEW DAILY MISSIONS</button><div class="privacy-card"><span>ⓘ</span><div><strong>Mission-approved only</strong><p>Rest and recovery count too. Contact your crew medical officer with questions about your plan.</p></div></div></aside>
+            </div>
+            <article class="panel feature-history-panel">
+              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> LOCAL ACTIVITY HISTORY</div><h2>Recent sessions and schedule</h2></div><div class="range-tabs" aria-label="Activity history range"><button class="range-tab" data-activity-range="7">7D</button><button class="range-tab active" data-activity-range="30">30D</button><button class="range-tab" data-activity-range="90">90D</button></div></div>
+              <div id="activity-history-list" class="feature-list" aria-live="polite"></div>
+            </article>
+            <footer class="disclaimer"><span>✳</span> AstroVital records activity you enter. It does not create or approve an exercise plan.</footer>
+          </section>
+
+          <section class="view" id="view-sleep">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> SLEEP TRACKING · LOCAL RECORDS</div><h1>Rest, <span>on your schedule.</span></h1><p>Record mission-approved sleep opportunities, actual sleep periods, and how rested you feel. Split periods and naps are supported.</p></div>
+            <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>YOUR APPROVED SCHEDULE</strong> &nbsp;Sleep timing is entered by you from your mission plan. AstroVital does not prescribe a sleep schedule or infer sleep stages.</span></div>
+            <div class="feature-summary-grid">
+              <article class="feature-summary-card"><span>AVERAGE DURATION · SELECTED RANGE</span><strong id="sleep-average-duration">—</strong><small>hours per logged day</small></article>
+              <article class="feature-summary-card"><span>AVERAGE QUALITY · SELF-REPORTED</span><strong id="sleep-average-quality">—</strong><small>out of 5</small></article>
+              <article class="feature-summary-card"><span>LOGGED DAYS</span><strong id="sleep-logged-days">0</strong><small>within selected range</small></article>
+            </div>
+            <div class="feature-grid">
+              <article class="panel feature-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> MISSION-APPROVED</div><h2>Add a sleep opportunity</h2></div></div>
+                <form id="sleep-schedule-form" class="feature-form">
+                  <label>LABEL<input name="label" maxlength="80" placeholder="e.g. Primary sleep"></label>
+                  <label>DATE<input name="date" type="date" required></label>
+                  <label>START TIME<input name="startTime" type="time" required></label>
+                  <label>END TIME<input name="endTime" type="time" required></label>
+                  <div class="feature-full-width form-footer"><span>IN-APP SCHEDULE ONLY · NO NOTIFICATIONS</span><button class="primary-button" type="submit">SAVE OPPORTUNITY</button></div>
+                </form>
+                <div id="sleep-schedule-list" class="feature-list feature-compact-list"></div>
+              </article>
+              <article class="panel feature-panel">
+                <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> SELF-REPORTED</div><h2>Log a sleep period</h2></div></div>
+                <form id="sleep-entry-form" class="feature-form">
+                  <label>START DATE<input name="date" type="date" required></label>
+                  <label>START TIME<input name="startTime" type="time" required></label>
+                  <label>END TIME<input name="endTime" type="time" required></label>
+                  <label>QUALITY · OPTIONAL<select name="quality"><option value="">Not recorded</option><option value="1">1 · Very poor</option><option value="2">2 · Poor</option><option value="3">3 · Okay</option><option value="4">4 · Good</option><option value="5">5 · Very good</option></select></label>
+                  <label>HOW RESTED? · OPTIONAL<select name="restedness"><option value="">Not recorded</option><option value="1">1 · Not rested</option><option value="2">2</option><option value="3">3 · Somewhat</option><option value="4">4</option><option value="5">5 · Well rested</option></select></label>
+                  <label>INTERRUPTIONS · OPTIONAL<input name="interruptions" type="number" min="0" max="30" step="1" placeholder="Number of awakenings"></label>
+                  <div class="feature-full-width form-footer"><span>OVERNIGHT PERIODS COUNT ON THEIR START DATE</span><button class="primary-button" type="submit">SAVE SLEEP LOG</button></div>
+                </form>
+                <div id="sleep-feedback" class="form-feedback" aria-live="polite"></div>
+              </article>
+            </div>
+            <article class="panel feature-history-panel">
+              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL SLEEP HISTORY</div><h2>Duration and quality trends</h2></div><div class="range-tabs" aria-label="Sleep history range"><button class="range-tab" data-sleep-range="7">7D</button><button class="range-tab active" data-sleep-range="30">30D</button><button class="range-tab" data-sleep-range="90">90D</button></div></div>
+              <div id="sleep-trend-list" class="feature-trend-list"></div>
+              <div id="sleep-history-list" class="feature-list"></div>
+            </article>
+            <div class="health-note"><span>ⓘ</span><div><strong>Health check-in connection</strong><p>Sleep duration entered in the simulated health check-in is included when no separate sleep periods are logged for that date. Once you log periods, their combined duration is used instead of counting the same sleep twice.</p></div></div>
+            <footer class="disclaimer"><span>✳</span> Sleep entries and trends are self-reported and descriptive. They are not a sleep assessment or medical advice.</footer>
+          </section>
+
+          <section class="view" id="view-meals">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> MEALS &amp; NUTRITION · LOCAL LOG</div><h1>Meals, <span>as planned.</span></h1><p>Record meals and schedules from your approved mission menu. AstroVital does not invent nutrition information.</p></div>
+            <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>APPROVED MENU ONLY</strong> &nbsp;Use meal information from your crew-approved plan. Nutrition details appear only when you enter them with a source.</span></div>
+            <div class="feature-summary-grid">
+              <article class="feature-summary-card"><span>SCHEDULED · SELECTED RANGE</span><strong id="meal-scheduled-count">0</strong><small>planned meals</small></article>
+              <article class="feature-summary-card"><span>LOGGED · SELECTED RANGE</span><strong id="meal-logged-count">0</strong><small>eaten, partial, or skipped</small></article>
+              <article class="feature-summary-card"><span>COMPLETED TODAY</span><strong id="meal-today-count">0</strong><small>self-reported entries</small></article>
+            </div>
+            <article class="panel feature-panel">
+              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> MEAL SCHEDULE &amp; LOG</div><h2>Add or record a meal</h2></div></div>
+              <form id="meal-entry-form" class="feature-form">
+                <label>MEAL OR MENU ITEM<input name="name" maxlength="100" placeholder="Name from your approved meal plan" required></label>
+                <label>DATE<input name="date" type="date" required></label>
+                <label>TIME<input name="time" type="time" required></label>
+                <label>STATUS<select name="status"><option value="scheduled">Scheduled</option><option value="eaten">Eaten</option><option value="partial">Partially eaten</option><option value="skipped">Skipped</option></select></label>
+                <label class="feature-full-width">NOTE · OPTIONAL<textarea name="note" rows="2" maxlength="300" placeholder="Optional note from your meal log"></textarea></label>
+                <label class="feature-full-width">NUTRITION INFORMATION · OPTIONAL<textarea name="nutritionInfo" rows="2" maxlength="500" placeholder="Enter only information provided by the approved menu or by you"></textarea></label>
+                <label class="feature-full-width">NUTRITION SOURCE · REQUIRED IF INFORMATION IS ENTERED<input name="nutritionSource" maxlength="200" placeholder="e.g. Approved mission menu, section 4"></label>
+                <div class="feature-full-width form-footer"><span>NO CALORIE OR NUTRIENT ESTIMATES</span><button class="primary-button" type="submit">SAVE MEAL ENTRY</button></div>
+              </form>
+              <div id="meal-feedback" class="form-feedback" aria-live="polite"></div>
+            </article>
+            <article class="panel feature-history-panel">
+              <div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> LOCAL MEAL HISTORY</div><h2>Scheduled meals and logs</h2></div><div class="range-tabs" aria-label="Meal history range"><button class="range-tab" data-meal-range="7">7D</button><button class="range-tab active" data-meal-range="30">30D</button><button class="range-tab" data-meal-range="90">90D</button></div></div>
+              <div id="meal-history-list" class="feature-list" aria-live="polite"></div>
+            </article>
+            <footer class="disclaimer"><span>✳</span> Meal schedules and logs are personal records. Follow your crew’s approved menu and medical guidance; nutrition information is shown only when its source is recorded.</footer>
+          </section>
+
           <section class="view" id="view-environment">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> NASA ENVIRONMENTAL DATA · PHASE 1</div><h1>Earth conditions, <span>in context.</span></h1><p>Explore daily surface meteorology and solar measurements from NASA POWER for a selected coordinate and date range.</p></div>
             <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>ENVIRONMENTAL DATA ONLY</strong> &nbsp;These are gridded Earth-surface observations/estimates, not astronaut biometrics, spacecraft conditions, or personal space-radiation exposure. Data are daily aggregates and may be delayed.</span></div>
@@ -278,7 +382,7 @@
                 <label>END DATE<input id="power-end" name="end" class="entry-control" type="date" required></label>
                 <button id="power-load-button" class="primary-button" type="submit">LOAD NASA POWER DATA</button>
               </form>
-              <p class="power-query-privacy">The selected coordinates and dates are sent directly from this browser to the public NASA POWER API. No RUFUS account or API key is used.</p>
+              <p class="power-query-privacy">The selected coordinates and dates are sent directly from this browser to the public NASA POWER API. No ASTROVITAL account or API key is used.</p>
               <div id="power-request-status" class="power-request-status" role="status" aria-live="polite">Choose a location and dates, then load the NASA POWER daily data.</div>
               <div id="power-request-error" class="power-request-error" role="alert" hidden></div>
             </article>
@@ -319,30 +423,30 @@
               <div id="settings-summary" class="settings-summary"></div>
               <button class="primary-button" data-action="profile">EDIT PROFILE & PREFERENCES <span>→</span></button>
             </article>
-            <div class="health-note"><span>ⓘ</span><div><strong>Local-only prototype</strong><p>Hydration and medication demo entries save on this device. Background notifications, meal tracking, full translations, and cloud sync are not implemented.</p></div></div>
+            <div class="health-note"><span>ⓘ</span><div><strong>Local-only prototype</strong><p>Hydration, activity, sleep, meals, wellbeing, and medication entries save on this device. Background notifications and cloud sync are not implemented.</p></div></div>
           </section>
 
           <section class="view" id="view-roadmap">
-            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> RUFUS DEVELOPMENT ROADMAP</div><h1 id="roadmap-title">Coming in a later phase.</h1><p id="roadmap-description">This area is clearly marked as planned and is not yet a working health feature.</p></div>
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> ASTROVITAL DEVELOPMENT ROADMAP</div><h1 id="roadmap-title">Coming in a later phase.</h1><p id="roadmap-description">This area is clearly marked as planned and is not yet a working health feature.</p></div>
             <article class="panel roadmap-panel"><span class="sim-tag" id="roadmap-phase">PLANNED</span><p id="roadmap-detail"></p><p class="roadmap-status">This Phase 1 build does not collect or simulate data for this feature.</p></article>
           </section>
 
           <section class="view" id="view-companion">
-            <div class="page-intro companion-heading"><div class="eyebrow"><span class="eyebrow-line"></span> RUFUS · YOUR COMPANION BAY</div><h1>Your crewmate, <span>your mission.</span></h1><p>Drop in, say hello, and choose Rufus’s pose and mission gear. Your companion progress stays on this device.</p></div>
+            <div class="page-intro companion-heading"><div class="eyebrow"><span class="eyebrow-line"></span> ASTROVITAL · YOUR COMPANION BAY</div><h1>Your crewmate, <span>your mission.</span></h1><p>Drop in, say hello, and choose Rufus’s pose and mission gear. Your companion progress stays on this device.</p></div>
             <div class="companion-hero">
               <div class="companion-stage">
                 <div class="companion-orbit orbit-a"></div><div class="companion-orbit orbit-b"></div>
                 <button class="companion-avatar-tap" data-action="pet-rufus" aria-label="Pet Rufus. Each visit can build your friendship.">
                   <canvas id="rufus-home-avatar" class="companion-avatar" width="245" height="360" data-rufus-art="wave" data-rufus-live data-avatar-canvas role="img" aria-label="Rufus in his customized astronaut suit"></canvas>
-                  <span class="companion-pet-hint">TAP RUFUS TO SAY HI</span>
+                  <span class="companion-pet-hint">TAP ASTROVITAL TO SAY HI</span>
                 </button>
                 <div class="companion-stage-caption"><span class="live-dot"></span><span id="rufus-stage-caption">READY FOR A LITTLE COMPANY</span></div>
               </div>
               <div class="companion-dashboard">
                 <div class="companion-bond-card"><div class="bond-heading"><span>CREW BOND</span><strong id="rufus-bond-level">LEVEL 1</strong></div><div class="bond-name" id="rufus-bond-title">New crewmates</div><div class="xp-track"><span id="rufus-bond-progress"></span></div><small><span id="rufus-bond-xp">0</span> / 100 BOND XP · EARNED BY SHOWING UP</small></div>
                 <div class="companion-stats"><div><span>MISSION STARDUST</span><strong><span id="rufus-stardust">0</span> ✦</strong></div><div><span>HELLO STREAK</span><strong><span id="rufus-pet-streak">0</span> days</strong></div><div><span>MISSIONS TODAY</span><strong id="rufus-mission-count">0 / 4</strong></div></div>
-                <div class="companion-dialogue" aria-live="polite"><span class="dialogue-label">RUFUS SAYS</span><p id="rufus-home-dialogue">Every mission starts with a little hello. Want to see the flight plan?</p><button class="text-button" data-action="rufus-cheer">CHAT WITH RUFUS <span>✦</span></button></div>
-                <div class="companion-shortcuts"><button class="primary-button" data-action="customize-rufus">CUSTOMIZE RUFUS <span>↗</span></button><button class="secondary-button" data-nav="missions">VIEW TODAY’S MISSIONS</button></div>
+                <div class="companion-dialogue" aria-live="polite"><span class="dialogue-label">ASTROVITAL SAYS</span><p id="rufus-home-dialogue">Every mission starts with a little hello. Want to see the flight plan?</p><button class="text-button" data-action="rufus-cheer">CHAT WITH ASTROVITAL <span>✦</span></button></div>
+                <div class="companion-shortcuts"><button class="primary-button" data-action="customize-rufus">CUSTOMIZE ASTROVITAL <span>↗</span></button><button class="secondary-button" data-nav="missions">VIEW TODAY’S MISSIONS</button></div>
               </div>
             </div>
             <div class="companion-sections">
@@ -355,18 +459,40 @@
           <section class="view" id="view-health">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH MONITOR</div><h1>Your health, <span>in context.</span></h1><p>Track cardiovascular and recovery signals, resistance exercise, symptoms, crew connection, and simulated radiation exposure. Compare patterns with your personal references, then follow mission medical guidance when something concerns you.</p></div>
             <div class="notice-strip"><span class="notice-icon">ⓘ</span><span><strong>SIMULATION MODE</strong> &nbsp;All readings are illustrative sample data, not real medical measurements.</span></div>
-            <aside class="rufus-brief health-rufus"><img data-rufus-art="confident" src="./icons/rufus-confident.png" alt="Rufus standing confidently in his astronaut suit" loading="lazy" decoding="async"><div><span class="rufus-brief-label">RUFUS · BASELINE CHECK</span><strong>Your numbers are information, not a score.</strong><p>Notice patterns at your own pace. If a reading concerns you, talk with your flight surgeon.</p></div></aside>
+            <aside class="rufus-brief health-rufus"><img data-rufus-art="confident" src="./icons/rufus-confident.png" alt="Rufus standing confidently in his astronaut suit" loading="lazy" decoding="async"><div><span class="rufus-brief-label">ASTROVITAL · BASELINE CHECK</span><strong>Your numbers are information, not a score.</strong><p>Notice patterns at your own pace. If a reading concerns you, talk with your flight surgeon.</p></div></aside>
             <div id="health-alerts"></div>
             <div class="health-detail-grid" id="health-metrics"></div>
             <article class="panel full-chart-panel"><div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> HEALTH TIMELINE</div><h2>Personal trends over time</h2></div><div class="range-tabs"><button class="range-tab active" data-range="7">7D</button><button class="range-tab" data-range="30">30D</button></div></div><div class="timeline-legend"><span><i class="legend-dot cyan"></i>HEART RATE</span><span><i class="legend-dot blue"></i>SLEEP (HRS)</span><span><i class="legend-line"></i>BASELINE</span></div><div class="chart-wrap large-chart" id="health-chart"></div></article>
+            <article class="panel baseline-link-panel"><div><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH BASELINE</div><h2>Follow your own trends over time.</h2><p>Establish a 30-day personal reference and compare check-ins with your own history, not population averages.</p></div><button class="primary-button" data-nav="baseline">OPEN PERSONAL BASELINE <span>→</span></button></article>
             <div class="health-note"><span>ⓘ</span><div><strong>About these indicators</strong><p>Resistance exercise is tracked as a bone-health countermeasure activity, not a measurement of bone density. Symptom and crew-connection entries are self-reports, not immune or behavioral health assessments. All references are illustrative; review concerns with your flight surgeon or crew medical officer.</p></div></div>
-            <footer class="disclaimer"><span>✳</span> RUFUS is a wellness companion, not a medical diagnostic system. Follow your mission medical team's guidance.</footer>
+            <footer class="disclaimer"><span>✳</span> ASTROVITAL is a wellness companion, not a medical diagnostic system. Follow your mission medical team's guidance.</footer>
+          </section>
+
+          <section class="view" id="view-baseline">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH BASELINE</div><h1>Your health, <span>your history.</span></h1><p>Track daily indicators against your own first 30 records. AstroVital does not compare you with other astronauts or the general population.</p></div>
+            <div class="baseline-toolbar">
+              <article class="panel baseline-progress-card"><div class="baseline-progress-copy"><span class="baseline-kicker">BASELINE STATUS</span><strong id="baseline-state">Collecting personal records</strong><p id="baseline-description">Log daily health measurements. Your baseline becomes available after 30 dated records covering at least 30 calendar dates.</p></div><div class="baseline-progress"><div><span id="baseline-record-count">0 / 30 records</span><strong id="baseline-progress-percent">0%</strong></div><div class="progress-track"><span id="baseline-progress-fill"></span></div></div></article>
+              <div class="baseline-actions"><button class="primary-button" data-action="checkin">LOG DAILY METRICS <span>→</span></button><button class="secondary-button" id="baseline-load-demo" data-action="baseline-load-demo">LOAD SYNTHETIC DEMO</button></div>
+            </div>
+            <div class="baseline-dashboard-grid">
+              <article class="baseline-score-card"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH SCORE</div><div class="baseline-score"><strong id="baseline-score">—</strong><span>/ 100</span></div><span class="baseline-score-status" id="baseline-score-status">Collecting baseline</span><p>This illustrative index summarizes changes from your own baseline. It is not clinically validated.</p></article>
+              <article class="baseline-summary-card"><div class="eyebrow"><span class="eyebrow-line"></span> DAILY SUMMARY · RULE-BASED</div><h2 id="baseline-summary-title">Your trends will appear here.</h2><p id="baseline-summary">Save daily measurements to see how your indicators compare with your personal history.</p><span id="baseline-data-mode" class="sim-tag">PERSONAL RECORDS · LOCAL ONLY</span></article>
+            </div>
+            <div class="section-heading baseline-section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> CURRENT VS YOUR BASELINE</div><h2>Health indicators</h2></div><span class="sim-tag">NO POPULATION COMPARISON</span></div>
+            <div class="baseline-metric-grid" id="baseline-metrics"></div>
+            <div class="baseline-lower-grid">
+              <article class="panel baseline-risk-panel"><div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> RULE-BASED SIGNALS</div><h2>Patterns to review</h2></div></div><div id="baseline-risks"></div></article>
+              <article class="panel baseline-trend-panel"><div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> ROLLING WINDOWS</div><h2>7, 14 &amp; 30 day trends</h2></div></div><div id="baseline-trends"></div></article>
+            </div>
+            <article class="panel baseline-charts-panel"><div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HISTORY</div><h2>Health trends</h2></div><div class="range-tabs" aria-label="Chart date range"><button class="range-tab" data-baseline-range="7">7D</button><button class="range-tab active" data-baseline-range="30">30D</button><button class="range-tab" data-baseline-range="90">90D</button></div></div><div class="baseline-charts" id="baseline-charts"></div></article>
+            <aside class="health-note baseline-source-note"><span>ⓘ</span><div><strong>NASA research context and data source</strong><p>This feature is inspired by NASA Spaceflight Standard Measures research for Actigraphy and Cognition. This prototype does not import participant-level NASA data or claim synthetic examples represent NASA crews. <a href="https://data.nasa.gov/dataset/nasa-life-sciences-portal-nlsp" target="_blank" rel="noopener noreferrer">NASA Life Sciences Portal</a> · <a href="https://www.nasa.gov/hrp/nlsp/" target="_blank" rel="noopener noreferrer">NASA HRP data access</a></p></div></aside>
+            <footer class="disclaimer"><span>✳</span> Trends, scores, risk flags, and prompts are illustrative and not diagnoses, medical advice, or calibrated probabilities. Follow mission medical protocols and discuss concerning changes with your crew medical officer. Personal records remain in this browser.</footer>
           </section>
 
           <section class="view" id="view-missions">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> MISSION DAY 142 · FLIGHT PLAN</div><h1>Small actions. <span>Stronger missions.</span></h1><p>Choose approved wellness activities that fit your day. Every check-in is progress.</p></div>
             <div class="mission-summary"><div class="summary-icon">◎</div><div><span>DAILY OBJECTIVES</span><strong id="mission-summary-text">0 of 4 complete</strong></div><div class="summary-progress"><div class="progress-track"><span id="mission-summary-progress"></span></div><small>MISSION XP EARNED <strong id="mission-xp-today">0 / 160 XP</strong></small></div><div class="summary-streak"><span>✦</span><strong id="mission-streak">6</strong><small>DAY STREAK</small></div></div>
-            <aside class="rufus-brief mission-rufus"><img data-rufus-art="wave" src="./icons/rufus-wave.png" alt="Rufus waves to the crew before their mission" loading="lazy" decoding="async"><div><span class="rufus-brief-label">RUFUS’S FLIGHT PLAN</span><strong>One small win at a time.</strong><p>Pick what feels manageable today. Rest and recovery are part of looking after your crew.</p></div><span class="rufus-mission-star" aria-hidden="true">✦</span></aside>
+            <aside class="rufus-brief mission-rufus"><img data-rufus-art="wave" src="./icons/rufus-wave.png" alt="Rufus waves to the crew before their mission" loading="lazy" decoding="async"><div><span class="rufus-brief-label">ASTROVITAL’S FLIGHT PLAN</span><strong>One small win at a time.</strong><p>Pick what feels manageable today. Rest and recovery are part of looking after your crew.</p></div><span class="rufus-mission-star" aria-hidden="true">✦</span></aside>
             <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> WELLNESS FLIGHT PLAN</div><h2>Today's objectives</h2></div><span class="sim-tag">SIMULATED MISSION DATA</span></div>
             <div class="objective-list" id="mission-objectives"></div>
             <div class="achievement-panel"><div class="achievement-mark">✳</div><div><strong>Consistency unlocks new insignia.</strong><p>Complete daily health check-ins and approved wellness activities to earn mission XP. XP and achievements are for motivation only.</p></div><div class="achievement-badge"><span>◈</span><small>NEXT BADGE</small><strong>STEADY ORBIT</strong></div></div>
@@ -376,7 +502,7 @@
           <section class="view" id="view-cognitive">
             <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> COGNITIVE FITNESS · MIND LAB</div><h1>Keep your mind <span>mission sharp.</span></h1><p>Short, optional brain games offer a fun way to practice focus. They are not clinical cognitive assessments.</p></div>
             <div class="cognitive-stats"><div><span>THIS WEEK</span><strong id="cog-sessions">3 <small>sessions</small></strong></div><div><span>BEST REACTION</span><strong id="cog-best">284 <small>ms</small></strong></div><div><span>FOCUS STREAK</span><strong>✦ 4 <small>days</small></strong></div><span class="sim-tag">SIMULATED SCORES</span></div>
-            <aside class="rufus-brief mind-rufus"><img data-rufus-art="confident" src="./icons/rufus-confident.png" alt="Rufus encourages the crew in the Mind Lab" loading="lazy" decoding="async"><div><span class="rufus-brief-label">RUFUS · MIND LAB</span><strong>Curiosity is a great place to start.</strong><p>These are just-for-fun focus games. Take a break whenever you need one.</p></div></aside>
+            <aside class="rufus-brief mind-rufus"><img data-rufus-art="confident" src="./icons/rufus-confident.png" alt="Rufus encourages the crew in the Mind Lab" loading="lazy" decoding="async"><div><span class="rufus-brief-label">ASTROVITAL · MIND LAB</span><strong>Curiosity is a great place to start.</strong><p>These are just-for-fun focus games. Take a break whenever you need one.</p></div></aside>
             <div class="game-tabs" role="tablist"><button class="game-tab active" data-game="memory">01 &nbsp; MEMORY</button><button class="game-tab" data-game="reaction">02 &nbsp; REACTION</button><button class="game-tab" data-game="attention">03 &nbsp; ATTENTION</button></div>
             <article class="panel game-panel">
               <div class="game-copy"><div class="eyebrow"><span class="eyebrow-line"></span><span id="game-kicker">MEMORY SEQUENCE</span></div><h2 id="game-title">Sequence protocol</h2><p id="game-description">Watch the sequence, then repeat it in the same order. Each round adds one new step.</p><div class="game-meta"><span>◷ &nbsp;<strong id="game-duration">~1 MIN</strong></span><span>✦ &nbsp;+25 XP COMPLETE</span></div><button class="primary-button" id="game-start">START EXERCISE <span>→</span></button></div>
@@ -385,15 +511,15 @@
             <div class="health-note"><span>ⓘ</span><div><strong>Not a cognitive assessment</strong><p>These games are for optional engagement and practice only. Scores can vary with sleep, focus, and your environment. Do not use them to make medical or operational decisions.</p></div></div>
           </section>
 
-          <section class="view" id="view-journal">
-            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> DAILY WELLBEING · PRIVATE BY DEFAULT</div><h1>Check in with <span>yourself.</span></h1><p>A quick reflection helps you notice patterns. Your journal stays on this device.</p></div>
-            <aside class="rufus-brief recovery-rufus"><img data-rufus-art="sleep" src="./icons/rufus-sleep.png" alt="Rufus snoozes on a cloud in his spacesuit" loading="lazy" decoding="async"><div><span class="rufus-brief-label">RUFUS · RECOVERY REMINDER</span><strong>Rest is part of the mission.</strong><p>A quiet moment, a good sleep opportunity, and an honest check-in all count.</p></div></aside>
+          <section class="view" id="view-wellbeing">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> WELLBEING · PRIVATE BY DEFAULT</div><h1>Check in with <span>yourself.</span></h1><p>One place for your reflections, self-reported check-ins, and personal history. Share only what feels comfortable.</p></div>
+            <aside class="rufus-brief recovery-rufus"><img data-rufus-art="sleep" src="./icons/rufus-sleep.png" alt="Rufus snoozes on a cloud in his spacesuit" loading="lazy" decoding="async"><div><span class="rufus-brief-label">ASTROVITAL · RECOVERY REMINDER</span><strong>Rest is part of the mission.</strong><p>A quiet moment, a good sleep opportunity, and an honest check-in all count.</p></div></aside>
             <div class="journal-grid">
-              <article class="panel checkin-panel"><div class="eyebrow"><span class="eyebrow-line"></span> TODAY'S WELLNESS CHECK-IN</div><h2>How are you feeling, Maya?</h2><p class="form-intro">This is a non-clinical wellbeing check-in. Share only what feels comfortable.</p><form id="wellness-form"><label class="field-label">MOOD RIGHT NOW</label><div class="mood-options"><label><input type="radio" name="mood" value="Low"><span>☁</span><small>LOW</small></label><label><input type="radio" name="mood" value="Okay"><span>◒</span><small>OKAY</small></label><label><input type="radio" name="mood" value="Good" checked><span>☀</span><small>GOOD</small></label><label><input type="radio" name="mood" value="Great"><span>✦</span><small>GREAT</small></label></div><label class="field-label" for="energy-slider">FATIGUE LEVEL <strong><span id="fatigue-value">3</span> / 10</strong></label><input id="energy-slider" class="range-input" type="range" min="1" max="10" value="3"><div class="range-labels"><span>FEELING RESTED</span><span>VERY FATIGUED</span></div><label class="field-label" for="journal-note">PRIVATE JOURNAL <span class="optional-label">OPTIONAL · STORED ON THIS DEVICE</span></label><textarea id="journal-note" rows="4" maxlength="500" placeholder="Anything you'd like to reflect on? Only you can see this note on this device."></textarea><div class="form-footer"><span>UP TO 500 CHARACTERS</span><button class="primary-button" type="submit">SAVE CHECK-IN <span>→</span></button></div><div class="form-feedback" id="journal-feedback" aria-live="polite"></div></form></article>
-              <aside class="wellness-aside"><article class="panel mood-summary"><div class="eyebrow"><span class="eyebrow-line"></span> YOUR WELLNESS TREND</div><h2>A little reflection goes a long way.</h2><div class="mood-trend"><div class="mood-dots"><span>☀</span><span>◒</span><span>☀</span><span>✦</span><span>☀</span><span>◒</span><span class="today-dot">☀</span></div><div class="mood-days"><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span><span>MON</span><span>TUE</span><span>TODAY</span></div></div><p>Patterns are personal. Use your check-ins to reflect on what helps you feel your best.</p></article><article class="privacy-card"><span>◉</span><div><strong>Your privacy matters</strong><p>Check-ins and journal entries are stored locally in this browser. They are not sent to a server. Avoid recording sensitive information on a shared device.</p></div></article><button class="subtle-button log-mission" data-nav="missions">EXPLORE WELLNESS ACTIVITIES <span>↗</span></button></aside>
+              <article class="panel checkin-panel"><div class="eyebrow"><span class="eyebrow-line"></span> TODAY'S WELLBEING CHECK-IN</div><h2 id="wellbeing-greeting">How are you feeling?</h2><p class="form-intro">This is a non-clinical reflection. You can skip any part and update today’s entry later.</p><form id="wellness-form"><label class="field-label">MOOD RIGHT NOW</label><div class="mood-options"><label><input type="radio" name="mood" value="Low"><span>☁</span><small>LOW</small></label><label><input type="radio" name="mood" value="Okay"><span>◒</span><small>OKAY</small></label><label><input type="radio" name="mood" value="Good"><span>☀</span><small>GOOD</small></label><label><input type="radio" name="mood" value="Great"><span>✦</span><small>GREAT</small></label></div><label class="field-label" for="energy-slider">FATIGUE LEVEL <strong><span id="fatigue-value">3</span> / 10</strong></label><input id="energy-slider" class="range-input" type="range" min="1" max="10" value="3"><div class="range-labels"><span>FEELING RESTED</span><span>VERY FATIGUED</span></div><label class="field-label" for="stress-slider">STRESS RIGHT NOW <strong><span id="stress-value">3</span> / 10</strong></label><input id="stress-slider" class="range-input" type="range" min="1" max="10" value="3"><div class="range-labels"><span>LOW</span><span>HIGH</span></div><label class="field-label" for="wellbeing-connection">SENSE OF CREW CONNECTION</label><select id="wellbeing-connection" name="connection" class="entry-control"><option>Connected</option><option>A little isolated</option><option>Isolated</option></select><label class="field-label" for="journal-note">PRIVATE JOURNAL <span class="optional-label">OPTIONAL · STORED ON THIS DEVICE</span></label><textarea id="journal-note" name="note" rows="4" maxlength="500" placeholder="Anything you'd like to reflect on? Only you can see this note on this device."></textarea><div class="form-footer"><span>UP TO 500 CHARACTERS · LOCAL PROFILE</span><button class="primary-button" type="submit">SAVE CHECK-IN <span>→</span></button></div><div class="form-feedback" id="journal-feedback" aria-live="polite"></div></form></article>
+              <aside class="wellness-aside"><article class="panel mood-summary"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL REFLECTIONS</div><h2>A little reflection goes a long way.</h2><p>These are your own reports, not a mental-health assessment. Use them to reflect on what feels helpful to you.</p><div class="feature-wellbeing-summary" id="wellbeing-summary"></div></article><article class="privacy-card"><span>◉</span><div><strong>Your privacy matters</strong><p>Check-ins and journal entries are stored locally in this browser. They are not sent to a server. Avoid recording sensitive information on a shared device.</p></div></article><div class="health-note"><span>ⓘ</span><div><strong>Want support?</strong><p>Follow mission protocols and contact your crew behavioral-health or medical support if you are concerned. This app is not for emergencies.</p></div></div><button class="subtle-button log-mission" data-nav="missions">EXPLORE WELLNESS ACTIVITIES <span>↗</span></button></aside>
             </div>
-            <div class="section-heading journal-history-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> YOUR PERSONAL LOG</div><h2>Recent check-ins</h2></div></div><div class="journal-history" id="journal-history"></div>
-            <footer class="disclaimer"><span>✳</span> RUFUS is a wellness companion, not a medical diagnostic system. Follow your mission medical team's guidance.</footer>
+            <div class="section-heading journal-history-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> YOUR PERSONAL LOG</div><h2>Check-ins and journal</h2></div><div class="range-tabs" aria-label="Wellbeing history range"><button class="range-tab" data-wellbeing-range="7">7D</button><button class="range-tab active" data-wellbeing-range="30">30D</button><button class="range-tab" data-wellbeing-range="90">90D</button></div></div><div class="journal-history" id="wellbeing-history"></div>
+            <footer class="disclaimer"><span>✳</span> AstroVital offers reflection tools only. It does not diagnose, assess mental health, or replace professional support.</footer>
           </section>
         </div>
       </main>
