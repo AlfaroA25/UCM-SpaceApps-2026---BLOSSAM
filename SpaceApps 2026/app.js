@@ -1394,6 +1394,33 @@
     target.innerHTML = state.checkinHistory.slice(0, 5).map((entry) => `<article class="journal-entry"><span>${entry.mood === 'Great' ? '✦' : entry.mood === 'Good' ? '☀' : entry.mood === 'Okay' ? '◒' : '☁'}</span><div><strong>${escapeHtml(entry.mood)} · Fatigue ${escapeHtml(entry.fatigue)}/10</strong><small>${escapeHtml(formatAppDate(entry.date))} · ${escapeHtml(entry.time)}</small>${entry.note ? `<p data-user-content>${escapeHtml(entry.note)}</p>` : ''}</div></article>`).join('');
   }
 
+  const mobileNavToggle = $('#mobile-nav-toggle');
+  const mobileNavBackdrop = $('#mobile-nav-backdrop');
+  const navSidebar = $('#nav-sidebar');
+
+  function setMobileNavOpen(open) {
+    const isMobile = window.matchMedia('(max-width: 760px)').matches;
+    const isOpen = isMobile && open;
+    document.body.classList.toggle('mobile-nav-open', isOpen);
+    mobileNavToggle.setAttribute('aria-expanded', String(isOpen));
+    mobileNavToggle.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+    navSidebar.inert = isMobile && !isOpen;
+    mobileNavBackdrop.hidden = !isOpen;
+  }
+
+  mobileNavToggle.addEventListener('click', () => {
+    setMobileNavOpen(mobileNavToggle.getAttribute('aria-expanded') !== 'true');
+  });
+  mobileNavBackdrop.addEventListener('click', () => setMobileNavOpen(false));
+  window.matchMedia('(max-width: 760px)').addEventListener('change', () => setMobileNavOpen(false));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && document.body.classList.contains('mobile-nav-open')) {
+      setMobileNavOpen(false);
+      mobileNavToggle.focus();
+    }
+  });
+  setMobileNavOpen(false);
+
   document.addEventListener('click', (event) => {
     const nav = event.target.closest('[data-nav]');
     if (nav) {
@@ -1401,6 +1428,10 @@
       const view = nav.dataset.nav;
       closeModal();
       setNav(view);
+      if (document.body.classList.contains('mobile-nav-open')) {
+        setMobileNavOpen(false);
+        mobileNavToggle.focus();
+      }
       return;
     }
     const action = event.target.closest('[data-action]')?.dataset.action;

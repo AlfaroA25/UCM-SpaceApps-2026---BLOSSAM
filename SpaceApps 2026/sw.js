@@ -1,4 +1,4 @@
-const CACHE_NAME = 'astrovital-shell-v18';
+const CACHE_NAME = 'astrovital-shell-v19';
 const APP_SHELL = [
   './', './index.html', './styles.css', './i18n-catalog.js', './i18n.js', './app.js', './nasa-power.js', './manifest.webmanifest',
   './icons/astrovital.svg', './icons/astrovital-192.png', './icons/astrovital-512.png',
