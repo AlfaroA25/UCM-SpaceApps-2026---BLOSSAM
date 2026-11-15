@@ -67,7 +67,7 @@
           <button class="nav-link active" data-nav="overview" title="Home dashboard"><span class="nav-icon">◈</span> Home dashboard</button>
           <button class="nav-link" data-nav="companion" title="Rufus companion"><span class="nav-icon">✦</span> Rufus companion</button>
           <button class="nav-link" data-nav="health" title="Health monitoring"><span class="nav-icon">⌁</span> Health monitoring</button>
-          <button class="nav-link" data-nav="baseline" title="Personal baseline"><span class="nav-icon">◷</span> Personal baseline</button>
+          <button class="nav-link" data-nav="insights" title="Health insights"><span class="nav-icon">◈</span> Health insights</button>
           <button class="nav-link" data-nav="environment" title="NASA Environmental Data"><span class="nav-icon">◌</span> NASA Environmental Data</button>
           <button class="nav-link" data-nav="hydration" title="Hydration tracker"><span class="nav-icon">◉</span> Hydration tracker</button>
           <button class="nav-link" data-nav="meals" title="Meals and nutrition"><span class="nav-icon">◒</span> Meals and nutrition</button>
@@ -75,7 +75,6 @@
           <button class="nav-link" data-nav="activity" title="Physical activity"><span class="nav-icon">↗</span> Physical activity</button>
           <button class="nav-link" data-nav="wellbeing" title="Wellbeing"><span class="nav-icon">☼</span> Wellbeing</button>
           <button class="nav-link" data-nav="sleep" title="Sleep tracking"><span class="nav-icon">☾</span> Sleep tracking</button>
-          <button class="nav-link" data-nav="reports" title="Health reports"><span class="nav-icon">▤</span> Health reports</button>
           <button class="nav-link" data-nav="alerts" title="Alerts and notifications"><span class="nav-icon">♧</span> Alerts</button>
           <button class="nav-link" data-nav="missions" title="Daily missions"><span class="nav-icon">◎</span> Daily missions</button>
           <button class="nav-link" data-nav="cognitive" title="Mind lab"><span class="nav-icon">⌘</span> Mind lab</button>
@@ -468,11 +467,19 @@
             <footer class="disclaimer"><span>✳</span> AstroVital provides wellness tools, not medical diagnoses. Follow mission medical guidance.</footer>
           </section>
 
-          <section class="view" id="view-baseline">
-            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH BASELINE</div><h1>Your health, <span>your history.</span></h1><p>Track daily indicators against your own first 30 records. AstroVital does not compare you with other astronauts or the general population.</p></div>
+          <section class="view" id="view-insights">
+            <div class="page-intro"><div class="eyebrow"><span class="eyebrow-line"></span> ASTROVITAL HEALTH INSIGHTS</div><h1>Health insights</h1><p>Explore your personal baseline and reports built from locally saved data.</p></div>
+            <div class="insights-toolbar"><span id="insights-mode-label">PERSONAL RECORDS · LOCAL ONLY</span><button class="secondary-button" id="insight-demo-toggle" data-action="toggle-insight-demo" type="button" aria-pressed="false">View demo data</button></div>
+            <div class="notice-strip insights-demo-notice" id="insights-demo-notice" hidden><span class="notice-icon">ⓘ</span><span>Synthetic demo data; not personal or NASA readings. Demo records are isolated to this view; your saved profile data will not change. Demo exports are marked synthetic.</span></div>
+            <div class="insight-tabs" role="tablist" aria-label="Health insights views">
+              <button class="insight-tab active" id="insight-tab-baseline" data-insight-tab="baseline" type="button" role="tab" aria-controls="view-baseline" aria-selected="true">Personal Baseline</button>
+              <button class="insight-tab" id="insight-tab-daily" data-insight-tab="daily" type="button" role="tab" aria-controls="view-reports" aria-selected="false" tabindex="-1">Daily Report</button>
+              <button class="insight-tab" id="insight-tab-weekly" data-insight-tab="weekly" type="button" role="tab" aria-controls="view-reports" aria-selected="false" tabindex="-1">Weekly Report</button>
+            </div>
+            <section class="insight-panel" id="view-baseline" data-insight-panel="baseline" role="tabpanel" aria-labelledby="insight-tab-baseline">
             <div class="baseline-toolbar">
               <article class="panel baseline-progress-card"><div class="baseline-progress-copy"><span class="baseline-kicker">BASELINE STATUS</span><strong id="baseline-state">Collecting personal records</strong><p id="baseline-description">Log daily health measurements. Your baseline becomes available after 30 dated records covering at least 30 calendar dates.</p></div><div class="baseline-progress"><div><span id="baseline-record-count">0 / 30 records</span><strong id="baseline-progress-percent">0%</strong></div><div class="progress-track"><span id="baseline-progress-fill"></span></div></div></article>
-              <div class="baseline-actions"><button class="primary-button" data-action="checkin">LOG DAILY METRICS <span>→</span></button><button class="secondary-button" id="baseline-load-demo" data-action="baseline-load-demo">LOAD SYNTHETIC DEMO</button></div>
+              <div class="baseline-actions"><button class="primary-button" id="baseline-log-metrics" data-action="checkin">LOG DAILY METRICS <span>→</span></button></div>
             </div>
             <div class="baseline-dashboard-grid">
               <article class="baseline-score-card"><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HEALTH SCORE</div><div class="baseline-score"><strong id="baseline-score">—</strong><span>/ 100</span></div><span class="baseline-score-status" id="baseline-score-status">Collecting baseline</span><p>This illustrative index summarizes changes from your own baseline. It is not clinically validated.</p></article>
@@ -487,6 +494,29 @@
             <article class="panel baseline-charts-panel"><div class="panel-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> PERSONAL HISTORY</div><h2>Health trends</h2></div><div class="range-tabs" aria-label="Chart date range"><button class="range-tab" data-baseline-range="7">7D</button><button class="range-tab active" data-baseline-range="30">30D</button><button class="range-tab" data-baseline-range="90">90D</button></div></div><div class="baseline-charts" id="baseline-charts"></div></article>
             <aside class="health-note baseline-source-note"><span>ⓘ</span><div><strong>NASA research context and data source</strong><p>This feature is inspired by NASA Spaceflight Standard Measures research for Actigraphy and Cognition. This prototype does not import participant-level NASA data or claim synthetic examples represent NASA crews. <a href="https://data.nasa.gov/dataset/nasa-life-sciences-portal-nlsp" target="_blank" rel="noopener noreferrer">NASA Life Sciences Portal</a> · <a href="https://www.nasa.gov/hrp/nlsp/" target="_blank" rel="noopener noreferrer">NASA HRP data access</a></p></div></aside>
             <footer class="disclaimer"><span>✳</span> Trends, scores, risk flags, and prompts are illustrative and not diagnoses, medical advice, or calibrated probabilities. Follow mission medical protocols and discuss concerning changes with your crew medical officer. Personal records remain in this browser.</footer>
+            </section>
+
+            <section class="insight-panel" id="view-reports" data-insight-panel="reports" role="tabpanel" aria-labelledby="insight-tab-daily" hidden>
+            <div class="notice-strip report-privacy-note"><span class="notice-icon">ⓘ</span><span id="health-report-privacy-copy">Reports use only data recorded in this local profile. CSV and print exports are created on this device; no health data are uploaded. Private notes and nutrition details are excluded from CSV. Self-reported and illustrative information is not a diagnosis or medical advice.</span></div>
+            <form class="panel health-report-controls" id="health-report-form">
+              <label><span>Ending date</span><input id="health-report-date" name="endDate" type="date" required></label>
+              <button class="primary-button" type="submit">Generate report <span>→</span></button>
+            </form>
+            <section class="health-report-document" id="health-report-document" aria-live="polite">
+              <header class="health-report-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> ASTROVITAL · HEALTH REPORT</div><h2 id="health-report-title">Daily summary</h2><p id="health-report-caption">Records in the selected date range.</p></div></header>
+              <div class="health-report-meta" id="health-report-meta">
+                <div><span>Profile</span><strong id="health-report-profile" data-user-content>—</strong></div>
+                <div><span>Report period</span><strong id="health-report-period-label">Daily</strong></div>
+                <div><span>Date range</span><strong id="health-report-range">—</strong></div>
+                <div><span>Recorded days</span><strong id="health-report-recorded-days">0 / 1</strong></div>
+              </div>
+              <div class="notice-strip synthetic-report-note" id="health-report-synthetic" hidden><span class="notice-icon">ⓘ</span><span>Synthetic demo data; these are not real readings.</span></div>
+              <div class="report-empty-state" id="health-report-empty" hidden>No records for this period.</div>
+              <div class="health-report-grid" id="health-report-content"></div>
+              <footer class="health-report-disclaimer">Rufus, your AI health companion. This summary describes saved records only; it does not assess risk or replace mission medical guidance.</footer>
+            </section>
+            <div class="health-report-actions"><button class="secondary-button" id="health-report-export" type="button">Export CSV</button><button class="secondary-button" id="health-report-print" type="button">Print / Save PDF</button><span id="health-report-feedback" role="status" aria-live="polite"></span></div>
+            </section>
           </section>
 
           <section class="view" id="view-missions">
@@ -542,6 +572,7 @@
     <script src="./nasa-power.js"></script>
     <script src="./feature-data.js"></script>
     <script src="./health-baseline.js"></script>
+    <script src="./health-reports.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

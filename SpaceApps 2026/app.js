@@ -36,7 +36,6 @@
     activity: { title: 'Physical activity', phase: 'PHASE 5', detail: 'This prototype can log mission-approved activity through Daily Missions. A dedicated schedule and activity-history view are planned for Phase 5.' },
     mental: { title: 'Mental wellness', phase: 'PHASE 5', detail: 'The current wellbeing log supports private, local check-ins. Expanded stress, sleep-quality, and wellness-history tools are planned for Phase 5.' },
     sleep: { title: 'Sleep tracking', phase: 'PHASE 5', detail: 'Sleep duration can be entered in the simulated health check-in. Dedicated sleep schedules, quality check-ins, and trends are planned for Phase 5.' },
-    reports: { title: 'Health reports', phase: 'PHASE 5', detail: 'Daily and weekly summaries and exportable health reports are planned for Phase 5.' }
   };
   const languageNames = { en: 'English', es: 'Español', fr: 'Français', de: 'Deutsch', zh: '简体中文', ja: '日本語', ar: 'العربية' };
   const timeZoneCopy = {
@@ -67,6 +66,9 @@
   let activeStorageKey = STORAGE_KEY;
   let state = loadState(activeStorageKey);
   let activeGame = 'memory';
+  let activeInsightTab = 'baseline';
+  let insightDemoMode = false;
+  let demoInsightData = null;
   let activeRange = 7;
   let baselineChartRange = 30;
   let activityRange = 30;
@@ -84,6 +86,7 @@
   let pendingHydrationDeleteId = null;
   let nasaPowerData = null;
   let nasaPowerRequestId = 0;
+  let latestHealthReport = null;
   let welcomeLanguageTouched = false;
   let rufusDialogue = '';
   let rufusReactionPose = '';
@@ -330,9 +333,41 @@
     return false;
   }
 
+  function setInsightTab(tab, shouldRender = true) {
+    activeInsightTab = ['baseline', 'daily', 'weekly'].includes(tab) ? tab : 'baseline';
+    const activePanel = activeInsightTab === 'baseline' ? 'baseline' : 'reports';
+    $$('[data-insight-tab]').forEach((button) => {
+      const active = button.dataset.insightTab === activeInsightTab;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', String(active));
+      button.tabIndex = active ? 0 : -1;
+    });
+    $$('[data-insight-panel]').forEach((panel) => {
+      panel.hidden = panel.dataset.insightPanel !== activePanel;
+    });
+    $('#view-reports').setAttribute('aria-labelledby', `insight-tab-${activeInsightTab}`);
+    const translate = window.RufusI18n.translate;
+    $('#insights-mode-label').textContent = translate(insightDemoMode
+      ? 'SYNTHETIC DEMO · ISOLATED'
+      : 'PERSONAL RECORDS · LOCAL ONLY');
+    $('#insights-demo-notice').hidden = !insightDemoMode;
+    $('#insight-demo-toggle').textContent = translate(insightDemoMode ? 'Return to my data' : 'View demo data');
+    $('#insight-demo-toggle').setAttribute('aria-pressed', String(insightDemoMode));
+    if (!shouldRender) return;
+    if (activeInsightTab === 'baseline') renderBaseline();
+    else renderHealthReports();
+  }
+
   function setNav(view) {
     const newWellbeingView = Boolean($('#view-wellbeing'));
-    const aliases = { journal: newWellbeingView ? 'wellbeing' : 'journal', mental: newWellbeingView ? 'wellbeing' : 'journal' };
+    const aliases = {
+      journal: newWellbeingView ? 'wellbeing' : 'journal',
+      mental: newWellbeingView ? 'wellbeing' : 'journal',
+      baseline: 'insights',
+      reports: 'insights'
+    };
+    if (view === 'baseline') activeInsightTab = 'baseline';
+    if (view === 'reports') activeInsightTab = 'daily';
     const selectedView = aliases[view] || view;
     const isFuturePage = Boolean(futurePages[selectedView] && !$(`#view-${selectedView}`));
     const activeView = isFuturePage ? 'roadmap' : selectedView;
@@ -341,14 +376,14 @@
     const labels = {
       overview: 'HOME DASHBOARD', health: 'HEALTH MONITOR', hydration: 'HYDRATION TRACKER', environment: 'NASA ENVIRONMENTAL DATA',
       meals: 'MEALS & NUTRITION', medications: 'MEDICATION MANAGER', activity: 'PHYSICAL ACTIVITY',
-      baseline: 'PERSONAL BASELINE', sleep: 'SLEEP TRACKING', reports: 'HEALTH REPORTS',
+      insights: 'HEALTH INSIGHTS', sleep: 'SLEEP TRACKING',
       alerts: 'ALERTS', missions: 'DAILY MISSIONS', cognitive: 'MIND LAB', wellbeing: 'WELLBEING', journal: 'WELLBEING LOG',
       settings: 'SETTINGS'
     };
     $('#page-crumb').textContent = labels[selectedView] || labels.overview;
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (view === 'health') renderHealth();
-    if (view === 'baseline') renderBaseline();
+    if (selectedView === 'insights') setInsightTab(activeInsightTab);
     if (view === 'hydration') renderHydration(true);
     if (view === 'medications') renderMedicationManager();
     if (view === 'activity') renderActivity();
@@ -388,6 +423,7 @@
       renderActivity();
       renderSleep();
       renderMeals();
+      if ($('#view-insights').classList.contains('active')) setInsightTab(activeInsightTab);
     }
   }
 
@@ -1015,16 +1051,54 @@
     return true;
   }
 
+  function getInsightData() {
+    if (insightDemoMode) {
+      if (!demoInsightData || demoInsightData.endDate !== today) {
+        const engine = window.AstroVitalBaseline;
+        const records = engine.generateSampleData(180, today);
+        const baseline = engine.calculateBaseline(records);
+        demoInsightData = {
+          ...window.AstroVitalHealthReports.createDemoData(today, records, baseline),
+          endDate: today
+        };
+      }
+      return demoInsightData;
+    }
+
+    const storedBaseline = state.healthBaseline;
+    const healthBaseline = storedBaseline.isSynthetic
+      ? {
+        records: storedBaseline.personalRecordsBackup,
+        baseline: storedBaseline.personalBaselineBackup
+          || window.AstroVitalBaseline.calculateBaseline(storedBaseline.personalRecordsBackup),
+        isSynthetic: false
+      }
+      : storedBaseline;
+    return {
+      profileName: state.profile.name,
+      sampleData: false,
+      healthBaseline,
+      wellbeingEntries: state.checkinHistory,
+      activityEntries: state.activityEntries,
+      sleepLogs: state.sleepLogs,
+      hydrationLogs: state.hydrationLogs,
+      mealEntries: state.mealEntries,
+      medicationLog: state.medicationLog
+    };
+  }
+
   function renderBaseline() {
     if (!$('#view-baseline')) return;
     const engine = window.AstroVitalBaseline;
-    const data = state.healthBaseline;
+    const insightData = getInsightData();
+    const data = insightData.healthBaseline;
     const records = data.records.slice().sort((first, second) => first.date.localeCompare(second.date));
     const baseline = data.baseline || engine.calculateBaseline(records);
-    if (baseline.ready && !data.baseline) {
+    if (baseline.ready && !data.baseline && !insightDemoMode && !state.healthBaseline.isSynthetic) {
       data.baseline = baseline;
       persist();
     }
+
     const latest = records.at(-1);
     const count = Math.min(records.length, engine.BASELINE_DAYS);
     $('#baseline-record-count').textContent = `${formatNumber(count)} / ${engine.BASELINE_DAYS} records`;
@@ -1034,10 +1108,10 @@
     $('#baseline-description').textContent = baseline.ready
       ? `Calculated from your first ${baseline.sample_days} dated records (${formatAppDate(baseline.start_date)}–${formatAppDate(baseline.end_date)}). Later entries do not change this reference.`
       : `Log ${Math.max(0, engine.BASELINE_DAYS - count)} more daily records. Your first 30 records, covering at least 30 calendar dates, establish your personal reference.`;
-    $('#baseline-data-mode').textContent = data.isSynthetic
-      ? 'SYNTHETIC DEMO DATA · NOT PERSONAL READINGS'
-      : 'PERSONAL RECORDS · LOCAL ONLY';
-    $('#baseline-load-demo').textContent = data.isSynthetic ? 'CLEAR SYNTHETIC DEMO' : 'LOAD SYNTHETIC DEMO';
+    $('#baseline-data-mode').textContent = insightDemoMode
+      ? window.RufusI18n.translate('SYNTHETIC DEMO · ISOLATED')
+      : window.RufusI18n.translate('PERSONAL RECORDS · LOCAL ONLY');
+    $('#baseline-log-metrics').disabled = insightDemoMode;
 
     const comparisons = baseline.ready && latest ? engine.compareToBaseline(latest, baseline) : null;
     const score = comparisons ? engine.calculateHealthScore(latest, baseline) : { score: null, status: 'unavailable' };
@@ -1089,6 +1163,151 @@
     renderBaselineCharts(records, baseline);
   }
 
+  function renderHealthReports() {
+    const form = $('#health-report-form');
+    const reportEngine = window.AstroVitalHealthReports;
+    if (!form || !reportEngine) return;
+    const period = activeInsightTab === 'weekly' ? 'weekly' : 'daily';
+    const dateInput = $('#health-report-date');
+    dateInput.max = today;
+    if (!dateInput.value) dateInput.value = today;
+    const insightData = getInsightData();
+    const report = reportEngine.summarize({
+      healthRecords: insightData.healthBaseline.records,
+      baseline: {
+        ready: Boolean(insightData.healthBaseline.baseline?.ready),
+        isSynthetic: insightData.sampleData,
+        allowSyntheticComparison: insightData.sampleData,
+        values: insightData.healthBaseline.baseline?.values || {}
+      },
+      sampleData: insightData.sampleData,
+      wellbeingEntries: insightData.wellbeingEntries,
+      activityEntries: insightData.activityEntries,
+      sleepLogs: insightData.sleepLogs,
+      hydrationLogs: insightData.hydrationLogs,
+      mealEntries: insightData.mealEntries,
+      medicationLog: insightData.medicationLog
+    }, period, dateInput.value);
+    report.profileName = insightData.profileName;
+    latestHealthReport = report;
+
+    const t = window.RufusI18n.translate;
+    $('#health-report-privacy-copy').textContent = t(insightData.sampleData
+      ? 'Demo reports use isolated synthetic data for illustration only. They are not saved to your profile or mixed with personal records. CSV and print exports are created on this device; no health data are uploaded. Private notes and nutrition details are excluded from CSV. Demo data are not personal or NASA readings, diagnoses, or medical advice.'
+      : 'Reports use only data recorded in this local profile. CSV and print exports are created on this device; no health data are uploaded. Private notes and nutrition details are excluded from CSV. Self-reported and illustrative information is not a diagnosis or medical advice.');
+    const formatDate = (date) => new Intl.DateTimeFormat(localeTag(), {
+      timeZone: 'UTC',
+      dateStyle: 'medium'
+    }).format(new Date(`${date}T12:00:00Z`));
+    const formatValue = (value) => value === null
+      ? '—'
+      : formatNumber(value, { maximumFractionDigits: 1 });
+    const metricRows = report.metricRows.map((metric) => {
+      const baseline = metric.baseline === null ? '—' : `${formatValue(metric.baseline)} ${metric.unit}`;
+      const difference = metric.difference === null
+        ? '—'
+        : `${metric.difference > 0 ? '+' : ''}${formatValue(metric.difference)} ${metric.unit}`;
+      return `<div class="report-table-row"><span>${escapeHtml(t(metric.label))}</span><strong>${escapeHtml(formatValue(metric.average))}${metric.average === null ? '' : ` ${escapeHtml(metric.unit)}`}</strong><span>${formatNumber(metric.entryCount)}</span><span>${escapeHtml(baseline)}</span><span>${escapeHtml(difference)}</span></div>`;
+    }).join('');
+    const statsSection = (title, items, empty) => `
+      <article class="panel health-report-section">
+        <h3>${escapeHtml(t(title))}</h3>
+        ${empty
+          ? `<p class="report-no-entries">${escapeHtml(t('No entries recorded in this section.'))}</p>`
+          : `<dl class="health-report-stats">${items.map(([label, value]) => `<div><dt>${escapeHtml(t(label))}</dt><dd>${escapeHtml(String(value))}</dd></div>`).join('')}</dl>`}
+      </article>`;
+    const hasHealthIndicators = report.metricRows.some((metric) => metric.entryCount > 0);
+    const healthSection = `
+      <article class="panel health-report-section">
+        <h3>${escapeHtml(t('Health indicators'))}</h3>
+        ${hasHealthIndicators
+          ? `<div class="report-table" role="table" aria-label="${escapeHtml(t('Health indicators'))}">
+              <div class="report-table-head" role="row"><span>${escapeHtml(t('Measure'))}</span><span>${escapeHtml(t('Average'))}</span><span>${escapeHtml(t('Records'))}</span><span>${escapeHtml(t('Baseline'))}</span><span>${escapeHtml(t('Difference'))}</span></div>
+              ${metricRows}
+            </div>
+            ${insightData.healthBaseline.baseline?.ready
+              ? `<p class="report-baseline-note">${escapeHtml(t('Baseline differences are descriptive only and do not indicate risk.'))}</p>`
+              : `<p class="report-baseline-note">${escapeHtml(t('A personal baseline is not available yet. It will appear after enough dated records are saved.'))}</p>`}`
+          : `<p class="report-no-entries">${escapeHtml(t('No entries recorded in this section.'))}</p>`}
+      </article>`;
+    const wellbeingItems = [
+      ['Mood check-ins', formatNumber(report.wellbeing.entryCount)],
+      ['Fatigue', report.wellbeing.averageFatigue === null ? '—' : formatValue(report.wellbeing.averageFatigue)],
+      ['Stress', report.wellbeing.averageStress === null ? '—' : formatValue(report.wellbeing.averageStress)]
+    ];
+    const activityItems = [
+      ['Completed sessions', formatNumber(report.activity.completed)],
+      ['Completed minutes', formatNumber(report.activity.completedMinutes)],
+      ['Scheduled sessions', formatNumber(report.activity.statuses.scheduled)],
+      ['Skipped sessions', formatNumber(report.activity.statuses.skipped)]
+    ];
+    const sleepItems = [
+      ['Total sleep', report.sleep.totalHours === null ? '—' : `${formatValue(report.sleep.totalHours)} h`],
+      ['Average per logged night', report.sleep.averageHours === null ? '—' : `${formatValue(report.sleep.averageHours)} h`],
+      ['Logged nights', formatNumber(report.sleep.loggedNights)]
+    ];
+    const hydrationItems = [
+      ['Total intake', report.hydration.totalMl === null ? '—' : `${formatNumber(report.hydration.totalMl)} mL`],
+      ['Entries', formatNumber(report.hydration.entryCount)]
+    ];
+    const mealItems = [
+      ['Scheduled meals', formatNumber(report.meals.statuses.scheduled)],
+      ['Eaten', formatNumber(report.meals.statuses.eaten)],
+      ['Partial', formatNumber(report.meals.statuses.partial)],
+      ['Skipped', formatNumber(report.meals.statuses.skipped)]
+    ];
+    const medicationItems = [
+      ['Taken', formatNumber(report.medication.statuses.taken)],
+      ['Skipped', formatNumber(report.medication.statuses.skipped)]
+    ];
+
+    $('#health-report-title').textContent = t(period === 'daily' ? 'Daily summary' : 'Weekly summary');
+    $('#health-report-caption').textContent = t('Records in the selected date range.');
+    $('#health-report-profile').textContent = insightData.profileName;
+    $('#health-report-period-label').textContent = t(period === 'daily' ? 'Daily' : 'Weekly');
+    $('#health-report-range').textContent = report.startDate === report.endDate
+      ? formatDate(report.endDate)
+      : `${formatDate(report.startDate)} – ${formatDate(report.endDate)}`;
+    $('#health-report-recorded-days').textContent = `${formatNumber(report.recordedDays)} / ${formatNumber(report.dayCount)}`;
+    $('#health-report-synthetic').hidden = !report.sampleData;
+    $('#health-report-empty').hidden = !report.isEmpty;
+    $('#health-report-feedback').textContent = '';
+    $('#health-report-export').disabled = false;
+    $('#health-report-content').innerHTML = [
+      healthSection,
+      statsSection('Wellbeing', wellbeingItems, report.wellbeing.entryCount === 0),
+      statsSection('Activity', activityItems, report.activity.entryCount === 0),
+      statsSection('Sleep', sleepItems, report.sleep.loggedNights === 0),
+      statsSection('Hydration', hydrationItems, report.hydration.entryCount === 0),
+      statsSection('Meals', mealItems, report.meals.entryCount === 0),
+      statsSection('Medication log', medicationItems, report.medication.entryCount === 0)
+    ].join('');
+  }
+
+  function exportHealthReport() {
+    const feedback = $('#health-report-feedback');
+    const t = window.RufusI18n.translate;
+    if (!latestHealthReport) {
+      feedback.textContent = t('Generate a report before exporting.');
+      return;
+    }
+    try {
+      const csv = window.AstroVitalHealthReports.toCsv(latestHealthReport, latestHealthReport.profileName, t);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const demoPrefix = latestHealthReport.sampleData ? 'demo-' : '';
+      link.download = `astrovital-${demoPrefix}health-report-${latestHealthReport.startDate}-${latestHealthReport.endDate}.csv`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+      feedback.textContent = t('CSV report downloaded.');
+    } catch (error) {
+      console.error('Unable to export AstroVital health report:', error);
+      feedback.textContent = t('The CSV report could not be created.');
+    }
+  }
+
   function renderBaselineCharts(records, baseline) {
     const engine = window.AstroVitalBaseline;
     const latestDate = records.at(-1)?.date;
@@ -1123,45 +1342,6 @@
     $$('[data-baseline-range]').forEach((button) => {
       button.classList.toggle('active', Number(button.dataset.baselineRange) === baselineChartRange);
     });
-  }
-
-  function loadBaselineDemo() {
-    if (state.healthBaseline.records.length && !state.healthBaseline.isSynthetic
-      && !window.confirm('Load the synthetic demo and replace this profile’s personal baseline records?')) return;
-    const personalRecordsBackup = state.healthBaseline.isSynthetic
-      ? state.healthBaseline.personalRecordsBackup
-      : state.healthBaseline.records;
-    const personalBaselineBackup = state.healthBaseline.isSynthetic
-      ? state.healthBaseline.personalBaselineBackup
-      : state.healthBaseline.baseline;
-    const records = window.AstroVitalBaseline.generateSampleData();
-    state.healthBaseline = {
-      records,
-      baseline: window.AstroVitalBaseline.calculateBaseline(records),
-      isSynthetic: true,
-      personalRecordsBackup,
-      personalBaselineBackup
-    };
-    persist();
-    renderBaseline();
-    showToast('Synthetic baseline demo loaded. It is not personal or NASA participant data.');
-  }
-
-  function clearBaselineDemo() {
-    if (!state.healthBaseline.isSynthetic) return;
-    if (!window.confirm('Clear the synthetic demo records from this profile?')) return;
-    const records = state.healthBaseline.personalRecordsBackup;
-    state.healthBaseline = {
-      records,
-      baseline: state.healthBaseline.personalBaselineBackup
-        || window.AstroVitalBaseline.calculateBaseline(records),
-      isSynthetic: false,
-      personalRecordsBackup: [],
-      personalBaselineBackup: null
-    };
-    persist();
-    renderBaseline();
-    showToast('Synthetic demo records cleared.');
   }
 
   function renderHeartChart(container, days, withSleep) {
@@ -2316,7 +2496,29 @@
   });
   setMobileNavOpen(false);
 
+  document.addEventListener('keydown', (event) => {
+    const currentTab = event.target.closest('[data-insight-tab]');
+    if (!currentTab || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    const tabs = $$('[data-insight-tab]');
+    const currentIndex = tabs.indexOf(currentTab);
+    const forwardKey = document.documentElement.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
+    const backwardKey = forwardKey === 'ArrowRight' ? 'ArrowLeft' : 'ArrowRight';
+    const nextIndex = event.key === 'Home'
+      ? 0
+      : event.key === 'End'
+        ? tabs.length - 1
+        : (currentIndex + (event.key === forwardKey ? 1 : -1) + tabs.length) % tabs.length;
+    event.preventDefault();
+    setInsightTab(tabs[nextIndex].dataset.insightTab);
+    tabs[nextIndex].focus();
+  });
+
   document.addEventListener('click', (event) => {
+    const insightTab = event.target.closest('[data-insight-tab]');
+    if (insightTab) {
+      setInsightTab(insightTab.dataset.insightTab);
+      return;
+    }
     const nav = event.target.closest('[data-nav]');
     if (nav) {
       event.preventDefault();
@@ -2329,6 +2531,14 @@
       }
       return;
     }
+    if (event.target.closest('#health-report-export')) {
+      exportHealthReport();
+      return;
+    }
+    if (event.target.closest('#health-report-print')) {
+      window.print();
+      return;
+    }
     const action = event.target.closest('[data-action]')?.dataset.action;
     const medicationStatusButton = event.target.closest('[data-medication-status]');
     if (medicationStatusButton) {
@@ -2337,6 +2547,9 @@
     }
     if (action === 'sign-out') {
       closeModal();
+      insightDemoMode = false;
+      demoInsightData = null;
+      activeInsightTab = 'baseline';
       $('#login-form').reset();
       $('#login-feedback').textContent = '';
       $('#welcome-language').value = languageNames[state.profile.language] ? state.profile.language : 'en';
@@ -2346,9 +2559,10 @@
     }
     if (action === 'profile') openProfile();
     if (action === 'checkin') openCheckin();
-    if (action === 'baseline-load-demo') {
-      if (state.healthBaseline.isSynthetic) clearBaselineDemo();
-      else loadBaselineDemo();
+    if (action === 'toggle-insight-demo') {
+      insightDemoMode = !insightDemoMode;
+      setInsightTab(activeInsightTab);
+      return;
     }
     if (action === 'alerts') openAlerts();
     if (action === 'rufus-cheer') cheerRufus();
@@ -2533,6 +2747,20 @@
   });
 
   document.addEventListener('submit', (event) => {
+    if (event.target.id === 'health-report-form') {
+      event.preventDefault();
+      const endDate = $('#health-report-date').value;
+      const feedback = $('#health-report-feedback');
+      feedback.textContent = '';
+      if (endDate > today) {
+        latestHealthReport = null;
+        $('#health-report-export').disabled = true;
+        feedback.textContent = window.RufusI18n.translate('Future report dates are unavailable.');
+        return;
+      }
+      renderHealthReports();
+      return;
+    }
     if (event.target.id === 'medication-log-form') {
       event.preventDefault();
       const form = new FormData(event.target);
@@ -2953,6 +3181,16 @@
     if (event.target.name === 'language' && event.target.closest('#profile-form')) {
       window.RufusI18n.setLocale(event.target.value);
     }
+    if (event.target.id === 'health-report-date') {
+      const endDate = $('#health-report-date').value;
+      if (endDate > today) {
+        latestHealthReport = null;
+        $('#health-report-export').disabled = true;
+        $('#health-report-feedback').textContent = window.RufusI18n.translate('Future report dates are unavailable.');
+      } else {
+        renderHealthReports();
+      }
+    }
   });
 
   document.addEventListener('rufus:localechange', () => {
@@ -2970,6 +3208,7 @@
     renderMedicationManager();
     renderHydration();
     renderSettings();
+    if ($('#view-insights').classList.contains('active')) setInsightTab(activeInsightTab);
     if (nasaPowerData) renderPowerResults(nasaPowerData);
   });
   $('#modal-backdrop').addEventListener('click', (event) => {
